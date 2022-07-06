@@ -155,11 +155,11 @@ export const XSwap = () => {
             </Grid>
             <Grid item xs={6}>
               <StyledCard className="swap-card">
-                <Typography gutterBottom variant="h5" component="div">
-                  <Button onClick={onInvokeSwap}>
+                <Button onClick={onInvokeSwap}>
+                  <Typography gutterBottom sx={{fontSize: '1.5rem'}} variant="h5" component="div">
                     Swap!
-                  </Button>
-                </Typography>
+                  </Typography>
+                </Button>
               </StyledCard>
             </Grid>
           </Grid>

@@ -203,7 +203,12 @@ color: ${Theme.typography.body1.color};
 }
 
 .mint-container {
-  width: 30vw;
+  @media (max-width: 500px) {
+    width: 100vw;
+  }
+  @media (min-width: 500px) {
+    width: 50vw;
+  }
 }
 
 `;
