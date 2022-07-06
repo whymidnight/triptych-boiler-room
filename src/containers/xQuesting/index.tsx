@@ -45,14 +45,19 @@ import {
   activeQuestProposalsAtom,
   globalEnumAtom,
   stakingProgressionAtom,
+  questsKPIsAtom
 } from "./state/atoms";
 import {StyledCard} from "../../components/cards";
 
 import {NFTGalleryItems, QuestStart} from "./enrollment";
-import {QuestedGalleryItems} from "./manage";
+import {QuestedGalleryItems, QuestedGalleryItemsHeader} from "./manage";
 import {QuestAction} from "./rewards";
 
 declare function get_quests(oracle: String): Promise<any>;
+declare function get_quests_kpis(
+  oracle: String,
+  holder: String,
+): Promise<any>;
 declare function get_quests_proposals(
   oracle: String,
   holder: String
@@ -103,7 +108,7 @@ declare function get_rewards(
   questIndex: String
 ): Promise<any>;
 
-const ORACLE = new PublicKey("PE4JrpqYku9fiR1SXPCUy5HrGEw6uvxYbQmMFUXx8HG");
+export const ORACLE = new PublicKey("9fXiLRZGeipeHEMkC8kV7S7t8eNcoSrTfA9mwd6DM2t4");
 
 //@ts-ignore
 export const QuestsGalleryItems = ({
@@ -226,6 +231,7 @@ export const QuestsGalleryItems = ({
                           </Typography>
                         </Grid>
                       </Grid>
+                      <QuestedGalleryItemsHeader quest={quest} />
                     </CardContent>
                     <CardActions style={{justifyContent: "center"}}>
                       <Button
@@ -310,9 +316,9 @@ export const QuestsGallery = () => {
   );
 
   const wallet = useWallet();
-  const [resync, setResync] = useRecoilState(resyncAtom);
   const [nfts, setNfts] = useRecoilState(nftsAtom);
   const [quests, setQuests] = useRecoilState(questsAtom);
+  const [questsKPIs, setQuestsKPIs] = useRecoilState(questsKPIsAtom);
   const [questsProposals, setQuestsProposals] =
     useRecoilState(questsProposalsAtom);
   const [activeQuestProposals, setActiveQuestProposals] = useRecoilState(
@@ -339,6 +345,8 @@ export const QuestsGallery = () => {
   const [pairings, setPairings] = useRecoilState(pairingsAtom);
   const [stakingProgression, setStakingProgression] = useRecoilState(stakingProgressionAtom);
 
+  const [resync, setResync] = useRecoilState(resyncAtom);
+
   useEffect(() => {
     async function fetchQuests() {
       if (!wallet.publicKey) {
@@ -358,34 +366,22 @@ export const QuestsGallery = () => {
       );
 
       setQuestsProposals(questsProposals);
+
+      const questsKPIsJson = await get_quests_kpis(
+        ORACLE.toString(),
+        wallet.publicKey.toString(),
+      );
+      const questsKPIs = JSON.parse(
+        String.fromCharCode(...questsKPIsJson)
+      );
+
+      console.log("...", questsKPIs);
+      setQuestsKPIs(questsKPIs);
     }
     if (questsProgression === 0) {
       fetchQuests();
     }
   }, [wallet, questsProgression, setQuests, setQuestsProposals]);
-
-  useEffect(() => {
-    async function fetchQuests() {
-      if (!wallet.publicKey) {
-        return;
-      }
-
-      const questsJson = await get_quests(ORACLE.toString());
-      const quests = JSON.parse(String.fromCharCode(...questsJson));
-      setQuests(quests);
-
-      const questsProposalsJson = await get_quests_proposals(
-        ORACLE.toString(),
-        wallet.publicKey.toString()
-      );
-      const questsProposals = JSON.parse(
-        String.fromCharCode(...questsProposalsJson)
-      );
-
-      setQuestsProposals(questsProposals);
-    }
-    fetchQuests();
-  }, [wallet, resync, setQuests, setQuestsProposals]);
 
   useEffect(() => {
     async function fetchNfts() {
@@ -409,12 +405,6 @@ export const QuestsGallery = () => {
             }
             return {...nft, offchainMetadata};
           })
-          .filter(
-            // @ts-ignore
-            async (nft) =>
-              // @ts-ignore
-              !nftsQuestedExhaust.includes((await nft).mint.toString())
-          )
       );
 
       //@ts-ignore
@@ -423,7 +413,7 @@ export const QuestsGallery = () => {
       setNftsSelection(myNfts.map(() => false));
     }
     fetchNfts();
-  }, [wallet, resync, nftsQuestedExhaust, setNfts, setNftsSelection]);
+  }, [wallet, resync, setNfts, setNftsSelection]);
 
   const onBack = useCallback(
     (_) => {
@@ -779,6 +769,8 @@ export const QuestsGallery = () => {
         setStakingProgression(0);
       }
 
+      setActiveQuestProposals([]);
+
       setNfts([]);
       setPairings({
         // @ts-ignore
@@ -799,6 +791,8 @@ export const QuestsGallery = () => {
       setNftsSelection,
       setResync,
       setShowCompleted,
+      setActiveQuestProposals,
+      setGlobalEnum,
     ]
   );
 
@@ -981,12 +975,19 @@ export const QuestsGallery = () => {
   }
 
   const topBarXsPoints = useMemo(() => {
-    let cols = 0;
+    var cols = 0;
     if (
       globalEnum === "recover"
     ) {
       console.log("waldo");
       cols += 1;
+    }
+    if (
+      globalEnum === "recover"
+      && activeQuestProposals.length > 0
+    ) {
+      console.log("waldo");
+      cols += 2;
     }
     if (questsProgression === 2 || questsProgression === 1) {
       cols += 2;
@@ -994,7 +995,7 @@ export const QuestsGallery = () => {
 
     console.log(cols);
     return Number(12 / cols);
-  }, [questsProgression]);
+  }, [globalEnum, questsProgression, activeQuestProposals]);
 
   const buttonText = useMemo(() => {
     switch (globalEnum) {
@@ -1052,46 +1053,27 @@ export const QuestsGallery = () => {
                     (globalEnum === "reward" &&
                       recoveryState.filter((item) => item).length > 0) ||
                     (globalEnum === "recover" &&
-                      questsProposals[questSelection].filter(
-                        (item) => !item.Started && !item.Withdrawn
-                      ).length > 0)) && (
-                    <Grid
-                      item
-                      xs={topBarXsPoints}
-                      sx={{justifyContent: "center"}}
-                    >
-                      <StyledCard>
-                        <Button
-                          sx={{
-                            fontSize: "1.1rem",
-                            width: "-webkit-fill-available",
-                          }}
-                          onClick={(event) => onRecover(event, questSelection)}
-                        >
-                          {buttonText}
-                        </Button>
-                      </StyledCard>
-                    </Grid>
-                  )}
-                {globalEnum === "recover" && nftsSelection.length > 0 && (
-                  <Grid
-                    item
-                    xs={topBarXsPoints}
-                    sx={{justifyContent: "center"}}
-                  >
-                    <StyledCard>
-                      <Button
-                        sx={{
-                          fontSize: "1.1rem",
-                          width: "-webkit-fill-available",
-                        }}
-                        onClick={(event) => onQuestStart(event, questSelection)}
+                      activeQuestProposals.length > 0)) && (
+                    <>
+                      <Grid
+                        item
+                        xs={topBarXsPoints}
+                        sx={{justifyContent: "center"}}
                       >
-                        Start
-                      </Button>
-                    </StyledCard>
-                  </Grid>
-                )}
+                        <StyledCard>
+                          <Button
+                            sx={{
+                              fontSize: "1.1rem",
+                              width: "-webkit-fill-available",
+                            }}
+                            onClick={(event) => onRecover(event, questSelection)}
+                          >
+                            {buttonText}
+                          </Button>
+                        </StyledCard>
+                      </Grid>
+                    </>
+                  )}
                 {questsProgression === 1 && (
                   <Grid
                     item

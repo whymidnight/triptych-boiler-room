@@ -159,7 +159,7 @@ export const NFTGalleryItems = ({onSelection}) => {
         })
       );
 
-      console.log("DONE WITH FETCHING");
+      console.log("DONE WITH FETCHING", nftsWithMetadata);
 
       setItems({
         ...items,

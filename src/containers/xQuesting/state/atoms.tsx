@@ -88,3 +88,8 @@ export const stakingProgressionAtom = atom({
   key: "stakingProgression",
   default: 0,
 });
+
+export const questsKPIsAtom = atom({
+  key: "questsKPIs",
+  default: {},
+});

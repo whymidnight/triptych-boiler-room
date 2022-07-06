@@ -7,7 +7,7 @@ import CardMedia from "@mui/material/CardMedia";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import {StyledCard} from "../../components/cards";
-import {Box, Grid} from "@mui/material";
+import {Box, Grid, Stack, Divider} from "@mui/material";
 import {useRecoilState} from "recoil";
 import {
   questsProposalsAtom,
@@ -23,9 +23,115 @@ import {
   recoveryStateAtom,
   activeQuestProposalsAtom,
   globalEnumAtom,
+  questsKPIsAtom,
+  resyncAtom,
 } from "./state/atoms";
 
 import axios from 'axios';
+import {useWallet} from "@solana/wallet-adapter-react";
+import {ORACLE} from './index';
+
+declare function get_quests_kpis(
+  oracle: String,
+  holder: String,
+): Promise<any>;
+
+export const QuestedGalleryItemsHeader = ({quest}) => {
+  const wallet = useWallet();
+  const [questsKPIs, setQuestsKPIs] = useRecoilState(questsKPIsAtom);
+  const [questsProposals] = useRecoilState(questsProposalsAtom);
+
+  const [resync, setResync] = useRecoilState(resyncAtom);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setResync(resync + 1);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [resync, setResync]);
+
+  useEffect(() => {
+    async function fetchQuests() {
+      if (!wallet.publicKey) {
+        return;
+      }
+
+      const questsKPIsJson = await get_quests_kpis(
+        ORACLE.toString(),
+        wallet.publicKey.toString(),
+      );
+      const questsKPIs = JSON.parse(
+        String.fromCharCode(...questsKPIsJson)
+      );
+
+      console.log("...", questsKPIs);
+      setQuestsKPIs(questsKPIs);
+    }
+    fetchQuests();
+  }, [wallet, resync, setQuestsKPIs]);
+
+
+
+  const stakingRewards = useCallback(() => {
+    console.log(questsProposals[quest])
+    return 0;
+  }, []);
+
+  useEffect(() => {
+    console.log(quest, questsKPIs)
+  }, [questsKPIs]);
+
+  return (
+    <Grid container justifyContent="center" xs={12} sx={{color: 'white'}}>
+      <StyledCard>
+        <Grid container justifyContent="center" item sx={{width: '100%'}} direction="row">
+          <Grid item sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}} xs={5}>
+            <Stack>
+              <Typography
+                gutterBottom
+                variant="h5"
+                component="div"
+                sx={{paddingTop: "2px"}}
+              >
+                {questsKPIs.hasOwnProperty(quest) ? Number(questsKPIs[quest].stakingRewards).toFixed(1) : "0.0"}
+              </Typography>
+              <Typography
+                gutterBottom
+                variant="h5"
+                component="div"
+                sx={{paddingTop: "2px"}}
+              >
+                stNBA
+              </Typography>
+            </Stack>
+          </Grid>
+          <Grid item xs={2} container direction="row" justifyContent="center" alignItems="center">
+            <Divider
+              orientation="vertical"
+              style={{height: '100%', width: '1px', backgroundColor: 'orange'}} />
+          </Grid>
+          <Grid item xs={5}>
+            <Typography
+              gutterBottom
+              variant="h5"
+              component="div"
+              sx={{paddingTop: "2px"}}
+            >
+              {questsKPIs.hasOwnProperty(quest) ? Number(questsKPIs[quest].totalStaked / (20 * 1000)).toFixed(4) : "0.0000"}%
+            </Typography>
+            <Typography
+              gutterBottom
+              variant="h5"
+              component="div"
+              sx={{paddingTop: "2px"}}
+            >
+              Total Apes Staked
+            </Typography>
+          </Grid>
+        </Grid>
+      </StyledCard>
+    </Grid>
+  );
+}
 
 //@ts-ignore
 export const QuestedGalleryItems = ({onSelection}) => {
@@ -146,39 +252,41 @@ export const QuestedGalleryItems = ({onSelection}) => {
   }, [globalEnum]);
 
   return (
-    <StyledCard className="xquesting-enrollment-box">
-      <Grid alignItems="center" container>
-
+    <StyledCard className="xquesting-enrollment-container">
+      <Grid justifyContent="center" alignItems="center" container sx={{}}>
+        <QuestedGalleryItemsHeader quest={questSelection} />
         {nftsQuested.map(({depositsMetadata}, pairIndex) => (
-          <Grid container item xs={12} sm={4} key={pairIndex} justifyContent="center">
-            <StyledCard>
-              <CardActions>
-                <Button
-                  style={{fontSize: '1.1rem'}}
-                  onClick={(event) => {
-                    console.log(".........");
-                    setRecoveryState((prev) => {
-                      const clone = Object.assign([], prev)
-                      clone[pairIndex] = !clone[pairIndex];
-                      return clone;
-                    });
-                    // onSelection(event, pairIndex);
-                  }}
-                  size="small"
-                >
-                  {
-                    //@ts-ignore
-                    buttonText(recoveryState[pairIndex])
-                  }
-                </Button>
-              </CardActions>
-              <Grid item key={0}>
-                <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-                  {depositsMetadata.map((depositMetadata, nftIndex) => (
+          <StyledCard>
+            <Grid container item key={pairIndex} justifyContent="center" >
+              <Grid item xs={12} sx={{display: 'flex', justifyContent: 'center'}}>
+                <Box>
+                  <Button
+                    style={{fontSize: '1rem', margin: '5px'}}
+                    onClick={(event) => {
+                      console.log(".........");
+                      setRecoveryState((prev) => {
+                        const clone = Object.assign([], prev)
+                        clone[pairIndex] = !clone[pairIndex];
+                        return clone;
+                      });
+                      // onSelection(event, pairIndex);
+                    }}
+                    size="small"
+                  >
+                    {
+                      //@ts-ignore
+                      buttonText(recoveryState[pairIndex])
+                    }
+                  </Button>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sx={{display: 'flex', justifyContent: 'center'}}>
+                {depositsMetadata.map((depositMetadata, nftIndex) => (
+                  <Grid item xs={12} sx={{display: 'flex', justifyContent: 'center'}}>
                     <CardMedia
-                      sx={{height: '80px', width: '80px'}}
+                      sx={{height: '120px', width: '120px'}}
                       component="img"
-                      height="140"
+                      height="120px"
                       image={
                         //@ts-ignore
                         depositMetadata.offchainMetadata.hasOwnProperty("image")
@@ -187,13 +295,13 @@ export const QuestedGalleryItems = ({onSelection}) => {
                           : "https://www.arweave.net/GLeORZQuLxFzDFK0aBQKwhQUUF0-4eawXnrjdtmv5fg?ext=png"
                       }
                     />
-                  ))}
-                </div>
+                  </Grid>
+                ))}
               </Grid>
-            </StyledCard>
-          </Grid>
+            </Grid>
+          </StyledCard>
         ))}
       </Grid>
-    </StyledCard>
+    </StyledCard >
   );
 };

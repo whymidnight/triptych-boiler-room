@@ -1,6 +1,6 @@
-import { Linktree } from "../components/cards";
+import {Linktree} from "../components/cards";
 import MatrixRain from "../../vendor_modules/matrixrain/src/MatrixRain";
-import { Grid } from "@mui/material";
+import {Grid} from "@mui/material";
 
 export const Home = () => {
   return (
@@ -12,23 +12,17 @@ export const Home = () => {
       <Grid
         container
         style={{
-          display: "fixed",
-          padding: "10%",
+          paddingTop: "33%",
           width: "100vw",
         }}
       >
         <Grid item xs={1} sm={4}></Grid>
-        <Grid item xs={10} sm={4}>
-          <Linktree
-            i={3}
-            title={"Mint Test Apes"}
-            subtitle={"NOT INTERNAL AND CONFIDENTIAL MINTING PAGE!"}
-            link={"/mint"}
-            cover={"/github.png"}
-          />
-        </Grid>
-        <Grid item xs={1} sm={4}></Grid>
-        <Grid item xs={6}>
+        <Grid
+          item
+          alignItems="center"
+          justifyContent="center"
+          xs={10}
+          sm={4}>
           <Linktree
             i={3}
             title={"xQuesting"}
@@ -37,17 +31,35 @@ export const Home = () => {
             cover={"/github.png"}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={1} sm={4}></Grid>
+        <Grid
+          item
+          alignItems="center"
+          justifyContent="center"
+          xs={6}>
           <Linktree
-            i={3}
+            i={1}
+            title={"Mint"}
+            subtitle={"NOT INTERNAL OR CONFIDENTIAL!"}
+            link={"/mint"}
+            cover={"/github.png"}
+          />
+        </Grid>
+        <Grid
+          item
+          alignItems="center"
+          justifyContent="center"
+          xs={6}>
+          <Linktree
+            i={4}
             title={"xSwap"}
-            subtitle={"Swap Utility Tokens for Project Tokens!"}
+            subtitle={"Swap Utility Tokens for Tokens!"}
             link={"/xswap"}
             cover={"/github.png"}
           />
         </Grid>
       </Grid>
-      <div style={{ zIndex: -1 }}>
+      <div style={{zIndex: -1}}>
         <MatrixRain />
       </div>
     </div>
