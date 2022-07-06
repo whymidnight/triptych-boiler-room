@@ -80,10 +80,10 @@ button[class*="CTAButton"] {
 
 .xquesting-enrollment-container {
   box-shadow: 0px 0px 40px 10px ${Theme.palette.primary.main} !important;
-  @media (max-width: 400px) {
+  @media (max-width: 500px) {
     width: 90vw;
   }
-  @media (min-width: 400px) {
+  @media (min-width: 500px) {
     width: 50vw;
   }
 }
