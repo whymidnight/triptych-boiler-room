@@ -3,9 +3,9 @@ import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
-import {StyledCard} from "../../components/cards";
-import {Box, Grid} from "@mui/material";
-import {useRecoilState} from "recoil";
+import { StyledCard } from "../../components/cards";
+import { Box, Grid } from "@mui/material";
+import { useRecoilState } from "recoil";
 import {
   nftsAtom,
   nftsSelectionAtom,
@@ -18,14 +18,14 @@ import {
   GridDropZone,
   GridItem,
   swap,
-  move
+  move,
 } from "react-grid-dnd";
-import {forwardRef, useCallback, useEffect, useState} from "react";
+import { forwardRef, useCallback, useEffect, useState } from "react";
 
-import MuiImageSlider from 'mui-image-slider';
-import axios from 'axios';
+import MuiImageSlider from "mui-image-slider";
+import axios from "axios";
 
-import {defaultAnnouncements, DndContext, useDndMonitor} from '@dnd-kit/core';
+import { defaultAnnouncements, DndContext, useDndMonitor } from "@dnd-kit/core";
 import {
   useDroppable,
   MouseSensor,
@@ -33,77 +33,83 @@ import {
   DragOverlay,
   useSensor,
   useSensors,
-} from '@dnd-kit/core';
-import {useDraggable} from '@dnd-kit/core';
+} from "@dnd-kit/core";
+import { useDraggable } from "@dnd-kit/core";
 import {
   arrayMove,
   SortableContext,
   rectSortingStrategy,
   useSortable,
-} from '@dnd-kit/sortable';
-import {CSS} from "@dnd-kit/utilities";
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
-const DraggableItem = forwardRef((props: {[key: string]: unknown}, ref) => {
+/* eslint-disable-next-line */
+const DraggableItem = forwardRef((props: { [key: string]: unknown }, ref) => {
   return (
     //@ts-ignore
-    <div {...props} ref={ref}>{props.children}</div>
-  )
+    <div {...props} ref={ref}>
+      {props.children}
+    </div>
+  );
 });
 export function UseDroppable(props) {
-  const {setNodeRef} = useDroppable({
+  const { setNodeRef } = useDroppable({
     id: props.id,
   });
-  let style: {[key: string]: unknown} = {};
+  let style: { [key: string]: unknown } = {};
 
   style = {
     ...style,
-    ...props.styles || {},
-    background: 'rgba(0, 0, 0, 0)',
-    minHeight: '50%',
-    height: props.items.length === 0 ? '200px' : 'max-content',
-  }
+    ...(props.styles || {}),
+    background: "rgba(0, 0, 0, 0)",
+    minHeight: "50%",
+    height: props.items.length === 0 ? "200px" : "max-content",
+  };
 
   return (
     <SortableContext id={props.id} items={props.items}>
       <div ref={setNodeRef} style={style}>
         {props.items.map((item) => (
           <Draggable key={item.id} id={item.id} item={item} />
-        ))
-        }
+        ))}
       </div>
     </SortableContext>
   );
 }
 
 export function Draggable(props) {
-  const {attributes, listeners, setNodeRef, transform, transition} = useSortable({
-    id: props.id,
-  });
-  let style: {[key: string]: unknown} = transform ? {
-    transform: CSS.Transform.toString(transform),
-  } : {};
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({
+      id: props.id,
+    });
+  let style: { [key: string]: unknown } = transform
+    ? {
+        transform: CSS.Transform.toString(transform),
+      }
+    : {};
 
   style = {
     ...style,
-    background: 'rgba(0, 0, 0, 0)',
-    border: 'unset',
-  }
+    background: "rgba(0, 0, 0, 0)",
+    border: "unset",
+  };
 
   return (
     <button ref={setNodeRef} style={style} {...listeners} {...attributes}>
       <DraggableItem>
-        <div style={{
-          width: '85px',
-          height: '85px',
-          background: `url("${props.item.offchainMetadata.image}")`,
-          backgroundSize: 'cover',
-          boxSizing: 'border-box',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          borderRadius: '50%',
-
-        }}>
+        <div
+          style={{
+            width: "85px",
+            height: "85px",
+            background: `url("${props.item.offchainMetadata.image}")`,
+            backgroundSize: "cover",
+            boxSizing: "border-box",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            borderRadius: "50%",
+          }}
+        >
           {props.children}
         </div>
       </DraggableItem>
@@ -112,10 +118,9 @@ export function Draggable(props) {
 }
 
 // @ts-ignore
-export const NFTGalleryItems = ({onSelection}) => {
+export const NFTGalleryItems = ({ onSelection }) => {
   const [activeId, setActiveId] = useState(null);
   const [active, setActive] = useState(null);
-
 
   const [nfts] = useRecoilState(nftsAtom);
   const [nftsSelection, setNftsSelection] = useRecoilState(nftsSelectionAtom);
@@ -124,7 +129,6 @@ export const NFTGalleryItems = ({onSelection}) => {
 
   const [items, setItems] = useRecoilState(pairingsAtom);
 
-
   useEffect(() => {
     //@ts-ignore
     setNftsSelection([items.genOneStaking, items.genTwoStaking]);
@@ -132,18 +136,25 @@ export const NFTGalleryItems = ({onSelection}) => {
 
   useEffect(() => {
     async function fetchNFTMetadata() {
-      const nftsWithMetadata = await Promise.all(nfts.map(async (nft, index) => {
-        let id = String("NFT-" + index);
-        let offchainMetadata = {image: "", properties: {creators: []}};
-        try {
-          offchainMetadata = (await axios.get(nft.uri)).data
-          console.log(nft.name, nft.uri, offchainMetadata.properties.creators[0].address, offchainMetadata);
-        } catch (e) {
-          offchainMetadata.properties.creators.push({address: ""});
-          console.log("fail");
-        }
-        return {...nft, offchainMetadata, id};
-      }));
+      const nftsWithMetadata = await Promise.all(
+        nfts.map(async (nft, index) => {
+          let id = String("NFT-" + index);
+          let offchainMetadata = { image: "", properties: { creators: [] } };
+          try {
+            offchainMetadata = (await axios.get(nft.uri)).data;
+            console.log(
+              nft.name,
+              nft.uri,
+              offchainMetadata.properties.creators[0].address,
+              offchainMetadata
+            );
+          } catch (e) {
+            offchainMetadata.properties.creators.push({ address: "" });
+            console.log("fail");
+          }
+          return { ...nft, offchainMetadata, id };
+        })
+      );
 
       console.log("DONE WITH FETCHING");
 
@@ -151,38 +162,60 @@ export const NFTGalleryItems = ({onSelection}) => {
         ...items,
         genOneDraggable: nftsWithMetadata
           .filter((item) => {
-            return Object.values(items.genOneStaking).findIndex((stakedItem) => stakedItem.id === item.id) === -1
+            return (
+              Object.values(items.genOneStaking).findIndex(
+                (stakedItem) => stakedItem.id === item.id
+              ) === -1
+            );
           })
           .filter((item) => {
-            return item.offchainMetadata.properties.creators[0].address === "2zJ3v9EHP5eStxMF7qkPS8KX4uUU9JTqk74F987XmkAo"
+            return (
+              item.offchainMetadata.properties.creators[0].address ===
+              "2zJ3v9EHP5eStxMF7qkPS8KX4uUU9JTqk74F987XmkAo"
+            );
           }),
         genTwoDraggable: nftsWithMetadata
           .filter((item) => {
-            return Object.values(items.genTwoStaking).findIndex((stakedItem) => stakedItem.id === item.id) === -1
+            return (
+              Object.values(items.genTwoStaking).findIndex(
+                (stakedItem) => stakedItem.id === item.id
+              ) === -1
+            );
           })
           .filter((item) => {
-            return item.offchainMetadata.properties.creators[0].address === "Gzr2ebsdPQJ15yWwpC4fFan7AmmFDvzQfkQ3qSGmknZ3"
+            return (
+              item.offchainMetadata.properties.creators[0].address ===
+              "Gzr2ebsdPQJ15yWwpC4fFan7AmmFDvzQfkQ3qSGmknZ3"
+            );
           }),
-      })
+      });
     }
 
     fetchNFTMetadata();
-  }, [nfts])
+  }, [nfts]);
 
   const sensors = useSensors(useSensor(MouseSensor), useSensor(TouchSensor));
 
   //@ts-ignore
-  const UseImages = useCallback((container) => {
-    if (!items.hasOwnProperty(container) || items[container].length === 0) {
-      return ["https://upload.wikimedia.org/wikipedia/commons/4/48/BLANK_ICON.png", "https://upload.wikimedia.org/wikipedia/commons/4/48/BLANK_ICON.png"];
-    }
-    return [...(items[container].map((item) => item.offchainMetadata.image)), "https://upload.wikimedia.org/wikipedia/commons/4/48/BLANK_ICON.png"];
-  }, [items]);
-
+  const UseImages = useCallback(
+    (container) => {
+      if (!items.hasOwnProperty(container) || items[container].length === 0) {
+        return [
+          "https://upload.wikimedia.org/wikipedia/commons/4/48/BLANK_ICON.png",
+          "https://upload.wikimedia.org/wikipedia/commons/4/48/BLANK_ICON.png",
+        ];
+      }
+      return [
+        ...items[container].map((item) => item.offchainMetadata.image),
+        "https://upload.wikimedia.org/wikipedia/commons/4/48/BLANK_ICON.png",
+      ];
+    },
+    [items]
+  );
 
   useEffect(() => {
     console.log(quests[questSelection]);
-  }, [quests])
+  }, [quests]);
 
   return (
     <>
@@ -191,121 +224,163 @@ export const NFTGalleryItems = ({onSelection}) => {
         onDragOver={handleDragOver}
         onDragCancel={handleDragCancel}
         sensors={sensors}
-        accessibility={{announcements: defaultAnnouncements}}>
-        <Box sx={{zIndex: 100}}>
-          <StyledCard className="xquesting-enrollment-box" style={{width: '60vw'}}>
-            <Grid container sx={{display: 'flex', height: '30vh'}}>
-              <Grid item sx={{justifyContent: 'center'}} xs={12}>
-                <Typography style={{fontSize: '2.5rem'}} gutterBottom variant="h5" component="div">
+        accessibility={{ announcements: defaultAnnouncements }}
+      >
+        <Box>
+          <StyledCard
+            className="xquesting-enrollment-box"
+            style={{ width: "60vw" }}
+          >
+            <Grid container alignItems="center" justifyContent="center">
+              <Grid item sx={{ justifyContent: "center" }} xs={12}>
+                <Typography
+                  style={{ fontSize: "2.5rem" }}
+                  gutterBottom
+                  variant="h5"
+                  component="div"
+                >
                   Overview
                 </Typography>
               </Grid>
-              <Grid container item sx={{justifyContent: 'center'}} xs={5}>
-                <div style={{height: '200px !important'}}>
+              <Grid container item sx={{ justifyContent: "center" }} xs={5}>
+                <div style={{ height: "200px !important" }}>
                   <MuiImageSlider
                     arrows={true}
                     alwaysShowArrows={true}
                     fitToImageHeight={true}
-                    images={UseImages("genOneStaking")} />
+                    images={UseImages("genOneStaking")}
+                  />
                 </div>
               </Grid>
-              <Grid container item sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}} xs={2}>
-                <Typography style={{paddingBottom: '40%', fontSize: '1.9rem'}} gutterBottom variant="h5" component="div">
+              <Grid
+                container
+                item
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+                xs={2}
+              >
+                <Typography
+                  style={{ paddingBottom: "40%", fontSize: "1.9rem" }}
+                  gutterBottom
+                  variant="h5"
+                  component="div"
+                >
                   Scroll to view!
                 </Typography>
-                <Typography style={{fontSize: '1.9rem'}} gutterBottom variant="h5" component="div">
+                <Typography
+                  style={{ fontSize: "1.9rem" }}
+                  gutterBottom
+                  variant="h5"
+                  component="div"
+                >
                   Drag to Stake!
                 </Typography>
               </Grid>
-              <Grid container item sx={{justifyContent: 'center'}} xs={5}>
-                <div style={{height: '200px !important'}}>
+              <Grid container item sx={{ justifyContent: "center" }} xs={5}>
+                <div style={{ height: "200px !important" }}>
                   <MuiImageSlider
                     arrows={true}
                     alwaysShowArrows={true}
                     fitToImageHeight={true}
-                    images={UseImages("genTwoStaking")} />
+                    images={UseImages("genTwoStaking")}
+                  />
                 </div>
               </Grid>
             </Grid>
             <Grid container>
-              <Grid item xs={4}>
-                <Typography style={{fontSize: '1.1rem'}} gutterBottom variant="h5" component="div">
-                  Gen One's Staking ({quests[questSelection].PairsConfig.Left} Required)
-                </Typography>
-              </Grid>
-              <Grid item xs={4}>
-                <Typography style={{fontSize: '1.1rem'}} gutterBottom variant="h5" component="div">
-                  Pairs
-                </Typography>
-              </Grid>
-              <Grid item xs={4}>
-                <Typography style={{fontSize: '1.1rem'}} gutterBottom variant="h5" component="div">
-                  Gen Two's Staking ({quests[questSelection].PairsConfig.Right} Required)
+              <Grid item xs={12}>
+                <Typography
+                  style={{ fontSize: "1.1rem" }}
+                  gutterBottom
+                  variant="h5"
+                  component="div"
+                >
+                  Gen One's Staking ({quests[questSelection].PairsConfig.Left}{" "}
+                  Required)
                 </Typography>
               </Grid>
             </Grid>
             <Grid container>
-              <Grid container item >
-                <Grid item xs={6} sx={{}}>
-                  <StyledCard className="xquesting-enrollment-box" sx={{
-                    display: 'grid',
-                    gridTemplateColumns: "1fr",
-                    gridTemplateRows: "1fr",
-                  }}>
-                    <UseDroppable styles={{zIndex: 2, gridRowStart: 1, gridColumnStart: 1}} id={"genOneStaking"} items={items.genOneStaking} />
-                    <Box sx={{zIndex: 1, gridRowStart: 1, gridColumnStart: 1, padding: '10%', height: 'max-content', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+              <Grid container item>
+                <Grid
+                  item
+                  alignItems="center"
+                  justifyContent="center"
+                  xs={12}
+                  sx={{}}
+                >
+                  <StyledCard
+                    className="xquesting-enrollment-box"
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr",
+                      gridTemplateRows: "1fr",
+                    }}
+                  >
+                    <UseDroppable
+                      styles={{
+                        zIndex: 2,
+                        gridRowStart: 1,
+                        gridColumnStart: 1,
+                      }}
+                      id={"genOneStaking"}
+                      items={items.genOneStaking}
+                    />
+                    <Box
+                      sx={{
+                        zIndex: 1,
+                        gridRowStart: 1,
+                        gridColumnStart: 1,
+                        padding: "10%",
+                        height: "max-content",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
                       <Typography
                         style={{
-                          fontSize: '1.9rem',
-                          opacity: items.genOneStaking.length === 0 ? '1.0' : '0.1',
-                        }} variant="h5" component="div">
-                        Staking!
-                      </Typography>
-                    </Box>
-                  </StyledCard>
-                </Grid>
-                <Grid item xs={6} sx={{}}>
-                  <StyledCard className="xquesting-enrollment-box" sx={{
-                    display: 'grid',
-                    gridTemplateColumns: "1fr",
-                    gridTemplateRows: "1fr",
-                  }}>
-                    <UseDroppable styles={{zIndex: 2, gridRowStart: 1, gridColumnStart: 1}} id={"genTwoStaking"} items={items.genTwoStaking} />
-                    <Box sx={{zIndex: 1, gridRowStart: 1, gridColumnStart: 1, padding: '10%', height: 'max-content', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-                      <Typography
-                        style={{
-                          fontSize: '1.9rem',
-                          opacity: items.genTwoStaking.length === 0 ? '1.0' : '0.1',
-                        }} variant="h5" component="div">
-                        Pairing!
+                          fontSize: "1.9rem",
+                          opacity:
+                            items.genOneStaking.length === 0 ? "1.0" : "0.1",
+                        }}
+                        variant="h5"
+                        component="div"
+                      >
+                        Drag to Stake!
                       </Typography>
                     </Box>
                   </StyledCard>
                 </Grid>
               </Grid>
               <Grid item xs={6} sx={{}}>
-                <StyledCard className="xquesting-enrollment-box" >
-                  <Typography style={{fontSize: '0.9rem'}} gutterBottom variant="h5" component="div">
+                <StyledCard className="xquesting-enrollment-box">
+                  <Typography
+                    style={{ fontSize: "0.9rem" }}
+                    gutterBottom
+                    variant="h5"
+                    component="div"
+                  >
                     Available Gen One's
                   </Typography>
-                  <Box sx={{height: 'max-content', minHeight: '200px'}}>
-                    <UseDroppable id={"genOneDraggable"} items={items.genOneDraggable} />
-                  </Box>
-                </StyledCard>
-              </Grid>
-              <Grid item xs={6}>
-                <StyledCard className="xquesting-enrollment-box">
-                  <Typography style={{fontSize: '0.9rem'}} gutterBottom variant="h5" component="div">
-                    Available Gen Two's
-                  </Typography>
-                  <Box sx={{height: 'max-content', minHeight: '200px'}}>
-                    <UseDroppable id={"genTwoDraggable"} items={items.genTwoDraggable} />
+                  <Box sx={{ height: "max-content", minHeight: "200px" }}>
+                    <UseDroppable
+                      id={"genOneDraggable"}
+                      items={items.genOneDraggable}
+                    />
                   </Box>
                 </StyledCard>
               </Grid>
             </Grid>
           </StyledCard>
-          <DragOverlay>{activeId ? <Draggable id={activeId} key={activeId} item={active} /> : null}</DragOverlay>
+          <DragOverlay>
+            {activeId ? (
+              <Draggable id={activeId} key={activeId} item={active} />
+            ) : null}
+          </DragOverlay>
         </Box>
       </DndContext>
     </>
@@ -316,31 +391,39 @@ export const NFTGalleryItems = ({onSelection}) => {
       return id;
     }
 
-    return Object.keys(items).find((key) => items[key].findIndex((item) => item.id === id) !== -1);
+    return Object.keys(items).find(
+      (key) => items[key].findIndex((item) => item.id === id) !== -1
+    );
   }
 
   function handleDragStart(event) {
     console.log("grabbing");
     const activeId = event.active.id;
     const activeContainer = findContainer(activeId);
-    const activeItem = items[activeContainer].findIndex((item) => item.id === activeId);
+    const activeItem = items[activeContainer].findIndex(
+      (item) => item.id === activeId
+    );
 
     setActiveId(activeId);
     setActive(items[activeContainer][activeItem]);
   }
 
   function handleDragOver(event) {
-    const {active, over, draggingRect} = event;
-    const {id} = active;
+    const { active, over, draggingRect } = event;
+    const { id } = active;
     if (over === null) return;
-    const {id: overId} = over;
+    const { id: overId } = over;
 
     // Find the containers
     const activeContainer = findContainer(activeId);
     const overContainer = findContainer(overId);
     console.log(activeContainer, overContainer);
 
-    if ((activeContainer === "genOneDraggable" || activeContainer === "genOneStaking") === (overContainer === "genTwoDraggable" || overContainer === "genTwoStaking")) {
+    if (
+      (activeContainer === "genOneDraggable" ||
+        activeContainer === "genOneStaking") ===
+      (overContainer === "genTwoDraggable" || overContainer === "genTwoStaking")
+    ) {
       return;
     }
 
@@ -381,14 +464,15 @@ export const NFTGalleryItems = ({onSelection}) => {
       let newData = {
         ...prev,
         [activeContainer]: [
-          ...prev[activeContainer].filter((item, index) => index !== activeIndex)
+          ...prev[activeContainer].filter(
+            (item, index) => index !== activeIndex
+          ),
         ],
         [overContainer]: [
           ...prev[overContainer],
           prev[activeContainer][activeIndex],
-        ]
+        ],
       };
-
 
       return newData;
     });
@@ -398,12 +482,12 @@ export const NFTGalleryItems = ({onSelection}) => {
   }
 
   function handleDragEnd(event) {
-    const {active, over} = event;
+    const { active, over } = event;
 
     console.log(active, over);
     if (over === null) return null;
-    const {id} = active;
-    const {id: overId} = over;
+    const { id } = active;
+    const { id: overId } = over;
 
     const activeContainer = findContainer(id);
     const overContainer = findContainer(overId);
@@ -422,7 +506,11 @@ export const NFTGalleryItems = ({onSelection}) => {
     if (activeIndex !== overIndex) {
       setItems((items) => ({
         ...items,
-        [overContainer]: arrayMove(items[overContainer], activeIndex, overIndex)
+        [overContainer]: arrayMove(
+          items[overContainer],
+          activeIndex,
+          overIndex
+        ),
       }));
     }
 
@@ -432,19 +520,21 @@ export const NFTGalleryItems = ({onSelection}) => {
   function handleDragCancel() {
     setActiveId(null);
   }
-
 };
 
 //@ts-ignore
-export const QuestStart = ({onSelection}) => {
+export const QuestStart = ({ onSelection }) => {
   const [nfts] = useRecoilState(nftsAtom);
   const [nftsSelection, setNftsSelection] = useRecoilState(nftsSelectionAtom);
   const [questSelection] = useRecoilState(questsSelectionAtom);
 
   return (
     <>
-      <StyledCard className="xquesting-enrollment-box" style={{width: '60vw'}}>
-        <CardContent style={{paddingTop: '5%', paddingBottom: '5%'}}>
+      <StyledCard
+        className="xquesting-enrollment-box"
+        style={{ width: "60vw" }}
+      >
+        <CardContent style={{ paddingTop: "5%", paddingBottom: "5%" }}>
           <CardActions
             style={{
               display: "block",
@@ -454,7 +544,7 @@ export const QuestStart = ({onSelection}) => {
             }}
           >
             <Button
-              sx={{fontSize: '1.5rem', color: '#fff'}}
+              sx={{ fontSize: "1.5rem", color: "#fff" }}
               className="xquesting-enrollment-box"
               onClick={(event) => onSelection(event, questSelection)}
               size="small"
@@ -465,26 +555,114 @@ export const QuestStart = ({onSelection}) => {
         </CardContent>
         <Grid container>
           <Grid item xs={nftsSelection[1].length > 0 ? 6 : 12}>
-            <Box style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-              <StyledCard className="xquesting-enrollment-box" sx={{width: '80%'}}>
+            <Box
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <StyledCard
+                className="xquesting-enrollment-box"
+                sx={{ width: "80%" }}
+              >
                 <Grid container>
                   <Grid item xs={12}>
                     <Typography
                       align="left"
                       style={{
-                        paddingLeft: '0%',
-                        color: '#fff',
-                        fontSize: '1.3rem',
-                      }} variant="h5" component="div">
+                        paddingLeft: "0%",
+                        color: "#fff",
+                        fontSize: "1.3rem",
+                      }}
+                      variant="h5"
+                      component="div"
+                    >
                       Gen One's Staking!
                     </Typography>
                   </Grid>
-                  {nftsSelection[0]
-                    .map((nft, nftIndex) => (
+                  {nftsSelection[0].map((nft, nftIndex) => (
+                    <Grid item key={nftIndex}>
+                      <Box textAlign="center">
+                        <StyledCard>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <CardMedia
+                              component="img"
+                              height="140"
+                              image={
+                                // @ts-ignore
+                                nft.offchainMetadata.hasOwnProperty("image")
+                                  ? // @ts-ignore
+                                    nft.offchainMetadata.image
+                                  : "https://www.arweave.net/GLeORZQuLxFzDFK0aBQKwhQUUF0-4eawXnrjdtmv5fg?ext=png"
+                              }
+                            />
+                          </div>
+                          <CardContent>
+                            <Typography
+                              gutterBottom
+                              variant="h5"
+                              component="div"
+                            >
+                              {
+                                // @ts-ignore
+                                nft.name
+                              }
+                            </Typography>
+                          </CardContent>
+                        </StyledCard>
+                      </Box>
+                    </Grid>
+                  ))}
+                </Grid>
+              </StyledCard>
+            </Box>
+          </Grid>
+          {nftsSelection[1].length > 0 && (
+            <Grid item xs={6}>
+              <Box
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <StyledCard
+                  className="xquesting-enrollment-box"
+                  style={{ width: "80%" }}
+                >
+                  <Grid container>
+                    <Grid item xs={12}>
+                      <Typography
+                        align="left"
+                        style={{
+                          paddingLeft: "0%",
+                          color: "#fff",
+                          fontSize: "1.3rem",
+                        }}
+                        variant="h5"
+                        component="div"
+                      >
+                        Gen Two's Staking!
+                      </Typography>
+                    </Grid>
+                    {nftsSelection[1].map((nft, nftIndex) => (
                       <Grid item key={nftIndex}>
                         <Box textAlign="center">
                           <StyledCard>
-                            <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                            >
                               <CardMedia
                                 component="img"
                                 height="140"
@@ -492,13 +670,17 @@ export const QuestStart = ({onSelection}) => {
                                   // @ts-ignore
                                   nft.offchainMetadata.hasOwnProperty("image")
                                     ? // @ts-ignore
-                                    nft.offchainMetadata.image
+                                      nft.offchainMetadata.image
                                     : "https://www.arweave.net/GLeORZQuLxFzDFK0aBQKwhQUUF0-4eawXnrjdtmv5fg?ext=png"
                                 }
                               />
                             </div>
                             <CardContent>
-                              <Typography gutterBottom variant="h5" component="div">
+                              <Typography
+                                gutterBottom
+                                variant="h5"
+                                component="div"
+                              >
                                 {
                                   // @ts-ignore
                                   nft.name
@@ -509,56 +691,6 @@ export const QuestStart = ({onSelection}) => {
                         </Box>
                       </Grid>
                     ))}
-                </Grid>
-              </StyledCard>
-            </Box>
-          </Grid>
-          {nftsSelection[1].length > 0 && (
-            <Grid item xs={6}>
-              <Box style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-                <StyledCard className="xquesting-enrollment-box" style={{width: '80%'}}>
-                  <Grid container>
-                    <Grid item xs={12}>
-                      <Typography
-                        align="left"
-                        style={{
-                          paddingLeft: '0%',
-                          color: '#fff',
-                          fontSize: '1.3rem',
-                        }} variant="h5" component="div">
-                        Gen Two's Staking!
-                      </Typography>
-                    </Grid>
-                    {nftsSelection[1]
-                      .map((nft, nftIndex) => (
-                        <Grid item key={nftIndex}>
-                          <Box textAlign="center">
-                            <StyledCard>
-                              <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-                                <CardMedia
-                                  component="img"
-                                  height="140"
-                                  image={
-                                    // @ts-ignore
-                                    nft.offchainMetadata.hasOwnProperty("image")
-                                      ? // @ts-ignore
-                                      nft.offchainMetadata.image
-                                      : "https://www.arweave.net/GLeORZQuLxFzDFK0aBQKwhQUUF0-4eawXnrjdtmv5fg?ext=png"
-                                  }
-                                />
-                              </div>
-                              <CardContent>
-                                <Typography gutterBottom variant="h5" component="div">
-                                  {
-                                    // @ts-ignore
-                                    nft.name
-                                  }
-                                </Typography>
-                              </CardContent>
-                            </StyledCard>
-                          </Box>
-                        </Grid>
-                      ))}
                   </Grid>
                 </StyledCard>
               </Box>

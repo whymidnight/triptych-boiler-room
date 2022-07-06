@@ -1,6 +1,6 @@
-import {Linktree} from "../components/cards";
+import { Linktree } from "../components/cards";
 import MatrixRain from "../../vendor_modules/matrixrain/src/MatrixRain";
-import {Grid} from "@mui/material";
+import { Grid } from "@mui/material";
 
 export const Home = () => {
   return (
@@ -17,9 +17,8 @@ export const Home = () => {
           width: "100vw",
         }}
       >
-        <Grid item xs={4}>
-        </Grid>
-        <Grid item xs={4}>
+        <Grid item xs={1} sm={4}></Grid>
+        <Grid item xs={10} sm={4}>
           <Linktree
             i={3}
             title={"Mint Test Apes"}
@@ -28,11 +27,8 @@ export const Home = () => {
             cover={"/github.png"}
           />
         </Grid>
-        <Grid item xs={4}>
-        </Grid>
-        <Grid item xs={1}>
-        </Grid>
-        <Grid item xs={5}>
+        <Grid item xs={1} sm={4}></Grid>
+        <Grid item xs={6}>
           <Linktree
             i={3}
             title={"xQuesting"}
@@ -41,7 +37,7 @@ export const Home = () => {
             cover={"/github.png"}
           />
         </Grid>
-        <Grid item xs={5}>
+        <Grid item xs={6}>
           <Linktree
             i={3}
             title={"xSwap"}
@@ -50,10 +46,8 @@ export const Home = () => {
             cover={"/github.png"}
           />
         </Grid>
-        <Grid item xs={1}>
-        </Grid>
       </Grid>
-      <div style={{zIndex: -1}}>
+      <div style={{ zIndex: -1 }}>
         <MatrixRain />
       </div>
     </div>

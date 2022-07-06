@@ -1,18 +1,18 @@
-import {Metaplex} from "@metaplex-foundation/js-next";
+import { Metaplex } from "@metaplex-foundation/js-next";
 
-import React, {useState, useEffect, useCallback, useMemo} from "react";
-import {Transaction, Message} from "@solana/web3.js";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { Transaction, Message } from "@solana/web3.js";
 
-import {Box, Grid} from "@mui/material";
+import { Box, Grid } from "@mui/material";
 import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
-import {useRecoilState} from "recoil";
-import {PublicKey} from "@solana/web3.js";
-import {useWallet} from "@solana/wallet-adapter-react";
-import {Connection} from "@solana/web3.js";
+import { useRecoilState } from "recoil";
+import { PublicKey } from "@solana/web3.js";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { Connection } from "@solana/web3.js";
 import axios from "axios";
 /*
 import {
@@ -45,40 +45,43 @@ import {
   activeQuestProposalsAtom,
   globalEnumAtom,
 } from "./state/atoms";
-import {StyledCard} from "../../components/cards";
+import { StyledCard } from "../../components/cards";
 
-import {NFTGalleryItems, QuestStart} from "./enrollment";
-import {QuestedGalleryItems} from "./manage";
-import {QuestAction} from "./rewards";
+import { NFTGalleryItems, QuestStart } from "./enrollment";
+import { QuestedGalleryItems } from "./manage";
+import { QuestAction } from "./rewards";
 
 declare function get_quests(oracle: String): Promise<any>;
-declare function get_quests_proposals(oracle: String, holder: String): Promise<any>;
+declare function get_quests_proposals(
+  oracle: String,
+  holder: String
+): Promise<any>;
 declare function select_quest(wallet_publicKey: String): Promise<any>;
 declare function new_quest_proposal(
   wallet_publicKey: String,
   quest: String,
   depositingLeft: String,
-  depositingRight: String,
+  depositingRight: String
 ): Promise<any>;
 declare function flush_quest_records(
   wallet_publicKey: String,
   quest: String,
-  proposalIndexes: String,
+  proposalIndexes: String
 ): Promise<any>;
 declare function start_quests(
   holder: String,
   quest: String,
-  proposalIndexes: String,
+  proposalIndexes: String
 ): Promise<any>;
 declare function claim_quest_staking_rewards(
   holder: String,
   quest: String,
-  proposalIndexes: String,
+  proposalIndexes: String
 ): Promise<any>;
 declare function end_quests(
   holder: String,
   quest: String,
-  proposalIndexes: String,
+  proposalIndexes: String
 ): Promise<any>;
 declare function do_rngs(
   wallet_publicKey: String,
@@ -102,155 +105,197 @@ declare function get_rewards(
 const ORACLE = new PublicKey("PE4JrpqYku9fiR1SXPCUy5HrGEw6uvxYbQmMFUXx8HG");
 
 //@ts-ignore
-export const QuestsGalleryItems = ({onSelection, onManage, onReward, onRecover}) => {
-  const [questsProposals, setQuestsProposals] = useRecoilState(questsProposalsAtom);
+export const QuestsGalleryItems = ({
+  onSelection,
+  onManage,
+  onReward,
+  onRecover,
+}) => {
+  const [questsProposals, setQuestsProposals] =
+    useRecoilState(questsProposalsAtom);
   const [quests] = useRecoilState(questsAtom);
   const [quested] = useRecoilState(questedAtom);
   const [nftsQuestedExhaust] = useRecoilState(nftsQuestedExhaustAtom);
   const questsKeys = Object.keys(quests);
 
   return (
-    <Grid alignItems="center" container>
+    <Grid justifyContent="center" alignItems="center" container>
       {questsKeys.length > 0 &&
         questsKeys.map((quest) => {
           return (
-            <Grid xs={4} key={quest}>
-              <Box textAlign="center">
-                <StyledCard>
-                  <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-                    <CardMedia
-                      style={{height: "280px"}}
-                      component="img"
-                      height="280"
-                      image="https://www.arweave.net/GLeORZQuLxFzDFK0aBQKwhQUUF0-4eawXnrjdtmv5fg?ext=png"
-                    />
-                  </div>
-                  <CardContent>
-                    <Typography gutterBottom variant="h5" component="div">
-                      {
-                        //@ts-ignore
-                        String(
-                          "Debug: " +
-                          //@ts-ignore
-                          quests[quest].Index +
-                          " Name: " +
-                          //@ts-ignore
-                          quests[quest].Name
-                        )
-                      }
-                    </Typography>
-                    <Typography gutterBottom variant="h5" component="div" sx={{paddingTop: '2px'}}>
-                      Layout:
-                    </Typography>
-                    <Grid container>
-                      <Grid item xs={5} sx={{padding: '10px'}}>
-                        <Typography align="right" gutterBottom variant="h5" component="div">
-                          {
-                            //@ts-ignore
-                            String(
-                              //@ts-ignore
-                              quests[quest].PairsConfig.Left
-                            )
-                          }
-                        </Typography>
-                      </Grid>
-                      <Grid item xs={7} sx={{padding: '10px'}}>
-                        <Typography align="left" gutterBottom variant="h5" component="div">
-                          {
-                            //@ts-ignore
-                            String(
-                              "Gen One's"
-                            )
-                          }
-                        </Typography>
-                      </Grid>
-                    </Grid>
-                    <Grid container>
-                      <Grid item xs={5} sx={{padding: '10px'}}>
-                        <Typography align="right" gutterBottom variant="h5" component="div">
-                          {
-                            //@ts-ignore
-                            String(
-                              //@ts-ignore
-                              quests[quest].PairsConfig.Right
-                            )
-                          }
-                        </Typography>
-                      </Grid>
-                      <Grid item xs={7} sx={{padding: '10px'}}>
-                        <Typography align="left" gutterBottom variant="h5" component="div">
-                          {
-                            //@ts-ignore
-                            String(
-                              "Gen Two's"
-                            )
-                          }
-                        </Typography>
-                      </Grid>
-                    </Grid>
-                  </CardContent>
-                  <CardActions style={{justifyContent: "center"}}>
-                    <Button
+            <>
+              <Grid xs={10} sm={3} key={quest}>
+                <Box textAlign="center">
+                  <StyledCard>
+                    <div
                       style={{
                         display: "flex",
-                        justifyContent: "center",
                         alignItems: "center",
+                        justifyContent: "center",
                       }}
-                      disabled={
-                        questsProposals.hasOwnProperty(quest) && questsProposals[quest].filter(
+                    >
+                      <CardMedia
+                        style={{ height: "10vh" }}
+                        component="img"
+                        height="280"
+                        image="https://www.arweave.net/GLeORZQuLxFzDFK0aBQKwhQUUF0-4eawXnrjdtmv5fg?ext=png"
+                      />
+                    </div>
+                    <CardContent>
+                      <Typography gutterBottom variant="h5" component="div">
+                        {
                           //@ts-ignore
-                          ({Started, Finished}) => Started && !Finished,
-                        ).length > 0 ? false : true
-                      }
-                      onClick={(event) => onManage(event, quest)}
-                      size="small"
-                    >
-                      Manage
-                    </Button>
-                    <Button
-                      style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                      onClick={(event) => onSelection(event, quest)}
-                      size="small"
-                    >
-                      Start
-                    </Button>
-                    {questsProposals.hasOwnProperty(quest)
-                      && questsProposals[quest].filter(
-                        (item) => !item.Started && !item.Withdrawn
-                      ).length > 0 &&
+                          String(
+                            "Debug: " +
+                              //@ts-ignore
+                              quests[quest].Index +
+                              " Name: " +
+                              //@ts-ignore
+                              quests[quest].Name
+                          )
+                        }
+                      </Typography>
+                      <Typography
+                        gutterBottom
+                        variant="h5"
+                        component="div"
+                        sx={{ paddingTop: "2px" }}
+                      >
+                        Layout:
+                      </Typography>
+                      <Grid container>
+                        <Grid item xs={5} sx={{ padding: "10px" }}>
+                          <Typography
+                            align="right"
+                            gutterBottom
+                            variant="h5"
+                            component="div"
+                          >
+                            {
+                              //@ts-ignore
+                              String(
+                                //@ts-ignore
+                                quests[quest].PairsConfig.Left
+                              )
+                            }
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={7} sx={{ padding: "10px" }}>
+                          <Typography
+                            align="left"
+                            gutterBottom
+                            variant="h5"
+                            component="div"
+                          >
+                            {
+                              //@ts-ignore
+                              String("Gen One's")
+                            }
+                          </Typography>
+                        </Grid>
+                      </Grid>
+                      <Grid container>
+                        <Grid item xs={5} sx={{ padding: "10px" }}>
+                          <Typography
+                            align="right"
+                            gutterBottom
+                            variant="h5"
+                            component="div"
+                          >
+                            {
+                              //@ts-ignore
+                              String(
+                                //@ts-ignore
+                                quests[quest].PairsConfig.Right
+                              )
+                            }
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={7} sx={{ padding: "10px" }}>
+                          <Typography
+                            align="left"
+                            gutterBottom
+                            variant="h5"
+                            component="div"
+                          >
+                            {
+                              //@ts-ignore
+                              String("Gen Two's")
+                            }
+                          </Typography>
+                        </Grid>
+                      </Grid>
+                    </CardContent>
+                    <CardActions style={{ justifyContent: "center" }}>
                       <Button
                         style={{
                           display: "flex",
                           justifyContent: "center",
                           alignItems: "center",
                         }}
-                        onClick={(event) => onRecover(event, quest)}
+                        disabled={
+                          questsProposals.hasOwnProperty(quest) &&
+                          questsProposals[quest].filter(
+                            //@ts-ignore
+                            ({ Started, Finished }) => Started && !Finished
+                          ).length > 0
+                            ? false
+                            : true
+                        }
+                        onClick={(event) => onManage(event, quest)}
                         size="small"
                       >
-                        Recover
+                        Manage
                       </Button>
-                    }
-                    <Button
-                      disabled={
-                        quests.hasOwnProperty(quest) && quests[quest].StakingConfig !== null &&
-                          questsProposals.hasOwnProperty(quest) && questsProposals[quest].filter(
+                      <Button
+                        style={{
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                        }}
+                        onClick={(event) => onSelection(event, quest)}
+                        size="small"
+                      >
+                        Start
+                      </Button>
+                      {questsProposals.hasOwnProperty(quest) &&
+                        questsProposals[quest].filter(
+                          (item) => !item.Started && !item.Withdrawn
+                        ).length > 0 && (
+                          <Button
+                            style={{
+                              display: "flex",
+                              justifyContent: "center",
+                              alignItems: "center",
+                            }}
+                            onClick={(event) => onRecover(event, quest)}
+                            size="small"
+                          >
+                            Recover
+                          </Button>
+                        )}
+                      <Button
+                        disabled={
+                          quests.hasOwnProperty(quest) &&
+                          quests[quest].StakingConfig !== null &&
+                          questsProposals.hasOwnProperty(quest) &&
+                          questsProposals[quest].filter(
                             //@ts-ignore
-                            ({Started, Finished}) => Started && !Finished,
-                          ).length > 0 ? false : true
-                      }
-                      onClick={(event) => onReward(event, quest)}
-                      size="small"
-                    >
-                      Rewards
-                    </Button>
-                  </CardActions>
-                </StyledCard>
-              </Box>
-            </Grid>
+                            ({ Started, Finished }) => Started && !Finished
+                          ).length > 0
+                            ? false
+                            : true
+                        }
+                        onClick={(event) => onReward(event, quest)}
+                        size="small"
+                      >
+                        Rewards
+                      </Button>
+                    </CardActions>
+                  </StyledCard>
+                </Box>
+              </Grid>
+            </>
           );
         })}
     </Grid>
@@ -267,8 +312,11 @@ export const QuestsGallery = () => {
   const [resync, setResync] = useRecoilState(resyncAtom);
   const [nfts, setNfts] = useRecoilState(nftsAtom);
   const [quests, setQuests] = useRecoilState(questsAtom);
-  const [questsProposals, setQuestsProposals] = useRecoilState(questsProposalsAtom);
-  const [activeQuestProposals, setActiveQuestProposals] = useRecoilState(activeQuestProposalsAtom);
+  const [questsProposals, setQuestsProposals] =
+    useRecoilState(questsProposalsAtom);
+  const [activeQuestProposals, setActiveQuestProposals] = useRecoilState(
+    activeQuestProposalsAtom
+  );
   const [, setQuested] = useRecoilState(questedAtom);
   const [questSelection, setQuestsSelection] =
     useRecoilState(questsSelectionAtom);
@@ -299,16 +347,20 @@ export const QuestsGallery = () => {
       const quests = JSON.parse(String.fromCharCode(...questsJson));
       setQuests(quests);
 
-      const questsProposalsJson = await get_quests_proposals(ORACLE.toString(), wallet.publicKey.toString());
-      const questsProposals = JSON.parse(String.fromCharCode(...questsProposalsJson));
-
+      const questsProposalsJson = await get_quests_proposals(
+        ORACLE.toString(),
+        wallet.publicKey.toString()
+      );
+      const questsProposals = JSON.parse(
+        String.fromCharCode(...questsProposalsJson)
+      );
 
       setQuestsProposals(questsProposals);
     }
     if (questsProgression === 0) {
       fetchQuests();
     }
-  }, [wallet, questsProgression, setQuests, setQuestsProposals])
+  }, [wallet, questsProgression, setQuests, setQuestsProposals]);
 
   useEffect(() => {
     async function fetchQuests() {
@@ -320,9 +372,13 @@ export const QuestsGallery = () => {
       const quests = JSON.parse(String.fromCharCode(...questsJson));
       setQuests(quests);
 
-      const questsProposalsJson = await get_quests_proposals(ORACLE.toString(), wallet.publicKey.toString());
-      const questsProposals = JSON.parse(String.fromCharCode(...questsProposalsJson));
-
+      const questsProposalsJson = await get_quests_proposals(
+        ORACLE.toString(),
+        wallet.publicKey.toString()
+      );
+      const questsProposals = JSON.parse(
+        String.fromCharCode(...questsProposalsJson)
+      );
 
       setQuestsProposals(questsProposals);
     }
@@ -349,7 +405,7 @@ export const QuestsGallery = () => {
             } catch (e) {
               console.log("fail");
             }
-            return {...nft, offchainMetadata};
+            return { ...nft, offchainMetadata };
           })
           .filter(
             // @ts-ignore
@@ -370,9 +426,13 @@ export const QuestsGallery = () => {
   const onBack = useCallback(
     (_) => {
       async function fetchQuestProposals() {
-        const questsProposalsJson = await get_quests_proposals(ORACLE.toString(), wallet.publicKey.toString());
-        const questsProposals = JSON.parse(String.fromCharCode(...questsProposalsJson));
-
+        const questsProposalsJson = await get_quests_proposals(
+          ORACLE.toString(),
+          wallet.publicKey.toString()
+        );
+        const questsProposals = JSON.parse(
+          String.fromCharCode(...questsProposalsJson)
+        );
 
         setQuestsProposals(questsProposals);
       }
@@ -388,17 +448,20 @@ export const QuestsGallery = () => {
       if (questsProgression < 0) setQuestsProgression(questsProgression + 1);
 
       fetchQuestProposals();
-
     },
     [questsProgression, setQuestsProgression]
   );
   const onRecover = useCallback(
     (_, quest) => {
       async function flush() {
-        const recoveries = nftsQuested.filter((_, index) => recoveryState[index]);
+        const recoveries = nftsQuested.filter(
+          (_, index) => recoveryState[index]
+        );
 
-        console.log(questSelection, recoveries.map((item) => item.index));
-
+        console.log(
+          questSelection,
+          recoveries.map((item) => item.index)
+        );
 
         // flush quest records
         const flushRecordsTxs = JSON.parse(
@@ -408,7 +471,7 @@ export const QuestsGallery = () => {
               wallet.publicKey.toString(),
               questSelection,
               // @ts-ignore
-              JSON.stringify(recoveries.map((item) => item.index)),
+              JSON.stringify(recoveries.map((item) => item.index))
             ))
           )
         );
@@ -429,10 +492,14 @@ export const QuestsGallery = () => {
       }
 
       async function claimRewards() {
-        const recoveries = nftsQuested.filter((_, index) => recoveryState[index]);
+        const recoveries = nftsQuested.filter(
+          (_, index) => recoveryState[index]
+        );
 
-        console.log(questSelection, recoveries.map((item) => item.index));
-
+        console.log(
+          questSelection,
+          recoveries.map((item) => item.index)
+        );
 
         // flush quest records
         const flushRecordsTxs = JSON.parse(
@@ -442,7 +509,7 @@ export const QuestsGallery = () => {
               wallet.publicKey.toString(),
               questSelection,
               // @ts-ignore
-              JSON.stringify(recoveries.map((item) => item.index)),
+              JSON.stringify(recoveries.map((item) => item.index))
             ))
           )
         );
@@ -461,10 +528,14 @@ export const QuestsGallery = () => {
       }
 
       async function endQuests() {
-        const recoveries = nftsQuested.filter((_, index) => recoveryState[index]);
+        const recoveries = nftsQuested.filter(
+          (_, index) => recoveryState[index]
+        );
 
-        console.log(questSelection, recoveries.map((item) => item.index));
-
+        console.log(
+          questSelection,
+          recoveries.map((item) => item.index)
+        );
 
         // flush quest records
         const flushRecordsTx = JSON.parse(
@@ -474,13 +545,15 @@ export const QuestsGallery = () => {
               wallet.publicKey.toString(),
               questSelection,
               // @ts-ignore
-              JSON.stringify(recoveries.map((item) => item.index)),
+              JSON.stringify(recoveries.map((item) => item.index))
             ))
           )
         );
 
         if (Object.keys(flushRecordsTx).length > 0) {
-          const flushTx = Transaction.populate(new Message(flushRecordsTx.message));
+          const flushTx = Transaction.populate(
+            new Message(flushRecordsTx.message)
+          );
           flushTx.recentBlockhash = (
             await connection.getRecentBlockhash("finalized")
           ).blockhash;
@@ -528,19 +601,18 @@ export const QuestsGallery = () => {
               JSON.stringify(
                 nftsSelection[0]
                   // @ts-ignore
-                  .map(({mint}) => mint.toString())
+                  .map(({ mint }) => mint.toString())
               ),
               JSON.stringify(
                 nftsSelection[1]
                   // @ts-ignore
-                  .map(({mint}) => mint.toString())
-              ),
+                  .map(({ mint }) => mint.toString())
+              )
             ))
           )
         );
 
         if (Object.keys(enrollQuesteesIx).length > 0) {
-
           setActiveQuestProposals([enrollQuesteesIx.proposalIndex]);
 
           const enrollQuesteesTx = Transaction.populate(
@@ -569,7 +641,7 @@ export const QuestsGallery = () => {
                 nftsQuested
                   .filter((_, nftIndex) => nftsSelection[nftIndex])
                   // @ts-ignore
-                  .map(({mint}) => mint.toString())
+                  .map(({ mint }) => mint.toString())
               ),
               ORACLE.toString(),
               // @ts-ignore
@@ -714,7 +786,7 @@ export const QuestsGallery = () => {
               // @ts-ignore
               wallet.publicKey.toString(),
               quest,
-              JSON.stringify(activeQuestProposals),
+              JSON.stringify(activeQuestProposals)
             ))
           )
         );
@@ -738,7 +810,15 @@ export const QuestsGallery = () => {
 
       startQuests();
     },
-    [connection, quests, nfts, nftsSelection, wallet, setQuestsProgression, activeQuestProposals]
+    [
+      connection,
+      quests,
+      nfts,
+      nftsSelection,
+      wallet,
+      setQuestsProgression,
+      activeQuestProposals,
+    ]
   );
 
   const onQuestAction = useCallback(
@@ -753,7 +833,7 @@ export const QuestsGallery = () => {
                 nftsQuested
                   .filter((_, nftIndex) => nftsSelection[nftIndex])
                   // @ts-ignore
-                  .map(({mint}) => mint.toString())
+                  .map(({ mint }) => mint.toString())
               ),
               ORACLE.toString(),
               // @ts-ignore
@@ -788,7 +868,7 @@ export const QuestsGallery = () => {
                 nftsQuested
                   .filter((_, nftIndex) => nftsSelection[nftIndex])
                   // @ts-ignore
-                  .map(({mint}) => mint.toString())
+                  .map(({ mint }) => mint.toString())
               ),
               ORACLE.toString(),
               // @ts-ignore
@@ -876,30 +956,42 @@ export const QuestsGallery = () => {
 
   const topBarXsPoints = useMemo(() => {
     let cols = 1;
-    if (globalEnum !== "reward" && globalEnum !== "manage" && globalEnum !== "recover" && questsProposals.hasOwnProperty(questSelection) && questsProposals[questSelection].filter(({Started, Finished, Withdrawn}) => !Started || Finished && !Withdrawn).length > 0) {
-
+    if (
+      globalEnum !== "reward" &&
+      globalEnum !== "manage" &&
+      globalEnum !== "recover" &&
+      questsProposals.hasOwnProperty(questSelection) &&
+      questsProposals[questSelection].filter(
+        ({ Started, Finished, Withdrawn }) =>
+          !Started || (Finished && !Withdrawn)
+      ).length > 0
+    ) {
       cols += 1;
     }
-    if (recoveryState.filter((item) => item).length > 0 && globalEnum === "recover") {
+    if (
+      recoveryState.filter((item) => item).length > 0 &&
+      globalEnum === "recover"
+    ) {
       cols += 1;
     }
 
     return Number(12 / cols);
-
   }, [questsProgression]);
 
   const buttonText = useMemo(() => {
     switch (globalEnum) {
-      case "enrollment": return "Recover"
-      case "reward": return "Claim"
-      case "recover": return "Recover"
-      case "manage": return "Withdraw"
+      case "enrollment":
+        return "Recover";
+      case "reward":
+        return "Claim";
+      case "recover":
+        return "Recover";
+      case "manage":
+        return "Withdraw";
     }
 
     return "okay";
   }, [globalEnum]);
-
-
 
   return (
     <>
@@ -917,40 +1009,90 @@ export const QuestsGallery = () => {
           }}
         >
           {questsProgression !== 0 && (
-            <StyledCard sx={{minWidth: '20vw'}}>
+            <StyledCard sx={{ minWidth: "20vw" }}>
               <Grid container>
-                <Grid item xs={topBarXsPoints} sx={{justifyContent: 'center'}}>
+                <Grid
+                  item
+                  xs={topBarXsPoints}
+                  sx={{ justifyContent: "center" }}
+                >
                   <StyledCard>
-                    <Button sx={{fontSize: '1.1rem', width: '-webkit-fill-available'}} onClick={onBack}>Back</Button>
+                    <Button
+                      sx={{
+                        fontSize: "1.1rem",
+                        width: "-webkit-fill-available",
+                      }}
+                      onClick={onBack}
+                    >
+                      Back
+                    </Button>
                   </StyledCard>
                 </Grid>
-                {questsProposals.hasOwnProperty(questSelection) && (
-                  (globalEnum === "manage" && recoveryState.filter((item) => item).length > 0) ||
-                  (globalEnum === "reward" && recoveryState.filter((item) => item).length > 0) ||
-                  (globalEnum === "recover" &&
-                    questsProposals[questSelection].filter(
-                      (item) => !item.Started && !item.Withdrawn
-                    ).length > 0)) &&
-                  <Grid item xs={topBarXsPoints} sx={{justifyContent: 'center'}}>
+                {questsProposals.hasOwnProperty(questSelection) &&
+                  ((globalEnum === "manage" &&
+                    recoveryState.filter((item) => item).length > 0) ||
+                    (globalEnum === "reward" &&
+                      recoveryState.filter((item) => item).length > 0) ||
+                    (globalEnum === "recover" &&
+                      questsProposals[questSelection].filter(
+                        (item) => !item.Started && !item.Withdrawn
+                      ).length > 0)) && (
+                    <Grid
+                      item
+                      xs={topBarXsPoints}
+                      sx={{ justifyContent: "center" }}
+                    >
+                      <StyledCard>
+                        <Button
+                          sx={{
+                            fontSize: "1.1rem",
+                            width: "-webkit-fill-available",
+                          }}
+                          onClick={(event) => onRecover(event, questSelection)}
+                        >
+                          {buttonText}
+                        </Button>
+                      </StyledCard>
+                    </Grid>
+                  )}
+                {globalEnum === "recover" && nftsSelection.length > 0 && (
+                  <Grid
+                    item
+                    xs={topBarXsPoints}
+                    sx={{ justifyContent: "center" }}
+                  >
                     <StyledCard>
-                      <Button sx={{fontSize: '1.1rem', width: '-webkit-fill-available'}} onClick={(event) => onRecover(event, questSelection)}>{buttonText}</Button>
+                      <Button
+                        sx={{
+                          fontSize: "1.1rem",
+                          width: "-webkit-fill-available",
+                        }}
+                        onClick={(event) => onQuestStart(event, questSelection)}
+                      >
+                        Start
+                      </Button>
                     </StyledCard>
                   </Grid>
-                }
-                {globalEnum === "recover" && nftsSelection.length > 0 &&
-                  <Grid item xs={topBarXsPoints} sx={{justifyContent: 'center'}}>
+                )}
+                {questsProgression === 1 && (
+                  <Grid
+                    item
+                    xs={topBarXsPoints}
+                    sx={{ justifyContent: "center" }}
+                  >
                     <StyledCard>
-                      <Button sx={{fontSize: '1.1rem', width: '-webkit-fill-available'}} onClick={(event) => onQuestStart(event, questSelection)}>Start</Button>
+                      <Button
+                        sx={{
+                          fontSize: "1.1rem",
+                          width: "-webkit-fill-available",
+                        }}
+                        onClick={onNext}
+                      >
+                        Next
+                      </Button>
                     </StyledCard>
                   </Grid>
-                }
-                {questsProgression === 1 &&
-                  <Grid item xs={topBarXsPoints} sx={{justifyContent: 'center'}}>
-                    <StyledCard>
-                      <Button sx={{fontSize: '1.1rem', width: '-webkit-fill-available'}} onClick={onNext}>Confirm</Button>
-                    </StyledCard>
-                  </Grid>
-                }
+                )}
               </Grid>
             </StyledCard>
           )}
