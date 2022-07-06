@@ -83,3 +83,8 @@ export const recoveryStateAtom = atom({
   key: "recoveryState",
   default: [],
 });
+
+export const stakingProgressionAtom = atom({
+  key: "stakingProgression",
+  default: 0,
+});

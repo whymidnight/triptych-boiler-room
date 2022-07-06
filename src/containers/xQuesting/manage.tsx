@@ -61,7 +61,8 @@ export const QuestedGalleryItems = ({onSelection}) => {
 
       switch (globalEnum) {
         case "recover": {
-          purgatory = questsProposals[questSelection].filter(({Started, Finished, Withdrawn}) => !Started || Finished && !Withdrawn);
+          purgatory = questsProposals.hasOwnProperty(questSelection) ? questsProposals[questSelection].filter(({Started, Finished, Withdrawn}) => (!Started || Finished) && !Withdrawn) : [];
+          console.log("asdfasdfasdfllllllllllllll", purgatory);
           break;
         }
         case "manage": {
@@ -69,7 +70,7 @@ export const QuestedGalleryItems = ({onSelection}) => {
           break;
         }
         case "reward": {
-          purgatory = questsProposals[questSelection].filter(({Started, Withdrawn}) => Started && !Withdrawn);
+          purgatory = questsProposals.hasOwnProperty(questSelection) ? questsProposals[questSelection].filter(({Started, Withdrawn}) => Started && !Withdrawn) : [];
           break;
         }
         default: {
@@ -145,11 +146,11 @@ export const QuestedGalleryItems = ({onSelection}) => {
   }, [globalEnum]);
 
   return (
-    <StyledCard className="xquesting-enrollment-box" style={{width: '60vw'}}>
+    <StyledCard className="xquesting-enrollment-box">
       <Grid alignItems="center" container>
 
         {nftsQuested.map(({depositsMetadata}, pairIndex) => (
-          <Grid container item xs={4} key={pairIndex}>
+          <Grid container item xs={12} sm={4} key={pairIndex} justifyContent="center">
             <StyledCard>
               <CardActions>
                 <Button
@@ -171,33 +172,24 @@ export const QuestedGalleryItems = ({onSelection}) => {
                   }
                 </Button>
               </CardActions>
-              {depositsMetadata.map((depositMetadata, nftIndex) => (
-                <Grid item key={nftIndex}>
-                  <Box textAlign="center">
-                    <StyledCard sx={{width: '100%'}}>
-                      <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-                        <CardMedia
-                          sx={{height: '140px', width: '140px'}}
-                          component="img"
-                          height="140"
-                          image={
-                            //@ts-ignore
-                            depositMetadata.offchainMetadata.hasOwnProperty("image")
-                              ? //@ts-ignore
-                              depositMetadata.offchainMetadata.image
-                              : "https://www.arweave.net/GLeORZQuLxFzDFK0aBQKwhQUUF0-4eawXnrjdtmv5fg?ext=png"
-                          }
-                        />
-                      </div>
-                      <CardContent>
-                        <Typography gutterBottom variant="h5" component="div">
-                          {depositMetadata.name}
-                        </Typography>
-                      </CardContent>
-                    </StyledCard>
-                  </Box>
-                </Grid>
-              ))}
+              <Grid item key={0}>
+                <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                  {depositsMetadata.map((depositMetadata, nftIndex) => (
+                    <CardMedia
+                      sx={{height: '80px', width: '80px'}}
+                      component="img"
+                      height="140"
+                      image={
+                        //@ts-ignore
+                        depositMetadata.offchainMetadata.hasOwnProperty("image")
+                          ? //@ts-ignore
+                          depositMetadata.offchainMetadata.image
+                          : "https://www.arweave.net/GLeORZQuLxFzDFK0aBQKwhQUUF0-4eawXnrjdtmv5fg?ext=png"
+                      }
+                    />
+                  ))}
+                </div>
+              </Grid>
             </StyledCard>
           </Grid>
         ))}
