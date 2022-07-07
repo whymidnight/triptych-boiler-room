@@ -174,7 +174,7 @@ export const NFTGalleryItems = ({onSelection}) => {
           .filter((item) => {
             return (
               item.offchainMetadata.properties.creators[0].address ===
-              "2zJ3v9EHP5eStxMF7qkPS8KX4uUU9JTqk74F987XmkAo"
+              "Gzr2ebsdPQJ15yWwpC4fFan7AmmFDvzQfkQ3qSGmknZ3"
             );
           }),
         genTwoDraggable: nftsWithMetadata
@@ -188,7 +188,7 @@ export const NFTGalleryItems = ({onSelection}) => {
           .filter((item) => {
             return (
               item.offchainMetadata.properties.creators[0].address ===
-              "Gzr2ebsdPQJ15yWwpC4fFan7AmmFDvzQfkQ3qSGmknZ3"
+              "2zJ3v9EHP5eStxMF7qkPS8KX4uUU9JTqk74F987XmkAo"
             );
           }),
       });

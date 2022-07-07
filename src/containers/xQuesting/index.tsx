@@ -69,6 +69,11 @@ declare function new_quest_proposal(
   depositingLeft: String,
   depositingRight: String
 ): Promise<any>;
+declare function onboard_from_singletons(
+  wallet_publicKey: String,
+  quest: String,
+  depositing: String,
+): Promise<any>;
 declare function flush_quest_records(
   wallet_publicKey: String,
   quest: String,
@@ -593,44 +598,82 @@ export const QuestsGallery = () => {
         if (wallet === null) {
           return;
         }
-        console.log(nftsSelection);
-        const enrollQuesteesIx = JSON.parse(
-          String.fromCharCode(
-            ...(await new_quest_proposal(
-              // @ts-ignore
-              wallet.publicKey.toString(),
-              questSelection,
-              JSON.stringify(
-                nftsSelection[0]
-                  // @ts-ignore
-                  .map(({mint}) => mint.toString())
-              ),
-              JSON.stringify(
-                nftsSelection[1]
-                  // @ts-ignore
-                  .map(({mint}) => mint.toString())
-              )
-            ))
-          )
-        );
-
-        if (Object.keys(enrollQuesteesIx).length > 0) {
-          setActiveQuestProposals([enrollQuesteesIx.proposalIndex]);
-
-          const enrollQuesteesTx = Transaction.populate(
-            new Message(enrollQuesteesIx.transaction.message)
+        if (quests[questSelection].PairsConfig.Left === 1 && quests[questSelection].PairsConfig.Right === 0) {
+          console.log("singleton")
+          const onboardTxs = JSON.parse(
+            String.fromCharCode(
+              ...(await onboard_from_singletons(
+                // @ts-ignore
+                wallet.publicKey.toString(),
+                questSelection,
+                JSON.stringify(
+                  nftsSelection[0]
+                    // @ts-ignore
+                    .map(({mint}) => mint.toString())
+                ),
+              ))
+            )
           );
-          enrollQuesteesTx.recentBlockhash = (
-            await connection.getRecentBlockhash("finalized")
-          ).blockhash;
-          const signature = await wallet.sendTransaction(
-            enrollQuesteesTx,
-            connection
+
+          if (onboardTxs.length > 0) {
+            for (const onboardTx of onboardTxs) {
+
+              const enrollQuesteesTx = Transaction.populate(
+                new Message(onboardTx.message)
+              );
+              enrollQuesteesTx.recentBlockhash = (
+                await connection.getRecentBlockhash("finalized")
+              ).blockhash;
+              const signature = await wallet.sendTransaction(
+                enrollQuesteesTx,
+                connection
+              );
+              console.log(signature);
+              await connection.confirmTransaction(signature, "confirmed");
+            }
+          }
+          setQuestsProgression(0);
+
+        } else {
+          console.log(nftsSelection);
+          const enrollQuesteesIx = JSON.parse(
+            String.fromCharCode(
+              ...(await new_quest_proposal(
+                // @ts-ignore
+                wallet.publicKey.toString(),
+                questSelection,
+                JSON.stringify(
+                  nftsSelection[0]
+                    // @ts-ignore
+                    .map(({mint}) => mint.toString())
+                ),
+                JSON.stringify(
+                  nftsSelection[1]
+                    // @ts-ignore
+                    .map(({mint}) => mint.toString())
+                ),
+              ))
+            )
           );
-          console.log(signature);
-          await connection.confirmTransaction(signature, "confirmed");
+
+          if (Object.keys(enrollQuesteesIx).length > 0) {
+            setActiveQuestProposals([enrollQuesteesIx.proposalIndex]);
+
+            const enrollQuesteesTx = Transaction.populate(
+              new Message(enrollQuesteesIx.transaction.message)
+            );
+            enrollQuesteesTx.recentBlockhash = (
+              await connection.getRecentBlockhash("finalized")
+            ).blockhash;
+            const signature = await wallet.sendTransaction(
+              enrollQuesteesTx,
+              connection
+            );
+            console.log(signature);
+            await connection.confirmTransaction(signature, "confirmed");
+          }
+          setQuestsProgression(2);
         }
-        setQuestsProgression(2);
       }
 
       async function doRngs() {
@@ -671,8 +714,12 @@ export const QuestsGallery = () => {
             console.log("....");
             newQuestProposal();
           } else {
-            console.log("asdf");
-            setStakingProgression((1 + stakingProgression) % 2);
+            if (quests[questSelection].PairsConfig.Left === 1 && quests[questSelection].PairsConfig.Right === 0) {
+              newQuestProposal();
+            } else {
+              console.log("asdf");
+              setStakingProgression((1 + stakingProgression) % 2);
+            }
           }
         }
 
