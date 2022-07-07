@@ -7,20 +7,23 @@ export const Home = () => {
     <div
       style={{
         display: "flex",
+        height: "100vh",
       }}
     >
       <Grid
         container
         style={{
-          paddingTop: "33%",
-          width: "100vw",
+          display: 'flex',
         }}
       >
         <Grid item xs={1} sm={4}></Grid>
         <Grid
           item
-          alignItems="center"
-          justifyContent="center"
+          sx={{
+            alignItems: "self-end",
+            display: 'flex',
+            justifyContent: 'center',
+          }}
           xs={10}
           sm={4}>
           <Linktree
@@ -32,11 +35,16 @@ export const Home = () => {
           />
         </Grid>
         <Grid item xs={1} sm={4}></Grid>
+        <Grid item xs={1} sm={2}></Grid>
         <Grid
           item
-          alignItems="center"
-          justifyContent="center"
-          xs={6}>
+          sx={{
+            alignItems: "self-start",
+            display: 'grid',
+            justifyContent: 'right',
+          }}
+          xs={6}
+          sm={4}>
           <Linktree
             i={1}
             title={"Mint"}
@@ -47,9 +55,13 @@ export const Home = () => {
         </Grid>
         <Grid
           item
-          alignItems="center"
-          justifyContent="center"
-          xs={6}>
+          sx={{
+            alignItems: "self-start",
+            display: 'grid',
+            justifyContent: 'left',
+          }}
+          xs={6}
+          sm={4}>
           <Linktree
             i={4}
             title={"xSwap"}
@@ -58,6 +70,7 @@ export const Home = () => {
             cover={"/github.png"}
           />
         </Grid>
+        <Grid item xs={1} sm={2}></Grid>
       </Grid>
       <div style={{zIndex: -1}}>
         <MatrixRain />
