@@ -17,14 +17,14 @@ export const Home = () => {
       <Grid container justifyContent="center" sx={{height: '80vh'}}>
         <Grid item xs={12} sm={8} justifyContent="center" sx={{height: '80vh'}}>
           <Swiper
-            modules={[Pagination, EffectCoverflow]}
+            modules={[Navigation, Pagination, EffectCoverflow]}
             loop={true}
             pagination={{clickable: true}}
             effect="coverflow"
             coverflowEffect={{
               rotate: 50,
               stretch: 0,
-              depth: 250,
+              depth: 50,
               modifier: 2,
               slideShadows: false
             }}
@@ -34,8 +34,8 @@ export const Home = () => {
                 spaceBetween: 50,
               },
               640: {
-                slidesPerView: 2,
-                spaceBetween: 50,
+                slidesPerView: 1,
+                spaceBetween: 100,
               },
             }}
             centeredSlides
@@ -44,7 +44,7 @@ export const Home = () => {
 
             <SwiperSlide>
               <Linktree
-                i={0}
+                i={1}
                 title={"xQuesting"}
                 subtitle={"A P2E Staking Game!"}
                 link={"/xquesting"}
