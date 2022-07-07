@@ -31,7 +31,7 @@ export const Navbar = () => {
           />
         </Grid>
 
-        <Grid item xs={4} />
+        <Grid item xs={2} />
         <Grid
           item
           style={{
@@ -39,7 +39,7 @@ export const Navbar = () => {
             justifyContent: "right",
             paddingRight: "1%",
           }}
-          xs={4}
+          xs={6}
         >
           <WalletMultiButton />
         </Grid>

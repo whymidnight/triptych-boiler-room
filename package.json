@@ -66,7 +66,8 @@
     "react-gesture-responder": "^2.1.0",
     "react-grid-dnd": "^2.1.2",
     "recoil": "^0.7.3",
-    "styled-components": "^5.3.5"
+    "styled-components": "^5.3.5",
+    "swiper": "^8.3.0"
   },
   "devDependencies": {
     "@types/node": "^17.0.0",
