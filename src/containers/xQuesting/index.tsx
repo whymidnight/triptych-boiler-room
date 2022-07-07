@@ -380,7 +380,6 @@ export const QuestsGallery = () => {
         String.fromCharCode(...questsKPIsJson)
       );
 
-      console.log("...", questsKPIs);
       setQuestsKPIs(questsKPIs);
     }
     if (questsProgression === 0) {

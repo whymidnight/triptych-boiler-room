@@ -63,7 +63,6 @@ export const QuestedGalleryItemsHeader = ({quest}) => {
         String.fromCharCode(...questsKPIsJson)
       );
 
-      console.log("...", questsKPIs);
       setQuestsKPIs(questsKPIs);
     }
     fetchQuests();
@@ -75,10 +74,6 @@ export const QuestedGalleryItemsHeader = ({quest}) => {
     console.log(questsProposals[quest])
     return 0;
   }, []);
-
-  useEffect(() => {
-    console.log(quest, questsKPIs)
-  }, [questsKPIs]);
 
   return (
     <Grid container justifyContent="center" xs={12} sx={{color: 'white'}}>
@@ -192,7 +187,7 @@ export const QuestedGalleryItems = ({onSelection}) => {
           index: item.Index,
           fulfilled: item.Fulfilled,
           started: item.Started,
-          depositsMints: [...item.DepositedLeft !== null ? item.DepositedLeft : [], ...item.DepositedRight !== null ? item.DepositedRight : []],
+          depositsMints: [...item.DepositingLeft !== null ? item.DepositingLeft : [], ...item.DepositingRight !== null ? item.DepositingRight : []],
           depositsMetadata: await Promise.all(
             (
               await Metaplex.make(
@@ -203,7 +198,18 @@ export const QuestedGalleryItems = ({onSelection}) => {
                 .nfts()
                 .findAllByMintList(
                   //@ts-ignore
-                  [...item.DepositedLeft !== null ? item.DepositedLeft.map((mint) => new PublicKey(mint)) : [], ...item.DepositedRight !== null ? item.DepositedRight.map((mint) => new PublicKey(mint)) : []],
+                  [
+                    ...item.DepositingLeft !== null
+                      ? item.DepositingLeft
+                        .filter((_, index) => item.RecordLeft[index])
+                        .map((mint) => new PublicKey(mint))
+                      : [],
+                    ...item.DepositingRight !== null
+                      ? item.DepositingRight
+                        .filter((_, index) => item.RecordRight[index])
+                        .map((mint) => new PublicKey(mint))
+                      : [],
+                  ],
                 )
             ).map(async (nft) => {
               let metadata = {};
