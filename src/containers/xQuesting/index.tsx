@@ -113,7 +113,7 @@ declare function get_rewards(
   questIndex: String
 ): Promise<any>;
 
-export const ORACLE = new PublicKey("9fXiLRZGeipeHEMkC8kV7S7t8eNcoSrTfA9mwd6DM2t4");
+export const ORACLE = new PublicKey("99WFbxMRFyCcdapa9r5ubta81W8gFB7izW8wHyr8v7bR");
 
 //@ts-ignore
 export const QuestsGalleryItems = ({
@@ -186,7 +186,7 @@ export const QuestsGalleryItems = ({
                               //@ts-ignore
                               String(
                                 //@ts-ignore
-                                quests[quest].PairsConfig.Left
+                                quests.hasOwnProperty(quest) ? quests[quest].PairsConfig.Left : 0
                               )
                             }
                           </Typography>
@@ -217,7 +217,7 @@ export const QuestsGalleryItems = ({
                               //@ts-ignore
                               String(
                                 //@ts-ignore
-                                quests[quest].PairsConfig.Right
+                                quests.hasOwnProperty(quest) ? quests[quest].PairsConfig.Right : 0
                               )
                             }
                           </Typography>
@@ -380,6 +380,7 @@ export const QuestsGallery = () => {
         String.fromCharCode(...questsKPIsJson)
       );
 
+      console.log("...", questsKPIs);
       setQuestsKPIs(questsKPIs);
     }
     if (questsProgression === 0) {

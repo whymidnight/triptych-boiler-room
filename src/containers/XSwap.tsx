@@ -21,10 +21,11 @@ declare function invoke_swap(
 // @ts-ignore
 export const XSwap = () => {
   const MINT = new PublicKey("GgYhiW7AqBGETa5d5Lb27gZbfNvcPF5b3HA3sTsBicbp");
-  const ORACLE = new PublicKey("FMujfP2mkVwBDAJ7FSEysFANsUv7jiYpZHEgerQVfvC8");
+  const ORACLE = new PublicKey("DnanY6jJYkHtFeTUVpioZbf6NXE8NhfpDje7ayxXp8x3");
   const wallet = useWallet();
   const [swaps, setSwaps] = useState([]);
-  const [swapId, setSwapId] = useState(0);
+  const [selectedFrom, setSelectedFrom] = useState(-1);
+  const [selectedTo, setSelectedTo] = useState(-1);
   const [balance, setBalance] = useState(0.0);
   const [amount, setAmount] = useState(0.0);
 
@@ -34,12 +35,12 @@ export const XSwap = () => {
   );
 
   const onInvokeSwap = useCallback((event) => {
-    console.log(swaps[swapId].Index, amount.toFixed(8));
+    console.log(swaps[selectedFrom].Index, amount.toFixed(8));
     async function invokeSwap() {
       const selectQuestIx = JSON.parse(
         String.fromCharCode(
           // @ts-ignore
-          ...(await invoke_swap(wallet.publicKey.toString(), ORACLE.toString(), String(swaps[swapId].Index), amount.toFixed(8)))
+          ...(await invoke_swap(wallet.publicKey.toString(), ORACLE.toString(), String(swaps[selectedFrom].Index), amount.toFixed(8)))
         )
       );
 
@@ -62,10 +63,24 @@ export const XSwap = () => {
     }
     invokeSwap();
 
-  }, [swaps, swapId, amount]);
+  }, [swaps, selectedFrom, amount]);
 
-  const onSwapSelect = useCallback((event, swapIndex) => {
-    setSwapId(swapIndex);
+  const onSwapSelect = useCallback((event, side, index) => {
+    console.log(side, index, swaps[index]);
+    switch (side) {
+      case "from": {
+        setSelectedFrom(index);
+        break;
+      }
+      case "to": {
+        setSelectedTo(index);
+        break;
+      }
+    }
+  }, [setSelectedTo, setSelectedFrom]);
+
+  useEffect(() => {
+
   }, []);
 
   const onAmountChange = useCallback((event, fieldEnum) => {
@@ -80,16 +95,18 @@ export const XSwap = () => {
   useEffect(() => {
     async function fetchBalance() {
       if (!wallet.publicKey) return;
-      if (swaps.length < swapId) return;
-      if (swaps[swapId] === undefined) return;
-      console.log(swaps, swapId);
-      const userTokens = await connection.getParsedTokenAccountsByOwner(wallet.publicKey, {mint: new PublicKey(swaps[swapId].FromMint)})
-      if (userTokens.value.length === 0) return;
-      setBalance(userTokens.value[0].account.data.parsed.info.tokenAmount.uiAmount);
+      if (swaps.length < selectedFrom) return;
+      if (swaps[selectedFrom] === undefined) return;
+      const userTokens = await connection.getParsedTokenAccountsByOwner(wallet.publicKey, {mint: new PublicKey(swaps[selectedFrom].swapMeta.FromMint)})
+      if (userTokens.value.length !== 0) {
+        setBalance(userTokens.value[0].account.data.parsed.info.tokenAmount.uiAmount);
+        return;
+      }
+      setBalance(0);
     }
 
     fetchBalance();
-  }, [wallet, swaps, swapId]);
+  }, [wallet, swaps, selectedFrom]);
 
   useEffect(() => {
     async function getTokens() {
@@ -97,53 +114,26 @@ export const XSwap = () => {
 
       const swaps = JSON.parse(String.fromCharCode(...(await get_swaps(ORACLE.toString()))));
       console.log(swaps);
-      setSwaps(swaps.map((swap, index) => ({...swap, name: String('debug' + " #" + index)})));
+      setSwaps(
+        swaps
+          .map((swap, index) => ({...swap, name: String('debug' + " #" + index)}))
+      );
     }
     getTokens();
   }, [wallet]);
 
 
   return (
-    <Grid container sx={{paddingTop: '35vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+    <Grid
+      container
+      sx={{
+        paddingTop: '35vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
       <Box >
-
-        <StyledCard className="swap-card" >
-          <Grid container item xs={12}>
-            <Grid item xs={2}>
-            </Grid>
-            <Grid item xs={8}>
-              <FormControl fullWidth sx={{textAlignLast: 'center'}}>
-                <InputLabel>
-                  <Typography align="center" gutterBottom variant="h5" component="div">
-                    {swaps.length > swapId ? swaps[swapId].name : "Select Swap"}
-                  </Typography>
-                </InputLabel>
-                <Select
-                  inputProps={{
-                    inputProps: {
-                      style: {
-                        textAlign: 'center',
-                      },
-                    },
-                  }}
-                >
-                  {swaps.map((swap, index) => (
-                    <MenuItem
-                      sx={{
-                        background: 'linear-gradient(140.14deg,rgb(0 182 191 / 15%),rgb(27 22 89 / 10%) 86.61%),linear-gradient(321.82deg,rgb(24 19 77),rgb(27 22 89))',
-                      }}
-                      value={10}
-                      onClick={(event) => onSwapSelect(event, index)}
-                    >{swap.name}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={2}>
-            </Grid>
-          </Grid>
-        </StyledCard>
-
         <StyledCard className="swap-container" >
           <Grid container item xs={12}>
             <Grid item xs={6}>
@@ -171,9 +161,36 @@ export const XSwap = () => {
                     From
                   </Typography>
                 </Grid>
-                <Grid item xs={1}>
+                <Grid item xs={4}>
+                  <FormControl fullWidth>
+                    <InputLabel>
+                      Token
+                    </InputLabel>
+                    <Select
+                      label="Token"
+                      value={String(selectedFrom)}
+                    >
+                      <MenuItem
+                        sx={{
+                          background: 'linear-gradient(140.14deg,rgb(0 182 191 / 15%),rgb(27 22 89 / 10%) 86.61%),linear-gradient(321.82deg,rgb(24 19 77),rgb(27 22 89))',
+                        }}
+                        value={-1}
+                        onClick={(event) => onSwapSelect(event, "from", -1)}
+                      >Select...</MenuItem>
+                      {swaps
+                        .map((swap, index) => (
+                          <MenuItem
+                            sx={{
+                              background: 'linear-gradient(140.14deg,rgb(0 182 191 / 15%),rgb(27 22 89 / 10%) 86.61%),linear-gradient(321.82deg,rgb(24 19 77),rgb(27 22 89))',
+                            }}
+                            value={index}
+                            onClick={(event) => onSwapSelect(event, "from", index)}
+                          >{swap.mintsMeta.from.tokenMetadata.name}</MenuItem>
+                        ))}
+                    </Select>
+                  </FormControl>
                 </Grid>
-                <Grid item xs={8}>
+                <Grid item xs={6}>
                   <TextField
                     onChange={(event) => onAmountChange(event, "")}
                     type="number"
@@ -186,7 +203,7 @@ export const XSwap = () => {
                         style: {textAlign: 'center'},
                       },
                       endAdornment: (<InputAdornment position="end"><Typography variant="h5" component="div">
-                        stakedNBA
+                        {selectedFrom !== -1 ? swaps[selectedFrom].mintsMeta.from.tokenMetadata.symbol : ""}
                       </Typography>
                       </InputAdornment>),
                     }}
@@ -198,8 +215,6 @@ export const XSwap = () => {
                       },
                     }}
                   />
-                </Grid>
-                <Grid item xs={1}>
                 </Grid>
               </Grid>
             </StyledCard>
@@ -210,21 +225,77 @@ export const XSwap = () => {
                     To
                   </Typography>
                 </Grid>
-                <Grid item xs={1}>
+                <Grid item xs={4}>
+                  <FormControl fullWidth sx={{textAlignLast: 'center'}}>
+                    <InputLabel>
+                      <Typography align="center" gutterBottom variant="h5" component="div">
+                        Token
+                      </Typography>
+                    </InputLabel>
+                    <Select
+                      label="Token"
+                      value={selectedTo}
+                    >
+                      <MenuItem
+                        sx={{
+                          background: 'linear-gradient(140.14deg,rgb(0 182 191 / 15%),rgb(27 22 89 / 10%) 86.61%),linear-gradient(321.82deg,rgb(24 19 77),rgb(27 22 89))',
+                        }}
+                        value={-1}
+                        onClick={(event) => onSwapSelect(event, "to", -1)}
+                      >Select...</MenuItem>
+                      {selectedFrom === -1 &&
+                        (
+                          swaps.reduce((acc, item) => {
+                            if (!acc.some((someItem) => someItem.swapMeta.ToMint === item.swapMeta.ToMint)) {
+                              return [...acc, item];
+                            }
+
+                            return [...acc];
+                          }, [])
+                        )
+
+                          .map((swap, index) => (
+                            <MenuItem
+                              sx={{
+                                background: 'linear-gradient(140.14deg,rgb(0 182 191 / 15%),rgb(27 22 89 / 10%) 86.61%),linear-gradient(321.82deg,rgb(24 19 77),rgb(27 22 89))',
+                              }}
+                              value={index}
+                              onClick={(event) => onSwapSelect(event, "to", index)}
+                            >{swap.mintsMeta.to.tokenMetadata.name}</MenuItem>
+                          ))}
+                      {swaps
+                        .filter((swap, index) => (
+                          selectedFrom !== -1
+                            ? swaps[index].swapMeta.FromMint === swaps[selectedFrom].swapMeta.FromMint
+                            : false
+
+                        ))
+                        .map((swap, index) => (
+                          <MenuItem
+                            sx={{
+                              background: 'linear-gradient(140.14deg,rgb(0 182 191 / 15%),rgb(27 22 89 / 10%) 86.61%),linear-gradient(321.82deg,rgb(24 19 77),rgb(27 22 89))',
+                            }}
+                            value={index}
+                            onClick={(event) => onSwapSelect(event, "to", index)}
+                          >{swap.mintsMeta.to.tokenMetadata.name}</MenuItem>
+                        ))}
+                    </Select>
+                  </FormControl>
                 </Grid>
-                <Grid
-                  item
-                  xs={8}
-                >
+                <Grid item xs={6}>
                   <TextField
-                    disabled={true}
+                    onChange={(event) => onAmountChange(event, "")}
+                    type="number"
                     value={amount}
                     InputProps={{
                       inputProps: {
+                        min: 0,
+                        max: balance,
+                        step: '0.1',
                         style: {textAlign: 'center'},
                       },
                       endAdornment: (<InputAdornment position="end"><Typography variant="h5" component="div">
-                        NBA
+                        {selectedTo !== -1 ? swaps[selectedTo].mintsMeta.to.tokenMetadata.symbol : ""}
                       </Typography>
                       </InputAdornment>),
                     }}
@@ -236,8 +307,6 @@ export const XSwap = () => {
                       },
                     }}
                   />
-                </Grid>
-                <Grid item xs={1}>
                 </Grid>
               </Grid>
             </StyledCard>

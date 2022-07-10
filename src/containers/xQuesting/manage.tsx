@@ -38,6 +38,7 @@ declare function get_quests_kpis(
 
 export const QuestedGalleryItemsHeader = ({quest}) => {
   const wallet = useWallet();
+  const [quests] = useRecoilState(questsAtom);
   const [questsKPIs, setQuestsKPIs] = useRecoilState(questsKPIsAtom);
   const [questsProposals] = useRecoilState(questsProposalsAtom);
 
@@ -69,7 +70,6 @@ export const QuestedGalleryItemsHeader = ({quest}) => {
   }, [wallet, resync, setQuestsKPIs]);
 
 
-
   const stakingRewards = useCallback(() => {
     console.log(questsProposals[quest])
     return 0;
@@ -79,31 +79,64 @@ export const QuestedGalleryItemsHeader = ({quest}) => {
     <Grid container justifyContent="center" xs={12} sx={{color: 'white'}}>
       <StyledCard>
         <Grid container justifyContent="center" item sx={{width: '100%'}} direction="row">
-          <Grid item sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}} xs={5}>
-            <Stack>
-              <Typography
-                gutterBottom
-                variant="h5"
-                component="div"
-                sx={{paddingTop: "2px"}}
-              >
-                {questsKPIs.hasOwnProperty(quest) ? Number(questsKPIs[quest].stakingRewards).toFixed(1) : "0.0"}
-              </Typography>
-              <Typography
-                gutterBottom
-                variant="h5"
-                component="div"
-                sx={{paddingTop: "2px"}}
-              >
-                stNBA
-              </Typography>
-            </Stack>
-          </Grid>
-          <Grid item xs={2} container direction="row" justifyContent="center" alignItems="center">
-            <Divider
-              orientation="vertical"
-              style={{height: '100%', width: '1px', backgroundColor: 'orange'}} />
-          </Grid>
+          {quests.hasOwnProperty(quest) && quests[quest].Tender !== null && (
+            <>
+              <Grid item sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}} xs={5}>
+                <Stack>
+                  <Typography
+                    gutterBottom
+                    variant="h5"
+                    component="div"
+                    sx={{paddingTop: "2px"}}
+                  >
+                    {quests[quest].Tender.Amount / Math.pow(10, 1)}
+                  </Typography>
+                  <Typography
+                    gutterBottom
+                    variant="h5"
+                    component="div"
+                    sx={{paddingTop: "2px"}}
+                  >
+                    Entry Cost
+                  </Typography>
+                </Stack>
+              </Grid>
+              <Grid item xs={2} container direction="row" justifyContent="center" alignItems="center">
+                <Divider
+                  orientation="vertical"
+                  style={{height: '100%', width: '1px', backgroundColor: 'orange'}} />
+              </Grid>
+            </>
+          )}
+          {quests.hasOwnProperty(quest) && quests[quest].StakingConfig !== null && (
+            <>
+              <Grid item sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}} xs={5}>
+                <Stack>
+                  <Typography
+                    gutterBottom
+                    variant="h5"
+                    component="div"
+                    sx={{paddingTop: "2px"}}
+                  >
+                    {questsKPIs.hasOwnProperty(quest) ? Number(questsKPIs[quest].stakingRewards).toFixed(1) : "0.0"}
+                  </Typography>
+                  <Typography
+                    gutterBottom
+                    variant="h5"
+                    component="div"
+                    sx={{paddingTop: "2px"}}
+                  >
+                    stNBA
+                  </Typography>
+                </Stack>
+              </Grid>
+              <Grid item xs={2} container direction="row" justifyContent="center" alignItems="center">
+                <Divider
+                  orientation="vertical"
+                  style={{height: '100%', width: '1px', backgroundColor: 'orange'}} />
+              </Grid>
+            </>
+          )}
           <Grid item xs={5}>
             <Typography
               gutterBottom
