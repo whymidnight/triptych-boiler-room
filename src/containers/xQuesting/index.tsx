@@ -49,6 +49,10 @@ import {
 } from "./state/atoms";
 import {StyledCard} from "../../components/cards";
 
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert, {AlertProps} from '@mui/material/Alert';
+
+
 import {NFTGalleryItems, QuestStart} from "./enrollment";
 import {QuestedGalleryItems, QuestedGalleryItemsHeader} from "./manage";
 import {QuestAction} from "./rewards";
@@ -114,6 +118,15 @@ declare function get_rewards(
 ): Promise<any>;
 
 export const ORACLE = new PublicKey("43Lcenu9HrorSd39rjKEiaNYCLurwwkzz4aGCL5YUoGe");
+
+const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
+  props,
+  ref,
+) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
+
+
 
 //@ts-ignore
 export const QuestsGalleryItems = ({
@@ -361,6 +374,17 @@ export const QuestsGallery = () => {
   const [stakingProgression, setStakingProgression] = useRecoilState(stakingProgressionAtom);
 
   const [resync, setResync] = useRecoilState(resyncAtom);
+  const [open, setOpen] = React.useState(false);
+  const [openMessage, setOpenMessage] = React.useState("");
+
+  const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpen(false);
+  };
+
 
   useEffect(() => {
     async function fetchQuests() {
@@ -495,13 +519,24 @@ export const QuestsGallery = () => {
 
         if (flushRecordsTxs.length > 0) {
           for (const flushTxB of flushRecordsTxs) {
-            const flushTx = Transaction.populate(new Message(flushTxB.message));
-            flushTx.recentBlockhash = (
-              await connection.getRecentBlockhash("finalized")
-            ).blockhash;
-            const signature = await wallet.sendTransaction(flushTx, connection);
-            console.log(signature);
-            await connection.confirmTransaction(signature, "confirmed");
+            try {
+              const flushTx = Transaction.populate(new Message(flushTxB.message));
+              flushTx.recentBlockhash = (
+                await connection.getRecentBlockhash("finalized")
+              ).blockhash;
+              setOpenMessage("Please Approve Quest Withdrawal Transaction.");
+              setOpen(true);
+              const signature = await wallet.sendTransaction(flushTx, connection);
+              setOpen(true);
+              setOpenMessage("Quest Withdrawal Transaction Submitted.");
+              console.log(signature);
+              setOpen(true);
+              setOpenMessage("Quest Withdrawal Transaction Succeeded.");
+              await connection.confirmTransaction(signature, "confirmed");
+            } catch (e) {
+                setOpenMessage("Quest Withdrawal Transaction Failed. :(");
+                setOpen(true);
+            }
           }
         }
         setQuestsSelection("");
@@ -533,13 +568,24 @@ export const QuestsGallery = () => {
 
         if (flushRecordsTxs.length > 0) {
           for (const flushTxB of flushRecordsTxs) {
-            const flushTx = Transaction.populate(new Message(flushTxB.message));
-            flushTx.recentBlockhash = (
-              await connection.getRecentBlockhash("finalized")
-            ).blockhash;
-            const signature = await wallet.sendTransaction(flushTx, connection);
-            console.log(signature);
-            await connection.confirmTransaction(signature, "confirmed");
+            try {
+              const flushTx = Transaction.populate(new Message(flushTxB.message));
+              flushTx.recentBlockhash = (
+                await connection.getRecentBlockhash("finalized")
+              ).blockhash;
+              setOpenMessage("Please Approve Claim Reward Transaction.");
+              setOpen(true);
+              const signature = await wallet.sendTransaction(flushTx, connection);
+              console.log(signature);
+              setOpen(true);
+              setOpenMessage("Claim Reward Transaction Submitted!");
+              await connection.confirmTransaction(signature, "confirmed");
+              setOpen(true);
+              setOpenMessage("Claim Reward Transaction Succeeded!");
+            } catch (e) {
+              setOpen(true);
+              setOpenMessage("Claim Reward Transaction Failed! :(");
+            }
           }
         }
       }
@@ -568,15 +614,26 @@ export const QuestsGallery = () => {
         );
 
         if (Object.keys(flushRecordsTx).length > 0) {
-          const flushTx = Transaction.populate(
-            new Message(flushRecordsTx.message)
-          );
-          flushTx.recentBlockhash = (
-            await connection.getRecentBlockhash("finalized")
-          ).blockhash;
-          const signature = await wallet.sendTransaction(flushTx, connection);
-          console.log(signature);
-          await connection.confirmTransaction(signature, "confirmed");
+          try {
+            const flushTx = Transaction.populate(
+              new Message(flushRecordsTx.message)
+            );
+            flushTx.recentBlockhash = (
+              await connection.getRecentBlockhash("finalized")
+            ).blockhash;
+            setOpenMessage("Please Approve Quest End Transaction.");
+            setOpen(true);
+            const signature = await wallet.sendTransaction(flushTx, connection);
+            setOpen(true);
+            setOpenMessage("Quest End Transaction Submitted!");
+            console.log(signature);
+            await connection.confirmTransaction(signature, "confirmed");
+            setOpen(true);
+            setOpenMessage("Quest End Transaction Succeeded!");
+          } catch (e) {
+              setOpenMessage("Quest End Transaction Failed. :(");
+              setOpen(true);
+          }
         }
         setQuestsSelection("");
         setQuestsProgression(0);
@@ -600,7 +657,7 @@ export const QuestsGallery = () => {
         setGlobalEnum("recover");
       }
     },
-    [questsProgression, setQuestsProgression, recoveryState]
+    [questsProgression, setQuestsProgression, recoveryState, setOpen, setOpenMessage]
   );
   const onNext = useCallback(
     (_) => {
@@ -628,18 +685,29 @@ export const QuestsGallery = () => {
           if (onboardTxs.length > 0) {
             for (const onboardTx of onboardTxs) {
 
-              const enrollQuesteesTx = Transaction.populate(
-                new Message(onboardTx.message)
-              );
-              enrollQuesteesTx.recentBlockhash = (
-                await connection.getRecentBlockhash("finalized")
-              ).blockhash;
-              const signature = await wallet.sendTransaction(
-                enrollQuesteesTx,
-                connection
-              );
-              console.log(signature);
-              await connection.confirmTransaction(signature, "confirmed");
+              try {
+                const enrollQuesteesTx = Transaction.populate(
+                  new Message(onboardTx.message)
+                );
+                enrollQuesteesTx.recentBlockhash = (
+                  await connection.getRecentBlockhash("finalized")
+                ).blockhash;
+                setOpenMessage("Please Approve Quest Start Transaction.");
+                setOpen(true);
+                const signature = await wallet.sendTransaction(
+                  enrollQuesteesTx,
+                  connection
+                );
+                setOpen(true);
+                setOpenMessage("Quest Start Transaction Submitted.");
+                console.log(signature);
+                await connection.confirmTransaction(signature, "confirmed");
+                setOpen(true);
+                setOpenMessage("Quest Start Transaction Succeeded.");
+              } catch (e) {
+                setOpenMessage("Quest Start Transaction Failed. :(");
+                setOpen(true);
+              }
             }
           }
           setQuestsProgression(0);
@@ -669,18 +737,29 @@ export const QuestsGallery = () => {
           if (Object.keys(enrollQuesteesIx).length > 0) {
             setActiveQuestProposals([enrollQuesteesIx.proposalIndex]);
 
-            const enrollQuesteesTx = Transaction.populate(
-              new Message(enrollQuesteesIx.transaction.message)
-            );
-            enrollQuesteesTx.recentBlockhash = (
-              await connection.getRecentBlockhash("finalized")
-            ).blockhash;
-            const signature = await wallet.sendTransaction(
-              enrollQuesteesTx,
-              connection
-            );
-            console.log(signature);
-            await connection.confirmTransaction(signature, "confirmed");
+            try {
+              const enrollQuesteesTx = Transaction.populate(
+                new Message(enrollQuesteesIx.transaction.message)
+              );
+              enrollQuesteesTx.recentBlockhash = (
+                await connection.getRecentBlockhash("finalized")
+              ).blockhash;
+              setOpenMessage("Please Approve Quest Start Transaction.");
+              setOpen(true);
+              const signature = await wallet.sendTransaction(
+                enrollQuesteesTx,
+                connection
+              );
+              setOpenMessage("Quest Start Transaction Submitted.");
+              setOpen(true);
+              console.log(signature);
+              await connection.confirmTransaction(signature, "confirmed");
+              setOpenMessage("Quest Start Transaction Succeeded.");
+              setOpen(true);
+            } catch (e) {
+              setOpenMessage("Quest Start Transaction Failed. :(");
+              setOpen(true);
+            }
           }
           setQuestsProgression(2);
         }
@@ -756,6 +835,8 @@ export const QuestsGallery = () => {
       quests,
       showCompleted,
       stakingProgression,
+      setOpen,
+      setOpenMessage,
     ]
   );
   const onManage = useCallback(
@@ -1172,6 +1253,20 @@ export const QuestsGallery = () => {
               </Grid>
             </StyledCard>
           )}
+          <Snackbar
+            open={open}
+            autoHideDuration={6000}
+            onClose={handleClose}
+            sx={{zIndex: 100000000}}
+            anchorOrigin={{
+              vertical: "top",
+              horizontal: "center"
+            }}
+          >
+            <Alert onClose={handleClose} severity="success" sx={{width: '100%'}}>
+              {openMessage}
+            </Alert>
+          </Snackbar>
           {body}
         </div>
       )}
