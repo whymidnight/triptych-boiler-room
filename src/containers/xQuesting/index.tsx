@@ -113,7 +113,7 @@ declare function get_rewards(
   questIndex: String
 ): Promise<any>;
 
-export const ORACLE = new PublicKey("99WFbxMRFyCcdapa9r5ubta81W8gFB7izW8wHyr8v7bR");
+export const ORACLE = new PublicKey("43Lcenu9HrorSd39rjKEiaNYCLurwwkzz4aGCL5YUoGe");
 
 //@ts-ignore
 export const QuestsGalleryItems = ({
@@ -138,42 +138,50 @@ export const QuestsGalleryItems = ({
               <Grid xs={10} sm={3} key={quest}>
                 <Box textAlign="center">
                   <StyledCard>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <CardMedia
-                        style={{height: "10vh"}}
-                        component="img"
-                        height="280"
-                        image="https://www.arweave.net/GLeORZQuLxFzDFK0aBQKwhQUUF0-4eawXnrjdtmv5fg?ext=png"
-                      />
-                    </div>
+                    <Grid alignItems="center" justifyContent="center">
+                      <Grid item xs={12} sx={{padding: '5% 0%'}}>
+                        <QuestedGalleryItemsHeader
+                          quest={quest}
+                          kpis={[
+                            "totalStaked",
+                            quests[quest].StakingConfig !== null ? "stakingReward" : "",
+                          ]}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sx={{padding: '5% 0%'}}>
+                        <QuestedGalleryItemsHeader
+                          quest={quest}
+                          kpis={[
+                            quests[quest].Tender !== null ? "entryCost" : "",
+                            "type",
+                          ]}
+                        />
+                      </Grid>
+                    </Grid>
                     <CardContent>
-                      <Typography gutterBottom variant="h5" component="div">
-                        {
-                          //@ts-ignore
-                          String(
-                            "Debug: " +
+                      <Box sx={{padding: "5%"}}>
+                        <Typography gutterBottom variant="h5" component="div">
+                          {
                             //@ts-ignore
-                            quests[quest].Index +
-                            " Name: " +
-                            //@ts-ignore
-                            quests[quest].Name
-                          )
-                        }
-                      </Typography>
-                      <Typography
-                        gutterBottom
-                        variant="h5"
-                        component="div"
-                        sx={{paddingTop: "2px"}}
-                      >
-                        Layout:
-                      </Typography>
+                            String(
+                              "Debug: " +
+                              //@ts-ignore
+                              quests[quest].Index +
+                              " Name: " +
+                              //@ts-ignore
+                              quests[quest].Name
+                            )
+                          }
+                        </Typography>
+                        <Typography
+                          gutterBottom
+                          variant="h5"
+                          component="div"
+                          sx={{paddingTop: "2px"}}
+                        >
+                          Layout:
+                        </Typography>
+                      </Box>
                       <Grid container>
                         <Grid item xs={5} sx={{padding: "10px"}}>
                           <Typography
@@ -236,7 +244,6 @@ export const QuestsGalleryItems = ({
                           </Typography>
                         </Grid>
                       </Grid>
-                      <QuestedGalleryItemsHeader quest={quest} />
                     </CardContent>
                     <CardActions style={{justifyContent: "center"}}>
                       <Button
@@ -286,23 +293,26 @@ export const QuestsGalleryItems = ({
                             Recover
                           </Button>
                         )}
-                      <Button
-                        disabled={
-                          quests.hasOwnProperty(quest) &&
-                            quests[quest].StakingConfig !== null &&
-                            questsProposals.hasOwnProperty(quest) &&
-                            questsProposals[quest].filter(
-                              //@ts-ignore
-                              ({Started, Finished}) => Started && !Finished
-                            ).length > 0
-                            ? false
-                            : true
-                        }
-                        onClick={(event) => onReward(event, quest)}
-                        size="small"
-                      >
-                        Rewards
-                      </Button>
+                      {quests.hasOwnProperty(quest) && quests[quest].StakingConfig !== null
+                        && (
+                          <Button
+                            disabled={
+                              quests.hasOwnProperty(quest) &&
+                                quests[quest].StakingConfig !== null &&
+                                questsProposals.hasOwnProperty(quest) &&
+                                questsProposals[quest].filter(
+                                  //@ts-ignore
+                                  ({Started, Finished}) => Started && !Finished
+                                ).length > 0
+                                ? false
+                                : true
+                            }
+                            onClick={(event) => onReward(event, quest)}
+                            size="small"
+                          >
+                            Rewards
+                          </Button>
+                        )}
                     </CardActions>
                   </StyledCard>
                 </Box>

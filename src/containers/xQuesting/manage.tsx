@@ -30,23 +30,310 @@ import {
 import axios from 'axios';
 import {useWallet} from "@solana/wallet-adapter-react";
 import {ORACLE} from './index';
+import moment from "moment";
 
 declare function get_quests_kpis(
   oracle: String,
   holder: String,
 ): Promise<any>;
 
-export const QuestedGalleryItemsHeader = ({quest}) => {
+const timeScalars = [1000, 60, 60, 24, 7, 52];
+const timeUnits = ['ms', 'seconds', 'minute', 'hour', 'day', 'week', 'year'];
+
+const getHumanReadableTime = (s, dp = 0) => {
+  let ms = s * 1000;
+  let timeScalarIndex = 0, scaledTime = ms;
+
+  while (scaledTime > timeScalars[timeScalarIndex]) {
+    scaledTime /= timeScalars[timeScalarIndex++];
+  }
+
+  return `${scaledTime.toFixed(dp)} ${timeUnits[timeScalarIndex]}`;
+};
+
+export const QuestedGalleryItemsHeader = ({quest, kpis}) => {
   const wallet = useWallet();
   const [quests] = useRecoilState(questsAtom);
   const [questsKPIs, setQuestsKPIs] = useRecoilState(questsKPIsAtom);
   const [questsProposals] = useRecoilState(questsProposalsAtom);
-
   const [resync, setResync] = useRecoilState(resyncAtom);
+  const [kpisElems, setKpis] = useState([]);
+
+  const kpiEnums = ["entryCost", "stakingReward", "totalStaked", "type"];
+
+  useEffect(() => {
+    let old = [];
+    const kpisNormalized = kpis.filter((v, i, a) => a.indexOf(v) === i && v !== "");
+    if (kpisNormalized.length === 0) return;
+    if (kpisNormalized.some((item) => kpiEnums.indexOf(item) === -1)) {
+      setKpis([]);
+      return;
+    }
+
+    for (const kpi in kpisNormalized) {
+      if (!quests.hasOwnProperty(quest)) break;
+      old.push(
+        <Grid item container direction="row" justifyContent="center" alignItems="center" xs={2}>
+          <Divider
+            orientation="vertical"
+            style={{height: '100%', width: '1px', backgroundColor: 'orange'}} />
+        </Grid>
+      );
+
+      switch (kpisNormalized[kpi]) {
+        case "entryCost": {
+          old.push(
+            <Grid item sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}} xs={6 / kpisNormalized.length}>
+              <Stack>
+                <Typography
+                  gutterBottom
+                  variant="h5"
+                  component="div"
+                  sx={{paddingTop: "2px"}}
+                >
+                  {quests[quest].Tender.Amount / Math.pow(10, quests[quest].Tender.Decimals)} {quests[quest].Tender.Name}
+                </Typography>
+                <Typography
+                  gutterBottom
+                  variant="h5"
+                  component="div"
+                  sx={{paddingTop: "2px"}}
+                >
+                  Entry Cost
+                </Typography>
+              </Stack>
+            </Grid>
+          );
+          break;
+        }
+        case "stakingReward": {
+          old.push(
+            <Grid item sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}} xs={6 / kpisNormalized.length}>
+              <Stack>
+                <Typography
+                  gutterBottom
+                  variant="h5"
+                  component="div"
+                  sx={{paddingTop: "2px"}}
+                >
+                  {questsKPIs.hasOwnProperty(quest) ? Number(questsKPIs[quest].stakingRewards).toFixed(quests[quest].StakingConfig.Decimals) : "0.0"}
+                </Typography>
+                <Typography
+                  gutterBottom
+                  variant="h5"
+                  component="div"
+                  sx={{paddingTop: "2px"}}
+                >
+                  {quests[quest].StakingConfig.Name}
+                </Typography>
+              </Stack>
+            </Grid>
+          );
+          break;
+        }
+        case "totalStaked": {
+          old.push(
+            <Grid item sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}} xs={6 / kpisNormalized.length}>
+              <Stack>
+                <Typography
+                  gutterBottom
+                  variant="h5"
+                  component="div"
+                  sx={{paddingTop: "2px"}}
+                >
+                  {questsKPIs.hasOwnProperty(quest) ? Number(questsKPIs[quest].totalStaked / (20 * 1000)).toFixed(4) : "0.0000"}%
+                </Typography>
+                <Typography
+                  gutterBottom
+                  variant="h5"
+                  component="div"
+                  sx={{paddingTop: "2px"}}
+                >
+                  Total Apes Staked
+                </Typography>
+              </Stack>
+            </Grid>
+          );
+          break;
+        }
+        case "type": {
+          old.push(
+            <Grid item sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}} xs={6 / kpisNormalized.length}>
+              <Stack>
+                <Typography
+                  gutterBottom
+                  variant="h5"
+                  component="div"
+                  sx={{paddingTop: "2px"}}
+                >
+                  {getHumanReadableTime(quests[quest].Duration)}
+                </Typography>
+                <Typography
+                  gutterBottom
+                  variant="h5"
+                  component="div"
+                  sx={{paddingTop: "2px"}}
+                >
+                  {quests[quest].StakingConfig ? "Staking Quest" : "Normal Quest"}
+                </Typography>
+              </Stack>
+            </Grid>
+          );
+          break;
+        }
+      }
+
+    }
+    if (old.length !== kpisNormalized.length - 1) {
+      old.push(
+        <Grid item container direction="row" justifyContent="center" alignItems="center" xs={2}>
+          <Divider
+            orientation="vertical"
+            style={{height: '100%', width: '1px', backgroundColor: 'orange'}} />
+        </Grid>
+      );
+    }
+    setKpis(old);
+  }, []);
+
+  useEffect(() => {
+
+    let old = [];
+    const kpisNormalized = kpis.filter((v, i, a) => a.indexOf(v) === i && v !== "");
+    if (kpisNormalized.length === 0) return;
+    if (kpisNormalized.some((item) => kpiEnums.indexOf(item) === -1)) {
+      setKpis([]);
+      return;
+    }
+
+    for (const kpi in kpisNormalized) {
+      if (!quests.hasOwnProperty(quest)) break;
+      old.push(
+        <Grid item container direction="row" justifyContent="center" alignItems="center" xs={2}>
+          <Divider
+            orientation="vertical"
+            style={{height: '100%', width: '1px', backgroundColor: 'orange'}} />
+        </Grid>
+      );
+
+      switch (kpisNormalized[kpi]) {
+        case kpiEnums[0]: {
+          old.push(
+            <Grid item sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}} xs={6 / kpisNormalized.length}>
+              <Stack>
+                <Typography
+                  gutterBottom
+                  variant="h5"
+                  component="div"
+                  sx={{paddingTop: "2px"}}
+                >
+                  {quests[quest].Tender.Amount / Math.pow(10, quests[quest].Tender.Decimals)} {quests[quest].Tender.Name}
+                </Typography>
+                <Typography
+                  gutterBottom
+                  variant="h5"
+                  component="div"
+                  sx={{paddingTop: "2px"}}
+                >
+                  Entry Cost
+                </Typography>
+              </Stack>
+            </Grid>
+          );
+          break;
+        }
+        case "stakingReward": {
+          old.push(
+            <Grid item sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}} xs={6 / kpisNormalized.length}>
+              <Stack>
+                <Typography
+                  gutterBottom
+                  variant="h5"
+                  component="div"
+                  sx={{paddingTop: "2px"}}
+                >
+                  {questsKPIs.hasOwnProperty(quest) ? Number(questsKPIs[quest].stakingRewards).toFixed(quests[quest].StakingConfig.Decimals) : "0.0"}
+                </Typography>
+                <Typography
+                  gutterBottom
+                  variant="h5"
+                  component="div"
+                  sx={{paddingTop: "2px"}}
+                >
+                  {quests[quest].StakingConfig.Name} Accrued
+                </Typography>
+              </Stack>
+            </Grid>
+          );
+          break;
+        }
+        case "totalStaked": {
+          old.push(
+            <Grid item sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}} xs={6 / kpisNormalized.length}>
+              <Stack>
+                <Typography
+                  gutterBottom
+                  variant="h5"
+                  component="div"
+                  sx={{paddingTop: "2px"}}
+                >
+                  {questsKPIs.hasOwnProperty(quest) ? Number(questsKPIs[quest].totalStaked / (20 * 1000)).toFixed(4) : "0.0000"}%
+                </Typography>
+                <Typography
+                  gutterBottom
+                  variant="h5"
+                  component="div"
+                  sx={{paddingTop: "2px"}}
+                >
+                  Total Apes Staked
+                </Typography>
+              </Stack>
+            </Grid>
+          );
+          break;
+        }
+        case "type": {
+          old.push(
+            <Grid item sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}} xs={6 / kpisNormalized.length}>
+              <Stack>
+                <Typography
+                  gutterBottom
+                  variant="h5"
+                  component="div"
+                  sx={{paddingTop: "2px"}}
+                >
+                  {getHumanReadableTime(quests[quest].Duration)}
+                </Typography>
+                <Typography
+                  gutterBottom
+                  variant="h5"
+                  component="div"
+                  sx={{paddingTop: "2px"}}
+                >
+                  {quests[quest].StakingConfig ? "Staking Quest" : "Normal Quest"}
+                </Typography>
+              </Stack>
+            </Grid>
+          );
+          break;
+        }
+      }
+    }
+
+    old.push(
+      <Grid item xs={2} container direction="row" justifyContent="center" alignItems="center">
+        <Divider
+          orientation="vertical"
+          style={{height: '100%', width: '1px', backgroundColor: 'orange'}} />
+      </Grid>
+    );
+    setKpis(old);
+  }, [questsKPIs, setKpis]);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setResync(resync + 1);
-    }, 5000);
+    }, 5 * 1000);
     return () => clearInterval(interval);
   }, [resync, setResync]);
 
@@ -75,89 +362,22 @@ export const QuestedGalleryItemsHeader = ({quest}) => {
     return 0;
   }, []);
 
+  useEffect(() => {
+    // console.log(kpisElems);
+  }, [kpisElems]);
+
   return (
-    <Grid container justifyContent="center" xs={12} sx={{color: 'white'}}>
-      <StyledCard>
-        <Grid container justifyContent="center" item sx={{width: '100%'}} direction="row">
-          {quests.hasOwnProperty(quest) && quests[quest].Tender !== null && (
-            <>
-              <Grid item sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}} xs={5}>
-                <Stack>
-                  <Typography
-                    gutterBottom
-                    variant="h5"
-                    component="div"
-                    sx={{paddingTop: "2px"}}
-                  >
-                    {quests[quest].Tender.Amount / Math.pow(10, 1)}
-                  </Typography>
-                  <Typography
-                    gutterBottom
-                    variant="h5"
-                    component="div"
-                    sx={{paddingTop: "2px"}}
-                  >
-                    Entry Cost
-                  </Typography>
-                </Stack>
-              </Grid>
-              <Grid item xs={2} container direction="row" justifyContent="center" alignItems="center">
-                <Divider
-                  orientation="vertical"
-                  style={{height: '100%', width: '1px', backgroundColor: 'orange'}} />
-              </Grid>
-            </>
-          )}
-          {quests.hasOwnProperty(quest) && quests[quest].StakingConfig !== null && (
-            <>
-              <Grid item sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}} xs={5}>
-                <Stack>
-                  <Typography
-                    gutterBottom
-                    variant="h5"
-                    component="div"
-                    sx={{paddingTop: "2px"}}
-                  >
-                    {questsKPIs.hasOwnProperty(quest) ? Number(questsKPIs[quest].stakingRewards).toFixed(1) : "0.0"}
-                  </Typography>
-                  <Typography
-                    gutterBottom
-                    variant="h5"
-                    component="div"
-                    sx={{paddingTop: "2px"}}
-                  >
-                    stNBA
-                  </Typography>
-                </Stack>
-              </Grid>
-              <Grid item xs={2} container direction="row" justifyContent="center" alignItems="center">
-                <Divider
-                  orientation="vertical"
-                  style={{height: '100%', width: '1px', backgroundColor: 'orange'}} />
-              </Grid>
-            </>
-          )}
-          <Grid item xs={5}>
-            <Typography
-              gutterBottom
-              variant="h5"
-              component="div"
-              sx={{paddingTop: "2px"}}
-            >
-              {questsKPIs.hasOwnProperty(quest) ? Number(questsKPIs[quest].totalStaked / (20 * 1000)).toFixed(4) : "0.0000"}%
-            </Typography>
-            <Typography
-              gutterBottom
-              variant="h5"
-              component="div"
-              sx={{paddingTop: "2px"}}
-            >
-              Total Apes Staked
-            </Typography>
-          </Grid>
+    <>
+      {kpisElems.length > 0 && (
+        <Grid container justifyContent="center" xs={12} sx={{height: '100px', color: 'white'}}>
+          <StyledCard sx={{width: '100%'}}>
+            <Grid container justifyContent="center" item sx={{width: '100%'}} direction="row" xs={12}>
+              {kpisElems}
+            </Grid>
+          </StyledCard>
         </Grid>
-      </StyledCard>
-    </Grid>
+      )}
+    </>
   );
 }
 
@@ -196,7 +416,6 @@ export const QuestedGalleryItems = ({onSelection}) => {
       switch (globalEnum) {
         case "recover": {
           purgatory = questsProposals.hasOwnProperty(questSelection) ? questsProposals[questSelection].filter(({Started, Finished, Withdrawn}) => (!Started || Finished) && !Withdrawn) : [];
-          console.log("asdfasdfasdfllllllllllllll", purgatory);
           break;
         }
         case "manage": {
@@ -216,10 +435,25 @@ export const QuestedGalleryItems = ({onSelection}) => {
       console.log(".....", globalEnum, showStarted, questsProposals[questSelection]);
 
       const pairs = await Promise.all(purgatory.map(async (item) => {
+        let disabled = true;
+        let remainingTime = 0;
+
+        let elapsedSinceEnd = Math.round((new Date()).getTime() / 1000) - item.EndTime;
+        if (elapsedSinceEnd >= 0) {
+          disabled = false;
+        } else {
+          remainingTime = Math.abs(elapsedSinceEnd);
+        }
+        if (globalEnum === "reward") {
+          disabled = false;
+        }
+
         return {
           index: item.Index,
           fulfilled: item.Fulfilled,
           started: item.Started,
+          disabled,
+          remainingTime,
           depositsMints: [...item.DepositingLeft !== null ? item.DepositingLeft : [], ...item.DepositingRight !== null ? item.DepositingRight : []],
           depositsMetadata: await Promise.all(
             (
@@ -293,31 +527,57 @@ export const QuestedGalleryItems = ({onSelection}) => {
   return (
     <StyledCard className="xquesting-enrollment-container">
       <Grid justifyContent="center" alignItems="center" container sx={{}}>
-        <QuestedGalleryItemsHeader quest={questSelection} />
-        {nftsQuested.map(({depositsMetadata}, pairIndex) => (
+        <QuestedGalleryItemsHeader
+          quest={questSelection}
+          kpis={[
+            quests.hasOwnProperty(questSelection) && quests[questSelection].StakingConfig !== null ? "stakingReward" : "",
+          ]}
+        />
+        {nftsQuested.map(({depositsMetadata, disabled, remainingTime}, pairIndex) => (
           <StyledCard>
             <Grid container item key={pairIndex} justifyContent="center" >
               <Grid item xs={12} sx={{display: 'flex', justifyContent: 'center'}}>
-                <Box>
-                  <Button
-                    style={{fontSize: '1rem', margin: '5px'}}
-                    onClick={(event) => {
-                      console.log(".........");
-                      setRecoveryState((prev) => {
-                        const clone = Object.assign([], prev)
-                        clone[pairIndex] = !clone[pairIndex];
-                        return clone;
-                      });
-                      // onSelection(event, pairIndex);
-                    }}
-                    size="small"
-                  >
-                    {
-                      //@ts-ignore
-                      buttonText(recoveryState[pairIndex])
-                    }
-                  </Button>
-                </Box>
+                <Grid item xs={6} sx={{display: 'flex', justifyContent: 'center'}}>
+                  <Box>
+                    <Button
+                      disabled={disabled}
+                      style={{fontSize: '1rem', margin: '5px'}}
+                      onClick={(event) => {
+                        console.log(".........");
+                        setRecoveryState((prev) => {
+                          const clone = Object.assign([], prev)
+                          clone[pairIndex] = !clone[pairIndex];
+                          return clone;
+                        });
+                        // onSelection(event, pairIndex);
+                      }}
+                      size="small"
+                    >
+                      {
+                        //@ts-ignore
+                        buttonText(recoveryState[pairIndex])
+                      }
+                    </Button>
+                  </Box>
+                </Grid>
+                <Grid item xs={6} sx={{display: 'flex', justifyContent: 'center'}}>
+                  <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                    <Stack>
+                      <Typography
+                        align="right"
+                        variant="h5"
+                      >
+                        Time Remaining
+                      </Typography>
+                      <Typography
+                        align="right"
+                        variant="h5"
+                      >
+                        {getHumanReadableTime(remainingTime)}
+                      </Typography>
+                    </Stack>
+                  </Box>
+                </Grid>
               </Grid>
               <Grid item xs={12} sx={{display: 'flex', justifyContent: 'center'}}>
                 {depositsMetadata.map((depositMetadata, nftIndex) => (
