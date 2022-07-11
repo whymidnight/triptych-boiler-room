@@ -1,7 +1,7 @@
 import {makeStyles} from '@mui/styles';
 import {Box, Grid, Typography, TextField, Button, Select, MenuItem} from "@mui/material";
 import {StyledCard} from "src/components/cards";
-import {useMemo, useState, useEffect, useCallback} from 'react';
+import {useMemo, useState, useEffect, useCallback, forwardRef} from 'react';
 import {Connection, PublicKey} from "@solana/web3.js";
 import {useWallet} from "@solana/wallet-adapter-react";
 import FormControl from '@mui/material/FormControl';
@@ -9,6 +9,15 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import InputLabel from '@mui/material/InputLabel';
 import InputAdornment from '@mui/material/InputAdornment';
 import {Transaction, Message} from "@solana/web3.js";
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert, {AlertProps} from '@mui/material/Alert';
+
+const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
+  props,
+  ref,
+) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 
 declare function get_swaps(oracle: String): Promise<any>;
@@ -20,14 +29,23 @@ declare function invoke_swap(
 ): Promise<any>;
 // @ts-ignore
 export const XSwap = () => {
-  const MINT = new PublicKey("GgYhiW7AqBGETa5d5Lb27gZbfNvcPF5b3HA3sTsBicbp");
-  const ORACLE = new PublicKey("DnanY6jJYkHtFeTUVpioZbf6NXE8NhfpDje7ayxXp8x3");
+  const ORACLE = new PublicKey("DVZrzRJ5n7YBULo36gf66WDEvdoMcK6bsN9HmSsuFV3d");
   const wallet = useWallet();
   const [swaps, setSwaps] = useState([]);
   const [selectedFrom, setSelectedFrom] = useState(-1);
   const [selectedTo, setSelectedTo] = useState(-1);
   const [balance, setBalance] = useState(0.0);
   const [amount, setAmount] = useState(0.0);
+  const [open, setOpen] = useState(false);
+  const [openMessage, setOpenMessage] = useState("");
+
+  const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpen(false);
+  };
 
   const connection = useMemo(
     () => new Connection("https://devnet.genesysgo.net"),
@@ -45,25 +63,37 @@ export const XSwap = () => {
       );
 
       if (Object.keys(selectQuestIx).length > 0) {
-        const selectQuestTx = Transaction.populate(
-          new Message(selectQuestIx.message)
-        );
-        const recentBlockhash = (
-          await connection.getRecentBlockhash("finalized")
-        ).blockhash;
-        selectQuestTx.recentBlockhash = recentBlockhash;
+        try {
+          const selectQuestTx = Transaction.populate(
+            new Message(selectQuestIx.message)
+          );
+          const recentBlockhash = (
+            await connection.getRecentBlockhash("finalized")
+          ).blockhash;
+          selectQuestTx.recentBlockhash = recentBlockhash;
 
-        const signature = await wallet.sendTransaction(
-          selectQuestTx,
-          connection
-        );
-        console.log(signature);
-        await connection.confirmTransaction(signature, "confirmed");
+          setOpenMessage("Please Approve Swap Transaction.");
+          setOpen(true);
+          const signature = await wallet.sendTransaction(
+            selectQuestTx,
+            connection
+          );
+          setOpen(true);
+          setOpenMessage("Swap Transaction Submitted.");
+          console.log(signature);
+          await connection.confirmTransaction(signature, "confirmed");
+          setOpen(true);
+          setOpenMessage("Swap Transaction Succeeded.");
+          setBalance(balance - amount);
+        } catch (e) {
+          setOpen(true);
+          setOpenMessage("Swap Transaction Failed. :(");
+        }
       }
     }
     invokeSwap();
 
-  }, [swaps, selectedFrom, amount]);
+  }, [swaps, selectedFrom, amount, balance, setOpen, setOpenMessage]);
 
   const onSwapSelect = useCallback((event, side, index) => {
     console.log(side, index, swaps[index]);
@@ -133,6 +163,20 @@ export const XSwap = () => {
         justifyContent: 'center',
       }}
     >
+          <Snackbar
+            open={open}
+            autoHideDuration={6000}
+            onClose={handleClose}
+            sx={{zIndex: 100000000}}
+            anchorOrigin={{
+              vertical: "top",
+              horizontal: "center"
+            }}
+          >
+        <Alert onClose={handleClose} severity="success" sx={{width: '100%'}}>
+          {openMessage}
+        </Alert>
+      </Snackbar>
       <Box >
         <StyledCard className="swap-container" >
           <Grid container item xs={12}>
@@ -146,7 +190,7 @@ export const XSwap = () => {
             <Grid item xs={6}>
               <StyledCard className="swap-card">
                 <Button onClick={onInvokeSwap}>
-                  <Typography gutterBottom sx={{fontSize: '1.5rem'}} variant="h5" component="div">
+                  <Typography sx={{fontSize: '1.5rem'}} variant="h5" component="div">
                     Swap!
                   </Typography>
                 </Button>
