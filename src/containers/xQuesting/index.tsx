@@ -534,8 +534,8 @@ export const QuestsGallery = () => {
               setOpenMessage("Quest Withdrawal Transaction Succeeded.");
               await connection.confirmTransaction(signature, "confirmed");
             } catch (e) {
-                setOpenMessage("Quest Withdrawal Transaction Failed. :(");
-                setOpen(true);
+              setOpenMessage("Quest Withdrawal Transaction Failed. :(");
+              setOpen(true);
             }
           }
         }
@@ -631,8 +631,8 @@ export const QuestsGallery = () => {
             setOpen(true);
             setOpenMessage("Quest End Transaction Succeeded!");
           } catch (e) {
-              setOpenMessage("Quest End Transaction Failed. :(");
-              setOpen(true);
+            setOpenMessage("Quest End Transaction Failed. :(");
+            setOpen(true);
           }
         }
         setQuestsSelection("");
@@ -876,7 +876,6 @@ export const QuestsGallery = () => {
   const onQuestSelection = useCallback(
     (_, quest) => {
       async function selectQuest() {
-        console.log(quest);
         const selectQuestIx = JSON.parse(
           String.fromCharCode(
             // @ts-ignore
@@ -885,19 +884,31 @@ export const QuestsGallery = () => {
         );
 
         if (Object.keys(selectQuestIx).length > 0) {
-          const selectQuestTx = Transaction.populate(
-            new Message(selectQuestIx.message)
-          );
-          const recentBlockhash = (
-            await connection.getRecentBlockhash("finalized")
-          ).blockhash;
-          selectQuestTx.recentBlockhash = recentBlockhash;
-          const signature = await wallet.sendTransaction(
-            selectQuestTx,
-            connection
-          );
-          console.log(signature);
-          await connection.confirmTransaction(signature, "confirmed");
+          try {
+            const selectQuestTx = Transaction.populate(
+              new Message(selectQuestIx.message)
+            );
+            const recentBlockhash = (
+              await connection.getRecentBlockhash("finalized")
+            ).blockhash;
+            selectQuestTx.recentBlockhash = recentBlockhash;
+            setOpenMessage("Please Approve Quest Selection Transaction.")
+            setOpen(true);
+            const signature = await wallet.sendTransaction(
+              selectQuestTx,
+              connection
+            );
+            setOpenMessage("Quest Selection Submitted.")
+            setOpen(true);
+            console.log(signature);
+            await connection.confirmTransaction(signature, "confirmed");
+            setOpenMessage("Quest Selection Succeeded.")
+            setOpen(true);
+          } catch (e) {
+            setOpen(true);
+            setOpenMessage("Quest Selection Failed. :(")
+            return;
+          }
         }
         setShowCompleted(false);
         setResync(resync + 1);
@@ -931,6 +942,8 @@ export const QuestsGallery = () => {
       setShowCompleted,
       setActiveQuestProposals,
       setGlobalEnum,
+      setOpen,
+      setOpenMessage,
     ]
   );
 
