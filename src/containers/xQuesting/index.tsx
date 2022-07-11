@@ -963,18 +963,29 @@ export const QuestsGallery = () => {
         );
 
         if (Object.keys(startQuestsIx).length > 0) {
-          const startQuestsTx = Transaction.populate(
-            new Message(startQuestsIx.message)
-          );
-          startQuestsTx.recentBlockhash = (
-            await connection.getRecentBlockhash("finalized")
-          ).blockhash;
-          const signature = await wallet.sendTransaction(
-            startQuestsTx,
-            connection
-          );
-          console.log(signature);
-          await connection.confirmTransaction(signature, "confirmed");
+          try {
+            const startQuestsTx = Transaction.populate(
+              new Message(startQuestsIx.message)
+            );
+            startQuestsTx.recentBlockhash = (
+              await connection.getRecentBlockhash("finalized")
+            ).blockhash;
+            setOpen(true);
+            setOpenMessage("Please Approve Start Quest Transaction.");
+            const signature = await wallet.sendTransaction(
+              startQuestsTx,
+              connection
+            );
+            setOpenMessage("Start Quest Transaction Submitted.");
+            setOpen(true);
+            console.log(signature);
+            await connection.confirmTransaction(signature, "confirmed");
+            setOpenMessage("Start Quest Transaction Succeeded.");
+            setOpen(true);
+          } catch (e) {
+            setOpen(true);
+            setOpenMessage("Start Quest Transaction Failed.");
+          }
           setQuestsProgression(0);
         }
       }
@@ -989,6 +1000,8 @@ export const QuestsGallery = () => {
       wallet,
       setQuestsProgression,
       activeQuestProposals,
+      setOpen,
+      setOpenMessage,
     ]
   );
 

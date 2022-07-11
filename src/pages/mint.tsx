@@ -28,7 +28,7 @@ export const MintPage: FC = () => {
           />
           <Mint
             candyMachineId={new anc.web3.PublicKey(
-              "4Ei6S1UzKdJB5jEQ62YJYBAirVTnivoqFDyFFRaqbzQ6"
+              "CHqwFhuXcUcoCWy6qwyMFYjHbzQusY7R86RVSkXFCZoj"
             )}
             connection={connection}
             rpcHost={rpcHost}

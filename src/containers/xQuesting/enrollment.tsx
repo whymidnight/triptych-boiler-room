@@ -188,7 +188,7 @@ export const NFTGalleryItems = ({onSelection}) => {
           .filter((item) => {
             return (
               item.offchainMetadata.properties.creators[0].address ===
-              "2zJ3v9EHP5eStxMF7qkPS8KX4uUU9JTqk74F987XmkAo"
+              "ApAKPwwVf12E5BfUho8HL59bEQ6nbdh5muTcERT1uYsx"
             );
           }),
       });
