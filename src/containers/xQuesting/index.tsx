@@ -117,7 +117,7 @@ declare function get_rewards(
   questIndex: String
 ): Promise<any>;
 
-export const ORACLE = new PublicKey("43Lcenu9HrorSd39rjKEiaNYCLurwwkzz4aGCL5YUoGe");
+export const ORACLE = new PublicKey("46jQ3RbaoXzyRhab2FRcwCcn7oHTEugdwn7JShXmmEHF");
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,
@@ -177,13 +177,13 @@ export const QuestsGalleryItems = ({
                           {
                             //@ts-ignore
                             String(
-                              "Debug: " +
-                              //@ts-ignore
-                              quests[quest].Index +
-                              " Name: " +
-                              //@ts-ignore
-                              quests[quest].Name
+                              " Name:"
                             )
+                          }
+                        </Typography>
+                        <Typography gutterBottom variant="h5" component="div">
+                          {
+                              quests[quest].Name
                           }
                         </Typography>
                         <Typography
@@ -470,12 +470,19 @@ export const QuestsGallery = () => {
 
       fetchQuestProposals();
 
+      console.log("....")
+
       if (questsProgression === 1) {
+        console.log(",,,,", stakingProgression, quests[questSelection].PairsConfig.Left)
         if (stakingProgression - 1 < 0) {
           setQuestsProgression(questsProgression - 1);
           return;
         }
-        setStakingProgression(stakingProgression - 1);
+        if (stakingProgression === 1 && quests[questSelection].PairsConfig.Left === 0) {
+          setQuestsProgression(0);
+          return;
+        }
+        setStakingProgression(stakingProgression - 1 % 2);
         return;
       }
       if (questsProgression - 1 === 0)
@@ -490,7 +497,7 @@ export const QuestsGallery = () => {
       if (questsProgression < 0) setQuestsProgression(questsProgression + 1);
 
     },
-    [questsProgression, setQuestsProgression, stakingProgression]
+    [quests, questSelection, questsProgression, setQuestsProgression, stakingProgression]
   );
   const onRecover = useCallback(
     (_, quest) => {
@@ -915,7 +922,15 @@ export const QuestsGallery = () => {
         setQuestsSelection(quest);
         setQuestsProgression(1);
         setGlobalEnum("enrollment");
+
+        /*
+          Set appropriate Staking Progression
+            on `quest.PairsConfig`
+        */
         setStakingProgression(0);
+        if (quests[quest].PairsConfig.Left === 0) {
+          setStakingProgression(1);
+        }
       }
 
       setActiveQuestProposals([]);
@@ -935,6 +950,7 @@ export const QuestsGallery = () => {
       resync,
       nfts,
       wallet,
+      quests,
       setQuestsSelection,
       setQuestsProgression,
       setNftsSelection,
@@ -1257,7 +1273,7 @@ export const QuestsGallery = () => {
                     </StyledCard>
                   </Grid>
                 )}
-                {questsProgression === 2 && (
+                {(questsProgression === 2 || (globalEnum === "recover" && activeQuestProposals.length > 0)) && (
                   <Grid
                     item
                     xs={topBarXsPoints}

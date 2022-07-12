@@ -20,7 +20,7 @@ export const MintPage: FC = () => {
         <div className="App-header">
           <Mint
             candyMachineId={new anc.web3.PublicKey(
-              "KEnXoCUsyTeWbUkjMqxeaNYMnkmztZqWNSUZzRbW4yd"
+              "BGcbvPi9RSNbrQZhmAYRPwhyryxoRLXSLt6n8QoPfEM1"
             )}
             connection={connection}
             rpcHost={rpcHost}
@@ -28,7 +28,7 @@ export const MintPage: FC = () => {
           />
           <Mint
             candyMachineId={new anc.web3.PublicKey(
-              "CHqwFhuXcUcoCWy6qwyMFYjHbzQusY7R86RVSkXFCZoj"
+              "CRopuXuzNQbb1pQjXGiUJUcrYNrFywDYyn7XUXoizPZj"
             )}
             connection={connection}
             rpcHost={rpcHost}

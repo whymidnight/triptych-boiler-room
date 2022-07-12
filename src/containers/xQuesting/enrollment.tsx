@@ -1,4 +1,5 @@
 import CardActions from "@mui/material/CardActions";
+import {PublicKey} from "@solana/web3.js";
 import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
 import Button from "@mui/material/Button";
@@ -172,9 +173,9 @@ export const NFTGalleryItems = ({onSelection}) => {
             );
           })
           .filter((item) => {
+            console.log(quests[questSelection].PairsConfig.LeftCreators);
             return (
-              item.offchainMetadata.properties.creators[0].address ===
-              "Gzr2ebsdPQJ15yWwpC4fFan7AmmFDvzQfkQ3qSGmknZ3"
+              quests[questSelection].PairsConfig.LeftCreators.findIndex((whitelistedCM) => (item.metadataAccount.data.data.creators[0].address.toString() === whitelistedCM)) !== -1
             );
           }),
         genTwoDraggable: nftsWithMetadata
@@ -187,8 +188,7 @@ export const NFTGalleryItems = ({onSelection}) => {
           })
           .filter((item) => {
             return (
-              item.offchainMetadata.properties.creators[0].address ===
-              "ApAKPwwVf12E5BfUho8HL59bEQ6nbdh5muTcERT1uYsx"
+              quests[questSelection].PairsConfig.RightCreators.findIndex((whitelistedCM) => (item.metadataAccount.data.data.creators[0].address.toString() === whitelistedCM)) !== -1
             );
           }),
       });
