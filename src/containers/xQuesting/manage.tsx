@@ -351,6 +351,7 @@ export const QuestedGalleryItemsHeader = ({quest, kpis}) => {
                 String.fromCharCode(...questsKPIsJson)
             );
 
+            // console.log(JSON.stringify(questsKPIs, null, 2))
             setQuestsKPIs(questsKPIs);
         }
         fetchQuests();
