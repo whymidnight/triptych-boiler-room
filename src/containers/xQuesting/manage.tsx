@@ -380,35 +380,6 @@ export const QuestedGalleryItemsHeader = ({quest, kpis}) => {
         setKpis(old);
     }, [questsKPIs, setKpis]);
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setResync(resync + 1);
-        }, 15 * 1000);
-        return () => clearInterval(interval);
-    }, [resync, setResync]);
-
-    useEffect(() => {
-        async function fetchQuests() {
-            if (!wallet.publicKey) {
-                return;
-            }
-
-            console.log("refreshing KPIS");
-            const questsKPIsJson = await get_quests_kpis(
-                ORACLE.toString(),
-                wallet.publicKey.toString(),
-            );
-            const questsKPIs = JSON.parse(
-                String.fromCharCode(...questsKPIsJson)
-            );
-            console.log("refreshed KPIS");
-
-            // console.log(JSON.stringify(questsKPIs, null, 2))
-            setQuestsKPIs(questsKPIs);
-        }
-        fetchQuests();
-    }, [wallet, resync, setQuestsKPIs]);
-
 
     const stakingRewards = useCallback(() => {
         console.log(questsProposals[quest])

@@ -46,7 +46,8 @@ import {
     activeQuestProposalsAtom,
     globalEnumAtom,
     stakingProgressionAtom,
-    questsKPIsAtom
+    questsKPIsAtom,
+    questTabsAtom,
 } from "./state/atoms";
 import {StyledCard} from "../../components/cards";
 
@@ -60,6 +61,7 @@ import Tab from '@mui/material/Tab';
 import {NFTGalleryItems, QuestStart} from "./enrollment";
 import {QuestedGalleryItems, QuestedGalleryItemsHeader} from "./manage";
 import {QuestAction} from "./rewards";
+import {exec} from "child_process";
 
 declare function get_quests(oracle: String): Promise<any>;
 declare function get_quests_kpis(
@@ -172,7 +174,7 @@ export const QuestsGalleryItems = ({
     const [quested] = useRecoilState(questedAtom);
     const [nftsQuestedExhaust] = useRecoilState(nftsQuestedExhaustAtom);
     const [questsKeys, setQuestsKeys] = useState([]);
-    const [tab, setTab] = useState(0);
+    const [tab, setTab] = useRecoilState(questTabsAtom);
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setTab(newValue);
     };
@@ -353,7 +355,7 @@ export const QuestsGalleryItems = ({
                                                     onClick={(event) => onSelection(event, quest)}
                                                     size="small"
                                                 >
-                                                    Start
+                                                    Begin
                                                 </Button>
                                                 {questsProposals.hasOwnProperty(quest) &&
                                                     questsProposals[quest].filter(
@@ -450,6 +452,29 @@ export const QuestsGallery = () => {
 
         setOpen(false);
     };
+
+    useEffect(() => {
+        async function fetchQuests() {
+            if (!wallet.publicKey) {
+                return;
+            }
+
+            console.log("refreshing KPIS");
+            const questsKPIsJson = await get_quests_kpis(
+                ORACLE.toString(),
+                wallet.publicKey.toString(),
+            );
+            const questsKPIs = JSON.parse(
+                String.fromCharCode(...questsKPIsJson)
+            );
+            console.log("refreshed KPIS");
+
+            // console.log(JSON.stringify(questsKPIs, null, 2))
+            setQuestsKPIs(questsKPIs);
+        }
+        fetchQuests();
+    }, [wallet, resync, setQuestsKPIs]);
+
 
 
     useEffect(() => {
@@ -608,6 +633,7 @@ export const QuestsGallery = () => {
                                 setOpen(true);
                                 setOpenMessage("Quest Withdrawal Transaction Succeeded.");
                                 await connection.confirmTransaction(signature, "confirmed");
+
                             } catch (e) {
                                 setOpenMessage("Quest Withdrawal Transaction Failed. :(");
                                 setOpen(true);
@@ -722,29 +748,27 @@ export const QuestsGallery = () => {
                             setOpen(true);
                             setOpenMessage("Quest End Transaction Submitted!");
                             console.log(signature);
-                            await connection.confirmTransaction(signature, "confirmed");
                             setOpen(true);
-                            setOpenMessage("Quest End Transaction Succeeded!");
+                            setOpenMessage("Refreshing!");
 
-                            // refresh proposals
-                            setOpen(true);
-                            setOpenMessage("Refreshing...");
-                            await (new Promise(resolve => setTimeout(resolve, 2 * 1000)));
+                            connection.confirmTransaction(signature, "finalized").then(async (_) => {
+                                if (quests[questSelection].Rewards.length > 0) {
+                                    const transactionResponse = await connection.getTransaction(signature);
+                                    if (transactionResponse.meta.logMessages.filter((line) => line.includes("minted reward"))) {
+                                        setOpen(true);
+                                        setOpenMessage("Congratulations! You won!");
+                                    } else {
+                                        setOpen(true);
+                                        setOpenMessage("Sorry! You did not win a Quest Reward!");
+                                    }
+                                }
+                            });
 
-                            const questsProposalsJson = await get_quests_proposals(
-                                ORACLE.toString(),
-                                wallet.publicKey.toString()
-                            );
-                            const questsProposals = JSON.parse(
-                                String.fromCharCode(...questsProposalsJson)
-                            );
 
-                            setQuestsProposals(questsProposals);
-                            setOpen(true);
-                            setOpenMessage("Refreshed!");
 
 
                         } catch (e) {
+                            console.log(e)
                             setOpenMessage("Quest End Transaction Failed. :(");
                             setOpen(true);
                         }
@@ -762,25 +786,45 @@ export const QuestsGallery = () => {
                 setQuestsProgression(0);
             }
 
-            if (questsProgression === -1) {
-                if (globalEnum === "recover") {
-                    flush();
-                }
-                if (globalEnum === "reward") {
-                    claimRewards();
-                }
-                if (globalEnum === "manage") {
-                    endQuests();
-                }
-            } else {
-                setShowStarted(false);
-                setShowCompleted(false);
-                setQuestsSelection(quest);
-                setQuestsProgression(-1);
-                setGlobalEnum("recover");
+            async function gc() {
+                const questsProposalsJson = await get_quests_proposals(
+                    ORACLE.toString(),
+                    wallet.publicKey.toString()
+                );
+                const questsProposals = JSON.parse(
+                    String.fromCharCode(...questsProposalsJson)
+                );
+
+                setQuestsProposals(questsProposals);
+
             }
+
+            async function executor() {
+                if (questsProgression === -1) {
+                    if (globalEnum === "recover") {
+                        await flush();
+                    }
+                    if (globalEnum === "reward") {
+                        await claimRewards();
+                    }
+                    if (globalEnum === "manage") {
+                        await endQuests();
+                    }
+                } else {
+                    setShowStarted(false);
+                    setShowCompleted(false);
+                    setQuestsSelection(quest);
+                    setQuestsProgression(-1);
+                    setGlobalEnum("recover");
+                }
+
+                await gc();
+            }
+
+            executor();
+
         },
-        [questsProgression, setQuestsProgression, recoveryState, setOpen, setOpenMessage, setQuestsProposals]
+        [wallet, quests, questsProgression, setQuestsProgression, recoveryState, setOpen, setOpenMessage, setQuestsProposals]
     );
     const onNext = useCallback(
         (_) => {
@@ -940,14 +984,27 @@ export const QuestsGallery = () => {
                 return;
             }
 
+            async function gc() {
+                const questsProposalsJson = await get_quests_proposals(
+                    ORACLE.toString(),
+                    wallet.publicKey.toString()
+                );
+                const questsProposals = JSON.parse(
+                    String.fromCharCode(...questsProposalsJson)
+                );
+
+                setQuestsProposals(questsProposals);
+
+            }
+
             async function executor() {
                 if (questsProgression > 0) {
                     if (quests[questSelection].PairsConfig.Left + quests[questSelection].PairsConfig.Right === [...nftsSelection[0], ...nftsSelection[1]].length) {
                         console.log("....");
-                        newQuestProposal();
+                        await newQuestProposal();
                     } else {
                         if (quests[questSelection].PairsConfig.Left === 1 && quests[questSelection].PairsConfig.Right === 0) {
-                            newQuestProposal();
+                            await newQuestProposal();
                         } else {
                             setStakingProgression((1 + stakingProgression) % 2);
                         }
@@ -956,11 +1013,13 @@ export const QuestsGallery = () => {
 
                 if (questsProgression < 0) {
                     if (showCompleted) {
-                        doRngs();
+                        await doRngs();
                     } else {
                         setQuestsProgression(-2);
                     }
                 }
+
+                await gc();
             }
 
             executor();
@@ -1431,7 +1490,7 @@ export const QuestsGallery = () => {
                     )}
                     <Snackbar
                         open={open}
-                        autoHideDuration={6000}
+                        autoHideDuration={10 * 1000}
                         onClose={handleClose}
                         sx={{zIndex: 100000000}}
                         anchorOrigin={{

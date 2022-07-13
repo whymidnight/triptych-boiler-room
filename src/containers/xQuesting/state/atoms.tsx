@@ -93,3 +93,8 @@ export const questsKPIsAtom = atom({
   key: "questsKPIs",
   default: {},
 });
+
+export const questTabsAtom = atom({
+  key: "questTabs",
+  default: 0,
+});
