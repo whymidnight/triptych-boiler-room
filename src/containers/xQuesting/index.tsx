@@ -117,7 +117,7 @@ declare function get_rewards(
   questIndex: String
 ): Promise<any>;
 
-export const ORACLE = new PublicKey("46jQ3RbaoXzyRhab2FRcwCcn7oHTEugdwn7JShXmmEHF");
+export const ORACLE = new PublicKey("42bi4dZPAfWdp6bEGpQXUfwAfJrWGhxCsf8NfLivkHqc");
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,

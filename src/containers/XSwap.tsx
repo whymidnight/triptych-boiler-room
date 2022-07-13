@@ -29,7 +29,7 @@ declare function invoke_swap(
 ): Promise<any>;
 // @ts-ignore
 export const XSwap = () => {
-  const ORACLE = new PublicKey("DVZrzRJ5n7YBULo36gf66WDEvdoMcK6bsN9HmSsuFV3d");
+  const ORACLE = new PublicKey("2TUfXJrUmadQyC5XUhgQefsvq3S8pU6P54cjeAVQmxnc");
   const wallet = useWallet();
   const [swaps, setSwaps] = useState([]);
   const [selectedFrom, setSelectedFrom] = useState(-1);
