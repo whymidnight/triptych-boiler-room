@@ -29,7 +29,7 @@ import {
 
 import axios from 'axios';
 import {useWallet} from "@solana/wallet-adapter-react";
-import {ORACLE} from './index';
+import {ORACLE, CONNECTION} from './index';
 import moment from "moment";
 
 declare function get_quests_kpis(
@@ -38,7 +38,7 @@ declare function get_quests_kpis(
 ): Promise<any>;
 
 const timeScalars = [1000, 60, 60, 24, 7, 52];
-const timeUnits = ['ms', 'seconds', 'minute', 'hour', 'day', 'week', 'year'];
+const timeUnits = ['ms', 'seconds', 'minutes', 'hours', 'days', 'weeks', 'years'];
 
 const getHumanReadableTime = (s, dp = 0) => {
     let ms = s * 1000;
@@ -59,7 +59,7 @@ export const QuestedGalleryItemsHeader = ({quest, kpis}) => {
     const [resync, setResync] = useRecoilState(resyncAtom);
     const [kpisElems, setKpis] = useState([]);
 
-    const kpiEnums = ["entryCost", "stakingReward", "totalStaked", "type"];
+    const kpiEnums = ["entryCost", "stakingReward", "totalStaked", "type", "payoutMeta"];
 
     useEffect(() => {
         let old = [];
@@ -175,6 +175,31 @@ export const QuestedGalleryItemsHeader = ({quest, kpis}) => {
                                     sx={{paddingTop: "2px"}}
                                 >
                                     {quests[quest].StakingConfig ? "Staking Quest" : "Normal Quest"}
+                                </Typography>
+                            </Stack>
+                        </Grid>
+                    );
+                    break;
+                }
+                case "payoutMeta": {
+                    old.push(
+                        <Grid item sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}} xs={6 / kpisNormalized.length}>
+                            <Stack>
+                                <Typography
+                                    gutterBottom
+                                    variant="h5"
+                                    component="div"
+                                    sx={{paddingTop: "2px"}}
+                                >
+                                    {quests[quest].StakingConfig.YieldPer / Math.pow(10, quests[quest].StakingConfig.Decimals)} {quests[quest].StakingConfig.Name}
+                                </Typography>
+                                <Typography
+                                    gutterBottom
+                                    variant="h5"
+                                    component="div"
+                                    sx={{paddingTop: "2px"}}
+                                >
+                                    Per {getHumanReadableTime(quests[quest].StakingConfig.YieldPerTime)}
                                 </Typography>
                             </Stack>
                         </Grid>
@@ -311,6 +336,31 @@ export const QuestedGalleryItemsHeader = ({quest, kpis}) => {
                                     sx={{paddingTop: "2px"}}
                                 >
                                     {quests[quest].StakingConfig ? "Staking Quest" : "Normal Quest"}
+                                </Typography>
+                            </Stack>
+                        </Grid>
+                    );
+                    break;
+                }
+                case "payoutMeta": {
+                    old.push(
+                        <Grid item sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}} xs={6 / kpisNormalized.length}>
+                            <Stack>
+                                <Typography
+                                    gutterBottom
+                                    variant="h5"
+                                    component="div"
+                                    sx={{paddingTop: "2px"}}
+                                >
+                                    {quests[quest].StakingConfig.YieldPer / Math.pow(10, quests[quest].StakingConfig.Decimals)} {quests[quest].StakingConfig.Name}
+                                </Typography>
+                                <Typography
+                                    gutterBottom
+                                    variant="h5"
+                                    component="div"
+                                    sx={{paddingTop: "2px"}}
+                                >
+                                    Per {getHumanReadableTime(quests[quest].StakingConfig.YieldPerTime)}
                                 </Typography>
                             </Stack>
                         </Grid>
@@ -462,7 +512,7 @@ export const QuestedGalleryItems = ({onSelection}) => {
                         (
                             await Metaplex.make(
                                 new Connection(
-                                    "https://sparkling-dark-shadow.solana-devnet.quiknode.pro/0e9964e4d70fe7f856e7d03bc7e41dc6a2b84452/"
+                                    CONNECTION,
                                 )
                             )
                                 .nfts()

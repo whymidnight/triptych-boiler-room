@@ -14,6 +14,7 @@ import {PublicKey} from "@solana/web3.js";
 import {useWallet} from "@solana/wallet-adapter-react";
 import {Connection} from "@solana/web3.js";
 import axios from "axios";
+
 /*
 import {
   get_quests,
@@ -51,6 +52,9 @@ import {StyledCard} from "../../components/cards";
 
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert, {AlertProps} from '@mui/material/Alert';
+import AppBar from '@mui/material/AppBar';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 
 
 import {NFTGalleryItems, QuestStart} from "./enrollment";
@@ -118,6 +122,7 @@ declare function get_rewards(
 ): Promise<any>;
 
 export const ORACLE = new PublicKey("42bi4dZPAfWdp6bEGpQXUfwAfJrWGhxCsf8NfLivkHqc");
+export const CONNECTION = "https://devnet.genesysgo.net";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
     props,
@@ -126,6 +131,32 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
+
+interface TabPanelProps {
+    children?: React.ReactNode;
+    index: number;
+    value: number;
+}
+
+function TabPanel(props: TabPanelProps) {
+    const {children, value, index, ...other} = props;
+
+    return (
+        <div
+            role="tabpanel"
+            hidden={value !== index}
+            id={`simple-tabpanel-${index}`}
+            aria-labelledby={`simple-tab-${index}`}
+            {...other}
+        >
+            {value === index && (
+                <Box sx={{p: 3}}>
+                    <Typography>{children}</Typography>
+                </Box>
+            )}
+        </div>
+    );
+}
 
 
 //@ts-ignore
@@ -140,206 +171,241 @@ export const QuestsGalleryItems = ({
     const [quests] = useRecoilState(questsAtom);
     const [quested] = useRecoilState(questedAtom);
     const [nftsQuestedExhaust] = useRecoilState(nftsQuestedExhaustAtom);
-    const questsKeys = Object.keys(quests);
+    const [questsKeys, setQuestsKeys] = useState([]);
+    const [tab, setTab] = useState(0);
+    const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+        setTab(newValue);
+    };
+
+    // 4jAu28eBUWzqNkYCLC17rWBCDEhs47juszS6dsABpkrw, 6tzi4GYZMTrCv9gJi6iXBC2eheD9EZBMBUxM1WHAibd8
+    useEffect(() => {
+        const wlQuests = ["4jAu28eBUWzqNkYCLC17rWBCDEhs47juszS6dsABpkrw", "6tzi4GYZMTrCv9gJi6iXBC2eheD9EZBMBUxM1WHAibd8"];
+
+        const keys = Object.keys(quests);
+        switch (tab) {
+            case 0: {
+                setQuestsKeys(keys.filter((quest) => !wlQuests.some((wlQuest) => wlQuest === quest)));
+                break;
+            }
+            case 1: {
+                setQuestsKeys(keys.filter((quest) => wlQuests.some((wlQuest) => wlQuest === quest)));
+                break;
+            }
+        }
+    }, [quests, tab, setQuestsKeys])
 
     return (
-        <Grid justifyContent="center" alignItems="center" container>
-            {questsKeys.length > 0 &&
-                questsKeys.map((quest) => {
-                    return (
-                        <>
-                            <Grid xs={10} sm={3} key={quest}>
-                                <Box textAlign="center">
-                                    <StyledCard>
-                                        <Grid alignItems="center" justifyContent="center">
-                                            <Grid item xs={12} sx={{padding: '5% 0%'}}>
-                                                <QuestedGalleryItemsHeader
-                                                    quest={quest}
-                                                    kpis={[
-                                                        "totalStaked",
-                                                        quests[quest].StakingConfig !== null ? "stakingReward" : "",
-                                                    ]}
-                                                />
+        <>
+            <Tabs value={tab} onChange={handleTabChange} centered>
+                <Tab label="Staking Quests" />
+                <Tab label="Whitelist Quests" />
+            </Tabs>
+            <Grid justifyContent="center" alignItems="center" container>
+                {questsKeys.length > 0 &&
+                    questsKeys.map((quest) => {
+                        return (
+                            <>
+                                <Grid xs={10} sm={3} key={quest}>
+                                    <Box textAlign="center">
+                                        <StyledCard>
+                                            <Grid container alignItems="center" justifyContent="center">
+                                                <Grid item xs={12} sx={{padding: '5% 0%'}}>
+                                                    <QuestedGalleryItemsHeader
+                                                        quest={quest}
+                                                        kpis={[
+                                                            "totalStaked",
+                                                            quests[quest].StakingConfig !== null ? "stakingReward" : "",
+                                                        ]}
+                                                    />
+                                                </Grid>
+                                                <Grid item xs={12} sx={{padding: '5% 0%'}}>
+                                                    <QuestedGalleryItemsHeader
+                                                        quest={quest}
+                                                        kpis={[
+                                                            quests[quest].Tender !== null ? "entryCost" : "",
+                                                            "type",
+                                                        ]}
+                                                    />
+                                                </Grid>
+                                                <Grid item xs={12} sx={{padding: '5% 0%'}}>
+                                                    <QuestedGalleryItemsHeader
+                                                        quest={quest}
+                                                        kpis={[
+                                                            quests[quest].StakingConfig !== null ? "payoutMeta" : "",
+                                                        ]}
+                                                    />
+                                                </Grid>
                                             </Grid>
-                                            <Grid item xs={12} sx={{padding: '5% 0%'}}>
-                                                <QuestedGalleryItemsHeader
-                                                    quest={quest}
-                                                    kpis={[
-                                                        quests[quest].Tender !== null ? "entryCost" : "",
-                                                        "type",
-                                                    ]}
-                                                />
-                                            </Grid>
-                                        </Grid>
-                                        <CardContent>
-                                            <StyledCard sx={{padding: "5%"}}>
-                                                <Typography gutterBottom variant="h5" component="div">
-                                                    {
-                                                        //@ts-ignore
-                                                        String(
-                                                            " Name:"
-                                                        )
-                                                    }
-                                                </Typography>
-                                                <Typography gutterBottom variant="h5" component="div">
-                                                    {
-                                                        quests[quest].Name
-                                                    }
-                                                </Typography>
-                                            </StyledCard>
-                                            <Typography
-                                                gutterBottom
-                                                variant="h5"
-                                                component="div"
-                                                sx={{paddingTop: "2px"}}
-                                            >
-                                                Layout:
-                                            </Typography>
-                                            <Grid container>
-                                                <Grid item xs={5} sx={{padding: "10px"}}>
-                                                    <Typography
-                                                        align="right"
-                                                        gutterBottom
-                                                        variant="h5"
-                                                        component="div"
-                                                    >
+                                            <CardContent>
+                                                <StyledCard sx={{padding: "5%"}}>
+                                                    <Typography gutterBottom variant="h5" component="div">
                                                         {
                                                             //@ts-ignore
                                                             String(
-                                                                //@ts-ignore
-                                                                quests.hasOwnProperty(quest) ? quests[quest].PairsConfig.Left : 0
+                                                                "Name:"
                                                             )
                                                         }
                                                     </Typography>
-                                                </Grid>
-                                                <Grid item xs={7} sx={{padding: "10px"}}>
-                                                    <Typography
-                                                        align="left"
-                                                        gutterBottom
-                                                        variant="h5"
-                                                        component="div"
-                                                    >
+                                                    <Typography gutterBottom variant="h5" component="div">
                                                         {
-                                                            //@ts-ignore
-                                                            String("Gen One's")
+                                                            quests[quest].Name
                                                         }
                                                     </Typography>
-                                                </Grid>
-                                            </Grid>
-                                            <Grid container>
-                                                <Grid item xs={5} sx={{padding: "10px"}}>
-                                                    <Typography
-                                                        align="right"
-                                                        gutterBottom
-                                                        variant="h5"
-                                                        component="div"
-                                                    >
-                                                        {
-                                                            //@ts-ignore
-                                                            String(
+                                                </StyledCard>
+                                                <Typography
+                                                    gutterBottom
+                                                    variant="h5"
+                                                    component="div"
+                                                    sx={{paddingTop: "2px"}}
+                                                >
+                                                    Layout:
+                                                </Typography>
+                                                <Grid container>
+                                                    <Grid item xs={5} sx={{padding: "10px"}}>
+                                                        <Typography
+                                                            align="right"
+                                                            gutterBottom
+                                                            variant="h5"
+                                                            component="div"
+                                                        >
+                                                            {
                                                                 //@ts-ignore
-                                                                quests.hasOwnProperty(quest) ? quests[quest].PairsConfig.Right : 0
-                                                            )
-                                                        }
-                                                    </Typography>
-                                                </Grid>
-                                                <Grid item xs={7} sx={{padding: "10px"}}>
-                                                    <Typography
-                                                        align="left"
-                                                        gutterBottom
-                                                        variant="h5"
-                                                        component="div"
-                                                    >
-                                                        {
-                                                            //@ts-ignore
-                                                            String("Gen Two's")
-                                                        }
-                                                    </Typography>
-                                                </Grid>
-                                            </Grid>
-                                        </CardContent>
-                                        <CardActions style={{justifyContent: "center"}}>
-                                            <Button
-                                                style={{
-                                                    display: "flex",
-                                                    justifyContent: "center",
-                                                    alignItems: "center",
-                                                }}
-                                                disabled={
-                                                    questsProposals.hasOwnProperty(quest) &&
-                                                        questsProposals[quest].filter(
-                                                            //@ts-ignore
-                                                            ({Started, Finished}) => Started && !Finished
-                                                        ).length > 0
-                                                        ? false
-                                                        : true
-                                                }
-                                                onClick={(event) => onManage(event, quest)}
-                                                size="small"
-                                            >
-                                                Manage
-                                            </Button>
-                                            <Button
-                                                style={{
-                                                    display: "flex",
-                                                    justifyContent: "center",
-                                                    alignItems: "center",
-                                                }}
-                                                onClick={(event) => onSelection(event, quest)}
-                                                size="small"
-                                            >
-                                                Start
-                                            </Button>
-                                            {questsProposals.hasOwnProperty(quest) &&
-                                                questsProposals[quest].filter(
-                                                    (item) => !item.Started && !item.Withdrawn
-                                                ).length > 0 && (
-                                                    <Button
-                                                        style={{
-                                                            display: "flex",
-                                                            justifyContent: "center",
-                                                            alignItems: "center",
-                                                        }}
-                                                        onClick={(event) => onRecover(event, quest)}
-                                                        size="small"
-                                                    >
-                                                        Recover
-                                                    </Button>
-                                                )}
-                                            {quests.hasOwnProperty(quest) && quests[quest].StakingConfig !== null
-                                                && (
-                                                    <Button
-                                                        disabled={
-                                                            quests.hasOwnProperty(quest) &&
-                                                                quests[quest].StakingConfig !== null &&
-                                                                questsProposals.hasOwnProperty(quest) &&
-                                                                questsProposals[quest].filter(
+                                                                String(
                                                                     //@ts-ignore
-                                                                    ({Started, Finished}) => Started && !Finished
-                                                                ).length > 0
-                                                                ? false
-                                                                : true
-                                                        }
-                                                        onClick={(event) => onReward(event, quest)}
-                                                        size="small"
-                                                    >
-                                                        Rewards
-                                                    </Button>
-                                                )}
-                                        </CardActions>
-                                    </StyledCard>
-                                </Box>
-                            </Grid>
-                        </>
-                    );
-                })}
-        </Grid>
+                                                                    quests.hasOwnProperty(quest) ? quests[quest].PairsConfig.Left : 0
+                                                                )
+                                                            }
+                                                        </Typography>
+                                                    </Grid>
+                                                    <Grid item xs={7} sx={{padding: "10px"}}>
+                                                        <Typography
+                                                            align="left"
+                                                            gutterBottom
+                                                            variant="h5"
+                                                            component="div"
+                                                        >
+                                                            {
+                                                                //@ts-ignore
+                                                                String("Gen One's")
+                                                            }
+                                                        </Typography>
+                                                    </Grid>
+                                                </Grid>
+                                                <Grid container>
+                                                    <Grid item xs={5} sx={{padding: "10px"}}>
+                                                        <Typography
+                                                            align="right"
+                                                            gutterBottom
+                                                            variant="h5"
+                                                            component="div"
+                                                        >
+                                                            {
+                                                                //@ts-ignore
+                                                                String(
+                                                                    //@ts-ignore
+                                                                    quests.hasOwnProperty(quest) ? quests[quest].PairsConfig.Right : 0
+                                                                )
+                                                            }
+                                                        </Typography>
+                                                    </Grid>
+                                                    <Grid item xs={7} sx={{padding: "10px"}}>
+                                                        <Typography
+                                                            align="left"
+                                                            gutterBottom
+                                                            variant="h5"
+                                                            component="div"
+                                                        >
+                                                            {
+                                                                //@ts-ignore
+                                                                String("Gen Two's")
+                                                            }
+                                                        </Typography>
+                                                    </Grid>
+                                                </Grid>
+                                            </CardContent>
+                                            <CardActions style={{justifyContent: "center"}}>
+                                                <Button
+                                                    style={{
+                                                        display: "flex",
+                                                        justifyContent: "center",
+                                                        alignItems: "center",
+                                                    }}
+                                                    disabled={
+                                                        questsProposals.hasOwnProperty(quest) &&
+                                                            questsProposals[quest].filter(
+                                                                //@ts-ignore
+                                                                ({Started, Finished}) => Started && !Finished
+                                                            ).length > 0
+                                                            ? false
+                                                            : true
+                                                    }
+                                                    onClick={(event) => onManage(event, quest)}
+                                                    size="small"
+                                                >
+                                                    Manage
+                                                </Button>
+                                                <Button
+                                                    style={{
+                                                        display: "flex",
+                                                        justifyContent: "center",
+                                                        alignItems: "center",
+                                                    }}
+                                                    onClick={(event) => onSelection(event, quest)}
+                                                    size="small"
+                                                >
+                                                    Start
+                                                </Button>
+                                                {questsProposals.hasOwnProperty(quest) &&
+                                                    questsProposals[quest].filter(
+                                                        (item) => !item.Started && !item.Withdrawn
+                                                    ).length > 0 && (
+                                                        <Button
+                                                            style={{
+                                                                display: "flex",
+                                                                justifyContent: "center",
+                                                                alignItems: "center",
+                                                            }}
+                                                            onClick={(event) => onRecover(event, quest)}
+                                                            size="small"
+                                                        >
+                                                            Recover
+                                                        </Button>
+                                                    )}
+                                                {quests.hasOwnProperty(quest) && quests[quest].StakingConfig !== null
+                                                    && (
+                                                        <Button
+                                                            disabled={
+                                                                quests.hasOwnProperty(quest) &&
+                                                                    quests[quest].StakingConfig !== null &&
+                                                                    questsProposals.hasOwnProperty(quest) &&
+                                                                    questsProposals[quest].filter(
+                                                                        //@ts-ignore
+                                                                        ({Started, Finished}) => Started && !Finished
+                                                                    ).length > 0
+                                                                    ? false
+                                                                    : true
+                                                            }
+                                                            onClick={(event) => onReward(event, quest)}
+                                                            size="small"
+                                                        >
+                                                            Rewards
+                                                        </Button>
+                                                    )}
+                                            </CardActions>
+                                        </StyledCard>
+                                    </Box>
+                                </Grid>
+                            </>
+                        );
+                    })}
+            </Grid>
+        </>
     );
 };
 
 export const QuestsGallery = () => {
     const connection = useMemo(
-        () => new Connection("https://devnet.genesysgo.net"),
+        () => new Connection(CONNECTION),
         []
     );
 
@@ -421,7 +487,7 @@ export const QuestsGallery = () => {
             setQuestsKPIs(questsKPIs);
         }
         fetchQuests();
-    }, []);
+    }, [wallet]);
 
     useEffect(() => {
         async function fetchNfts() {
@@ -431,7 +497,7 @@ export const QuestsGallery = () => {
 
             let myNfts = await Promise.all(
                 (
-                    await Metaplex.make(new Connection("https://api.devnet.solana.com"))
+                    await Metaplex.make(new Connection(CONNECTION))
                         .nfts()
                         //@ts-ignore
                         .findAllByOwner(wallet.publicKey.toBase58())
@@ -659,6 +725,25 @@ export const QuestsGallery = () => {
                             await connection.confirmTransaction(signature, "confirmed");
                             setOpen(true);
                             setOpenMessage("Quest End Transaction Succeeded!");
+
+                            // refresh proposals
+                            setOpen(true);
+                            setOpenMessage("Refreshing...");
+                            await (new Promise(resolve => setTimeout(resolve, 2 * 1000)));
+
+                            const questsProposalsJson = await get_quests_proposals(
+                                ORACLE.toString(),
+                                wallet.publicKey.toString()
+                            );
+                            const questsProposals = JSON.parse(
+                                String.fromCharCode(...questsProposalsJson)
+                            );
+
+                            setQuestsProposals(questsProposals);
+                            setOpen(true);
+                            setOpenMessage("Refreshed!");
+
+
                         } catch (e) {
                             setOpenMessage("Quest End Transaction Failed. :(");
                             setOpen(true);
@@ -695,7 +780,7 @@ export const QuestsGallery = () => {
                 setGlobalEnum("recover");
             }
         },
-        [questsProgression, setQuestsProgression, recoveryState, setOpen, setOpenMessage]
+        [questsProgression, setQuestsProgression, recoveryState, setOpen, setOpenMessage, setQuestsProposals]
     );
     const onNext = useCallback(
         (_) => {
@@ -864,7 +949,6 @@ export const QuestsGallery = () => {
                         if (quests[questSelection].PairsConfig.Left === 1 && quests[questSelection].PairsConfig.Right === 0) {
                             newQuestProposal();
                         } else {
-                            console.log("asdf");
                             setStakingProgression((1 + stakingProgression) % 2);
                         }
                     }
@@ -1224,7 +1308,6 @@ export const QuestsGallery = () => {
             cols += 2;
         }
 
-        console.log(cols);
         return Number(12 / cols);
     }, [globalEnum, questsProgression, activeQuestProposals]);
 
@@ -1360,7 +1443,14 @@ export const QuestsGallery = () => {
                             {openMessage}
                         </Alert>
                     </Snackbar>
-                    {body}
+                    <StyledCard>
+                        {Object.keys(quests).length == 0 && (
+                            <StyledCard>
+                                Loading
+                            </StyledCard>
+                        )}
+                        {body}
+                    </StyledCard>
                 </div>
             )}
         </>
