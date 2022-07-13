@@ -333,7 +333,7 @@ export const QuestedGalleryItemsHeader = ({quest, kpis}) => {
     useEffect(() => {
         const interval = setInterval(() => {
             setResync(resync + 1);
-        }, 10 * 1000);
+        }, 15 * 1000);
         return () => clearInterval(interval);
     }, [resync, setResync]);
 
@@ -343,6 +343,7 @@ export const QuestedGalleryItemsHeader = ({quest, kpis}) => {
                 return;
             }
 
+            console.log("refreshing KPIS");
             const questsKPIsJson = await get_quests_kpis(
                 ORACLE.toString(),
                 wallet.publicKey.toString(),
@@ -350,6 +351,7 @@ export const QuestedGalleryItemsHeader = ({quest, kpis}) => {
             const questsKPIs = JSON.parse(
                 String.fromCharCode(...questsKPIsJson)
             );
+            console.log("refreshed KPIS");
 
             // console.log(JSON.stringify(questsKPIs, null, 2))
             setQuestsKPIs(questsKPIs);
