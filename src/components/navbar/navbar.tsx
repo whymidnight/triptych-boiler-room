@@ -22,6 +22,7 @@ export const Navbar = () => {
     <TopBar id="topbar">
       <Grid container sx={{width: "100vw", display: "flex"}}>
         <Grid item style={{position: "relative"}} xs={4}>
+          <Link href="/">
           <Image
             src={process.env.NEXT_PUBLIC_LOGO_FILE!}
             width={300}
@@ -29,6 +30,7 @@ export const Navbar = () => {
             objectFit="contain"
             alt="logo"
           />
+          </Link>
         </Grid>
 
         <Grid item xs={2} />

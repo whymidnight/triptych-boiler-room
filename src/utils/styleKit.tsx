@@ -188,6 +188,15 @@ height: auto;
 .undefined {
 }
 
+.home-swiper {
+  @media (max-width: 500px) {
+    width: 80%;
+  }
+  @media (min-width: 500px) {
+    width: 50%;
+  }
+}
+
 .swap-container {
   @media (max-width: 500px) {
     width: 95vw;
