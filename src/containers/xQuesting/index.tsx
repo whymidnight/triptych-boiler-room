@@ -754,7 +754,8 @@ export const QuestsGallery = () => {
                             connection.confirmTransaction(signature, "finalized").then(async (_) => {
                                 if (quests[questSelection].Rewards.length > 0) {
                                     const transactionResponse = await connection.getTransaction(signature);
-                                    if (transactionResponse.meta.logMessages.filter((line) => line.includes("minted reward"))) {
+                                    console.log(transactionResponse.meta.logMessages);
+                                    if (transactionResponse.meta.logMessages.filter((line) => line.includes("minted reward")).length === 1) {
                                         setOpen(true);
                                         setOpenMessage("Congratulations! You won!");
                                     } else {
