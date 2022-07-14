@@ -3,7 +3,7 @@ import {Metaplex} from "@metaplex-foundation/js-next";
 import React, {useState, useEffect, useCallback, useMemo} from "react";
 import {Transaction, Message} from "@solana/web3.js";
 
-import {Box, Grid} from "@mui/material";
+import {Box, Grid, CircularProgress} from "@mui/material";
 import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
@@ -459,6 +459,7 @@ export const QuestsGallery = () => {
     const [openMessage, setOpenMessage] = React.useState("");
     const [refreshInterval, setRefreshInterval] = useRecoilState(refreshIntervalAtom);
     const [shouldRefreshInterval, setShouldRefreshInterval] = useRecoilState(shouldRefreshIntervalAtom);
+    const [loading, setLoading] = React.useState(true);
 
 
     const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
@@ -476,6 +477,7 @@ export const QuestsGallery = () => {
         if (!shouldRefreshInterval) return;
 
         try {
+            console.log("asdf.......FETCHING", loading)
             const requests = await Promise.allSettled([
                 get_quests(ORACLE.toString()),
                 get_quests_proposals(
@@ -510,9 +512,11 @@ export const QuestsGallery = () => {
             setQuestsProposals(questsProposals);
             setQuestsKPIs(questsKPIs);
             console.log("auto-refreshed quests");
+
         } catch (e) {
             console.log("failed to auto-refresh kpis")
         }
+        setLoading(false);
     }
 
     useEffect(() => {
@@ -885,10 +889,10 @@ export const QuestsGallery = () => {
                             }
                         }
                     } catch (e) {
-                    setOpenMessage(e.message);
-                    setOpen(true);
+                        setOpenMessage(e.message);
+                        setOpen(true);
 
-                    await (new Promise(resolve => setTimeout(resolve, 2 * 1000)));
+                        await (new Promise(resolve => setTimeout(resolve, 2 * 1000)));
                     }
                     setQuestsProgression(0);
                     setShouldRefreshInterval(true);
@@ -944,10 +948,10 @@ export const QuestsGallery = () => {
                             }
                         }
                     } catch (e) {
-                    setOpenMessage(e.message);
-                    setOpen(true);
+                        setOpenMessage(e.message);
+                        setOpen(true);
 
-                    await (new Promise(resolve => setTimeout(resolve, 2 * 1000)));
+                        await (new Promise(resolve => setTimeout(resolve, 2 * 1000)));
                     }
                     setQuestsProgression(2);
                     setShouldRefreshInterval(false);
@@ -1401,22 +1405,66 @@ export const QuestsGallery = () => {
 
     return (
         <>
-            {Object.values(quests).length > 0 && (
-                <div
-                    style={{
-                        paddingTop: "10vh",
-                        height: "100%",
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        overflow: "hidden",
-                        overflowY: "scroll",
-                    }}
-                >
-                    {questsProgression !== 0 && (
-                        <StyledCard>
-                            <Grid container>
+            <div
+                style={{
+                    paddingTop: "10vh",
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    overflow: "hidden",
+                    overflowY: "scroll",
+                }}
+            >
+                {questsProgression !== 0 && (
+                    <StyledCard>
+                        <Grid container>
+                            <Grid
+                                item
+                                xs={topBarXsPoints}
+                                sx={{justifyContent: "center"}}
+                            >
+                                <StyledCard>
+                                    <Button
+                                        sx={{
+                                            fontSize: "1.1rem",
+                                            width: "-webkit-fill-available",
+                                        }}
+                                        onClick={onBack}
+                                    >
+                                        Back
+                                    </Button>
+                                </StyledCard>
+                            </Grid>
+                            {questsProposals.hasOwnProperty(questSelection) &&
+                                ((globalEnum === "manage" &&
+                                    recoveryState.filter((item) => item).length > 0) ||
+                                    (globalEnum === "reward" &&
+                                        recoveryState.filter((item) => item).length > 0) ||
+                                    (globalEnum === "recover" &&
+                                        activeQuestProposals.length > 0)) && (
+                                    <>
+                                        <Grid
+                                            item
+                                            xs={topBarXsPoints}
+                                            sx={{justifyContent: "center"}}
+                                        >
+                                            <StyledCard>
+                                                <Button
+                                                    sx={{
+                                                        fontSize: "1.1rem",
+                                                        width: "-webkit-fill-available",
+                                                    }}
+                                                    onClick={(event) => onRecover(event, questSelection)}
+                                                >
+                                                    {buttonText}
+                                                </Button>
+                                            </StyledCard>
+                                        </Grid>
+                                    </>
+                                )}
+                            {questsProgression === 1 && (
                                 <Grid
                                     item
                                     xs={topBarXsPoints}
@@ -1428,104 +1476,65 @@ export const QuestsGallery = () => {
                                                 fontSize: "1.1rem",
                                                 width: "-webkit-fill-available",
                                             }}
-                                            onClick={onBack}
+                                            onClick={onNext}
                                         >
-                                            Back
+                                            Next
                                         </Button>
                                     </StyledCard>
                                 </Grid>
-                                {questsProposals.hasOwnProperty(questSelection) &&
-                                    ((globalEnum === "manage" &&
-                                        recoveryState.filter((item) => item).length > 0) ||
-                                        (globalEnum === "reward" &&
-                                            recoveryState.filter((item) => item).length > 0) ||
-                                        (globalEnum === "recover" &&
-                                            activeQuestProposals.length > 0)) && (
-                                        <>
-                                            <Grid
-                                                item
-                                                xs={topBarXsPoints}
-                                                sx={{justifyContent: "center"}}
-                                            >
-                                                <StyledCard>
-                                                    <Button
-                                                        sx={{
-                                                            fontSize: "1.1rem",
-                                                            width: "-webkit-fill-available",
-                                                        }}
-                                                        onClick={(event) => onRecover(event, questSelection)}
-                                                    >
-                                                        {buttonText}
-                                                    </Button>
-                                                </StyledCard>
-                                            </Grid>
-                                        </>
-                                    )}
-                                {questsProgression === 1 && (
-                                    <Grid
-                                        item
-                                        xs={topBarXsPoints}
-                                        sx={{justifyContent: "center"}}
-                                    >
-                                        <StyledCard>
-                                            <Button
-                                                sx={{
-                                                    fontSize: "1.1rem",
-                                                    width: "-webkit-fill-available",
-                                                }}
-                                                onClick={onNext}
-                                            >
-                                                Next
-                                            </Button>
-                                        </StyledCard>
-                                    </Grid>
-                                )}
-                                {(questsProgression === 2 || (globalEnum === "recover" && activeQuestProposals.length > 0)) && (
-                                    <Grid
-                                        item
-                                        xs={topBarXsPoints}
-                                        sx={{justifyContent: "center"}}
-                                    >
-                                        <StyledCard>
-                                            <Button
-                                                sx={{
-                                                    fontSize: "1.1rem",
-                                                    width: "-webkit-fill-available",
-                                                }}
-                                                onClick={(event) => onQuestStart(event, questSelection)}
-                                            >
-                                                Start
-                                            </Button>
-                                        </StyledCard>
-                                    </Grid>
-                                )}
-                            </Grid>
+                            )}
+                            {(questsProgression === 2 || (globalEnum === "recover" && activeQuestProposals.length > 0)) && (
+                                <Grid
+                                    item
+                                    xs={topBarXsPoints}
+                                    sx={{justifyContent: "center"}}
+                                >
+                                    <StyledCard>
+                                        <Button
+                                            sx={{
+                                                fontSize: "1.1rem",
+                                                width: "-webkit-fill-available",
+                                            }}
+                                            onClick={(event) => onQuestStart(event, questSelection)}
+                                        >
+                                            Start
+                                        </Button>
+                                    </StyledCard>
+                                </Grid>
+                            )}
+                        </Grid>
+                    </StyledCard>
+                )}
+                <Snackbar
+                    open={open}
+                    autoHideDuration={10 * 1000}
+                    onClose={handleClose}
+                    sx={{zIndex: 100000000}}
+                    anchorOrigin={{
+                        vertical: "top",
+                        horizontal: "center"
+                    }}
+                >
+                    <Alert onClose={handleClose} severity="success" sx={{width: '100%'}}>
+                        {openMessage}
+                    </Alert>
+                </Snackbar>
+                <StyledCard>
+                    {body}
+                    {loading === true && (
+                        <StyledCard>
+                            <Stack justifyContent="center" alignContent="center">
+                                <Typography gutterBottom variant="h5" component="div">
+                                    Loading...
+                                </Typography>
+                                <div style={{display: 'flex', justifyContent: 'center'}}>
+                                    <CircularProgress />
+                                </div>
+                            </Stack>
                         </StyledCard>
                     )}
-                    <Snackbar
-                        open={open}
-                        autoHideDuration={10 * 1000}
-                        onClose={handleClose}
-                        sx={{zIndex: 100000000}}
-                        anchorOrigin={{
-                            vertical: "top",
-                            horizontal: "center"
-                        }}
-                    >
-                        <Alert onClose={handleClose} severity="success" sx={{width: '100%'}}>
-                            {openMessage}
-                        </Alert>
-                    </Snackbar>
-                    <StyledCard>
-                        {Object.keys(quests).length == 0 && (
-                            <StyledCard>
-                                Loading
-                            </StyledCard>
-                        )}
-                        {body}
-                    </StyledCard>
-                </div>
-            )}
+                </StyledCard>
+            </div>
         </>
     );
 };
