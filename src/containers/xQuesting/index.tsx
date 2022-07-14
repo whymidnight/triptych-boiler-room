@@ -190,7 +190,7 @@ export const QuestsGalleryItems = ({
 
     // 4jAu28eBUWzqNkYCLC17rWBCDEhs47juszS6dsABpkrw, 6tzi4GYZMTrCv9gJi6iXBC2eheD9EZBMBUxM1WHAibd8
     useEffect(() => {
-        const wlQuests = ["BioAubmmQRT7Qg4crp3W6BaUzcdiWh6kZ2BGarsNMDzs", "9w9FEA1St3CwyndiXGdkSWuvKZpknBYW7j5ysCfPprHc"];
+        const wlQuests = ["Ex2YyicgAHnGH1JZCu6y4Pq5UUrKqJdPCGa8qPx9MmDK", "HqK1mrYLhAuDHgyzRGNFJXeKzkH9fWXXKNaAi2YibJju"];
 
         const keys = Object.keys(quests);
         switch (tab) {
