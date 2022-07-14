@@ -41,15 +41,6 @@ export const Home = () => {
                         <SwiperSlide>
                             <Linktree
                                 i={1}
-                                title={"Mint"}
-                                subtitle={"NOT INTERNAL OR CONFIDENTIAL!"}
-                                link={"/mint"}
-                                cover={"/github.png"}
-                            />
-                        </SwiperSlide>
-                        <SwiperSlide>
-                            <Linktree
-                                i={2}
                                 title={"xSwap"}
                                 subtitle={"Swap Utility Tokens for Tokens!"}
                                 link={"/xswap"}

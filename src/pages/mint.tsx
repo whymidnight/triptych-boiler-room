@@ -16,26 +16,8 @@ export const MintPage: FC = () => {
     return (
         <>
             <Navbar />
-            {publicKey && (
-                <div className="App-header">
-                    <Mint
-                        candyMachineId={new anc.web3.PublicKey(
-                            "Hiq5iqME7LtWLhqQGXtkMZixC8PfuzczaLXbkJzRHyPW"
-                        )}
-                        connection={connection}
-                        rpcHost={rpcHost}
-                        network={network}
-                    />
-                    <Mint
-                        candyMachineId={new anc.web3.PublicKey(
-                            "7ebwtk1oA88HRUq5GYmCAsz8TjASALKyuK2gmGqpt6d3"
-                        )}
-                        connection={connection}
-                        rpcHost={rpcHost}
-                        network={network}
-                    />
-                </div>
-            )}
+            <div className="App-header">
+            </div>
         </>
     );
 };
