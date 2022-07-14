@@ -48,14 +48,22 @@ import {
     stakingProgressionAtom,
     questsKPIsAtom,
     questTabsAtom,
+    refreshIntervalAtom,
+    shouldRefreshIntervalAtom,
 } from "./state/atoms";
 import {StyledCard} from "../../components/cards";
 
 import Snackbar from '@mui/material/Snackbar';
+import {Stack} from '@mui/material';
 import MuiAlert, {AlertProps} from '@mui/material/Alert';
 import AppBar from '@mui/material/AppBar';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select, {SelectChangeEvent} from '@mui/material/Select';
 
 
 import {NFTGalleryItems, QuestStart} from "./enrollment";
@@ -123,8 +131,8 @@ declare function get_rewards(
     questIndex: String
 ): Promise<any>;
 
-export const ORACLE = new PublicKey("42bi4dZPAfWdp6bEGpQXUfwAfJrWGhxCsf8NfLivkHqc");
-export const CONNECTION = "https://devnet.genesysgo.net";
+export const ORACLE = new PublicKey("GbfoTncFrg8PxS2KY9mmCHz73Bv9cXUxsr7Q66y5SUDo");
+export const CONNECTION = "https://api.mainnet-beta.solana.com";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
     props,
@@ -175,13 +183,14 @@ export const QuestsGalleryItems = ({
     const [nftsQuestedExhaust] = useRecoilState(nftsQuestedExhaustAtom);
     const [questsKeys, setQuestsKeys] = useState([]);
     const [tab, setTab] = useRecoilState(questTabsAtom);
+    const [refreshInterval, setRefreshInterval] = useRecoilState(refreshIntervalAtom);
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setTab(newValue);
     };
 
     // 4jAu28eBUWzqNkYCLC17rWBCDEhs47juszS6dsABpkrw, 6tzi4GYZMTrCv9gJi6iXBC2eheD9EZBMBUxM1WHAibd8
     useEffect(() => {
-        const wlQuests = ["4jAu28eBUWzqNkYCLC17rWBCDEhs47juszS6dsABpkrw", "6tzi4GYZMTrCv9gJi6iXBC2eheD9EZBMBUxM1WHAibd8"];
+        const wlQuests = ["BioAubmmQRT7Qg4crp3W6BaUzcdiWh6kZ2BGarsNMDzs", "9w9FEA1St3CwyndiXGdkSWuvKZpknBYW7j5ysCfPprHc"];
 
         const keys = Object.keys(quests);
         switch (tab) {
@@ -195,6 +204,10 @@ export const QuestsGalleryItems = ({
             }
         }
     }, [quests, tab, setQuestsKeys])
+
+    const handleIntervalChange = useCallback((event: SelectChangeEvent) => {
+        setRefreshInterval(Number(event.target.value));
+    }, []);
 
     return (
         <>
@@ -210,6 +223,21 @@ export const QuestsGalleryItems = ({
                                 <Grid xs={10} sm={3} key={quest}>
                                     <Box textAlign="center">
                                         <StyledCard>
+                                            <StyledCard sx={{padding: "5%"}}>
+                                                <Typography gutterBottom variant="h5" component="div">
+                                                    {
+                                                        quests[quest].Name
+                                                    }
+                                                </Typography>
+                                                <Typography gutterBottom variant="h5" component="div">
+                                                    {
+                                                        //@ts-ignore
+                                                        String(
+                                                            "Quest"
+                                                        )
+                                                    }
+                                                </Typography>
+                                            </StyledCard>
                                             <Grid container alignItems="center" justifyContent="center">
                                                 <Grid item xs={12} sx={{padding: '5% 0%'}}>
                                                     <QuestedGalleryItemsHeader
@@ -239,21 +267,6 @@ export const QuestsGalleryItems = ({
                                                 </Grid>
                                             </Grid>
                                             <CardContent>
-                                                <StyledCard sx={{padding: "5%"}}>
-                                                    <Typography gutterBottom variant="h5" component="div">
-                                                        {
-                                                            //@ts-ignore
-                                                            String(
-                                                                "Name:"
-                                                            )
-                                                        }
-                                                    </Typography>
-                                                    <Typography gutterBottom variant="h5" component="div">
-                                                        {
-                                                            quests[quest].Name
-                                                        }
-                                                    </Typography>
-                                                </StyledCard>
                                                 <Typography
                                                     gutterBottom
                                                     variant="h5"
@@ -359,7 +372,7 @@ export const QuestsGalleryItems = ({
                                                 </Button>
                                                 {questsProposals.hasOwnProperty(quest) &&
                                                     questsProposals[quest].filter(
-                                                        (item) => !item.Started && !item.Withdrawn
+                                                        (item) => !item.Started && !item.Withdrawn && (item.StartTime === null || item.StartTime === 0)
                                                     ).length > 0 && (
                                                         <Button
                                                             style={{
@@ -444,6 +457,9 @@ export const QuestsGallery = () => {
     const [resync, setResync] = useRecoilState(resyncAtom);
     const [open, setOpen] = React.useState(false);
     const [openMessage, setOpenMessage] = React.useState("");
+    const [refreshInterval, setRefreshInterval] = useRecoilState(refreshIntervalAtom);
+    const [shouldRefreshInterval, setShouldRefreshInterval] = useRecoilState(shouldRefreshIntervalAtom);
+
 
     const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
         if (reason === 'clickaway') {
@@ -476,43 +492,53 @@ export const QuestsGallery = () => {
     }, [wallet, resync, setQuestsKPIs]);
 
 
+    async function fetchQuests() {
+        if (!wallet.publicKey) {
+            return;
+        }
+        if (!shouldRefreshInterval) return;
 
-    useEffect(() => {
-        async function fetchQuests() {
-            if (!wallet.publicKey) {
-                return;
-            }
-
-            console.log("0000");
-            const questsJson = await get_quests(ORACLE.toString());
-            const quests = JSON.parse(String.fromCharCode(...questsJson));
-            setQuests(quests);
-
-            console.log("1111");
-            const questsProposalsJson = await get_quests_proposals(
+        const requests = await Promise.allSettled([
+            get_quests(ORACLE.toString()),
+            get_quests_proposals(
                 ORACLE.toString(),
                 wallet.publicKey.toString()
-            );
-            const questsProposals = JSON.parse(
-                String.fromCharCode(...questsProposalsJson)
-            );
-
-            setQuestsProposals(questsProposals);
-
-            console.log("2222");
-            const questsKPIsJson = await get_quests_kpis(
+            ),
+            get_quests_kpis(
                 ORACLE.toString(),
                 wallet.publicKey.toString(),
-            );
-            const questsKPIs = JSON.parse(
-                String.fromCharCode(...questsKPIsJson)
-            );
+            ),
+        ]);
 
-            console.log("3333");
-            setQuestsKPIs(questsKPIs);
-        }
-        fetchQuests();
-    }, [wallet]);
+        const questsJson = requests[0];
+        const questsProposalsJson = requests[1];
+        const questsKPIsJson = requests[2];
+
+        //@ts-ignore
+        const quests = JSON.parse(String.fromCharCode(...questsJson.value));
+        const questsProposals = JSON.parse(
+            //@ts-ignore
+            String.fromCharCode(...questsProposalsJson.value)
+        );
+        const questsKPIs = JSON.parse(
+            //@ts-ignore
+            String.fromCharCode(...questsKPIsJson.value)
+        );
+
+        console.log(questsProposals);
+
+        console.log(Object.keys(quests));
+        setQuests(quests);
+        setQuestsProposals(questsProposals);
+        setQuestsKPIs(questsKPIs);
+        console.log("auto-refreshed quests");
+    }
+
+    useEffect(() => {
+        if (shouldRefreshInterval === false) return;
+        const interval = setInterval(fetchQuests, refreshInterval * 1000);
+        return () => clearInterval(interval);
+    }, [wallet, refreshInterval, shouldRefreshInterval]);
 
     useEffect(() => {
         async function fetchNfts() {
@@ -564,8 +590,10 @@ export const QuestsGallery = () => {
 
             console.log("....")
 
+
             if (questsProgression === 1) {
                 console.log(",,,,", stakingProgression, quests[questSelection].PairsConfig.Left)
+                setShouldRefreshInterval(false);
                 if (stakingProgression - 1 < 0) {
                     setQuestsProgression(questsProgression - 1);
                     return;
@@ -577,7 +605,7 @@ export const QuestsGallery = () => {
                 setStakingProgression(stakingProgression - 1 % 2);
                 return;
             }
-            if (questsProgression - 1 === 0)
+            if (questsProgression - 1 === 0 || questsProgression + 1 === 0) {
                 setPairings({
                     // @ts-ignore
                     genOneDraggable: [],
@@ -585,11 +613,13 @@ export const QuestsGallery = () => {
                     genTwoDraggable: [],
                     genTwoStaking: [],
                 });
+                setShouldRefreshInterval(true);
+            }
             if (questsProgression > 0) setQuestsProgression(questsProgression - 1);
             if (questsProgression < 0) setQuestsProgression(questsProgression + 1);
 
         },
-        [quests, questSelection, questsProgression, setQuestsProgression, stakingProgression]
+        [quests, questSelection, questsProgression, setQuestsProgression, stakingProgression, setShouldRefreshInterval]
     );
     const onRecover = useCallback(
         (_, quest) => {
@@ -651,6 +681,7 @@ export const QuestsGallery = () => {
                 }
                 setQuestsSelection("");
                 setQuestsProgression(0);
+                setShouldRefreshInterval(true);
             }
 
             async function claimRewards() {
@@ -752,7 +783,7 @@ export const QuestsGallery = () => {
                             setOpenMessage("Refreshing!");
 
                             connection.confirmTransaction(signature, "finalized").then(async (_) => {
-                                if (quests[questSelection].Rewards.length > 0) {
+                                if (quests[questSelection].Rewards !== null && quests[questSelection].Rewards.length > 0) {
                                     const transactionResponse = await connection.getTransaction(signature);
                                     console.log(transactionResponse.meta.logMessages);
                                     if (transactionResponse.meta.logMessages.filter((line) => line.includes("minted reward")).length === 1) {
@@ -783,8 +814,10 @@ export const QuestsGallery = () => {
                     setOpenMessage("Something terrible has gone wrong. :(");
                     setOpen(true);
                 }
+                await gc();
                 setQuestsSelection("");
                 setQuestsProgression(0);
+                setShouldRefreshInterval(true);
             }
 
             async function gc() {
@@ -816,16 +849,16 @@ export const QuestsGallery = () => {
                     setShowCompleted(false);
                     setQuestsSelection(quest);
                     setQuestsProgression(-1);
+                    setShouldRefreshInterval(false);
                     setGlobalEnum("recover");
                 }
 
-                await gc();
             }
 
             executor();
 
         },
-        [wallet, quests, questsProgression, setQuestsProgression, recoveryState, setOpen, setOpenMessage, setQuestsProposals]
+        [wallet, quests, questsProgression, setQuestsProgression, recoveryState, setOpen, setOpenMessage, setQuestsProposals, setShouldRefreshInterval]
     );
     const onNext = useCallback(
         (_) => {
@@ -889,6 +922,7 @@ export const QuestsGallery = () => {
                         setOpen(true);
                     }
                     setQuestsProgression(0);
+                    setShouldRefreshInterval(true);
 
                 } else {
                     console.log(nftsSelection);
@@ -950,6 +984,7 @@ export const QuestsGallery = () => {
                         setOpen(true);
                     }
                     setQuestsProgression(2);
+                    setShouldRefreshInterval(false);
                 }
             }
 
@@ -982,6 +1017,7 @@ export const QuestsGallery = () => {
                     await connection.confirmTransaction(signature, "confirmed");
                 }
                 setQuestsProgression(-2);
+                setShouldRefreshInterval(false);
                 return;
             }
 
@@ -1017,10 +1053,10 @@ export const QuestsGallery = () => {
                         await doRngs();
                     } else {
                         setQuestsProgression(-2);
+                        setShouldRefreshInterval(false);
                     }
                 }
 
-                await gc();
             }
 
             executor();
@@ -1039,6 +1075,7 @@ export const QuestsGallery = () => {
             stakingProgression,
             setOpen,
             setOpenMessage,
+            setShouldRefreshInterval,
         ]
     );
     const onManage = useCallback(
@@ -1048,11 +1085,13 @@ export const QuestsGallery = () => {
             setShowCompleted(false);
             setQuestsSelection(quest);
             setQuestsProgression(-1);
+            setShouldRefreshInterval(false);
             setGlobalEnum("manage");
         },
         [
             resync,
             setQuestsProgression,
+            setShouldRefreshInterval,
             setQuestsSelection,
             setResync,
             setShowCompleted,
@@ -1066,10 +1105,12 @@ export const QuestsGallery = () => {
             setShowCompleted(true);
             setResync(resync + 1);
             setQuestsProgression(-1);
+            setShouldRefreshInterval(false);
         },
         [
             resync,
             setQuestsProgression,
+            setShouldRefreshInterval,
             setQuestsSelection,
             setResync,
             setShowCompleted,
@@ -1116,6 +1157,7 @@ export const QuestsGallery = () => {
                 setResync(resync + 1);
                 setQuestsSelection(quest);
                 setQuestsProgression(1);
+                setShouldRefreshInterval(false);
                 setGlobalEnum("enrollment");
 
                 /*
@@ -1148,6 +1190,7 @@ export const QuestsGallery = () => {
             quests,
             setQuestsSelection,
             setQuestsProgression,
+            setShouldRefreshInterval,
             setNftsSelection,
             setResync,
             setShowCompleted,
@@ -1198,6 +1241,7 @@ export const QuestsGallery = () => {
                         setOpenMessage("Start Quest Transaction Failed.");
                     }
                     setQuestsProgression(0);
+                    setShouldRefreshInterval(true);
                 }
             }
 
@@ -1210,6 +1254,7 @@ export const QuestsGallery = () => {
             nftsSelection,
             wallet,
             setQuestsProgression,
+            setShouldRefreshInterval,
             activeQuestProposals,
             setOpen,
             setOpenMessage,
@@ -1286,6 +1331,7 @@ export const QuestsGallery = () => {
                     console.log(signature);
                     await connection.confirmTransaction(signature, "confirmed");
                     setQuestsProgression(0);
+                    setShouldRefreshInterval(true);
                 }
             }
 
@@ -1303,6 +1349,7 @@ export const QuestsGallery = () => {
             nftsSelection,
             wallet,
             setQuestsProgression,
+            setShouldRefreshInterval,
         ]
     );
 

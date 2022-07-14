@@ -38,9 +38,20 @@ declare function get_quests_kpis(
 ): Promise<any>;
 
 const timeScalars = [1000, 60, 60, 24, 7, 52];
-const timeUnits = ['ms', 'seconds', 'minutes', 'hours', 'days', 'weeks', 'years'];
 
 const getHumanReadableTime = (s, dp = 0) => {
+    const timeUnits = ['ms', 'second', 'minute', 'hour', 'day', 'week', 'year'];
+    let ms = s * 1000;
+    let timeScalarIndex = 0, scaledTime = ms;
+
+    while (scaledTime > timeScalars[timeScalarIndex]) {
+        scaledTime /= timeScalars[timeScalarIndex++];
+    }
+
+    return `${scaledTime.toFixed(dp)} ${timeUnits[timeScalarIndex]}`;
+};
+const getHumanReadablePluralTime = (s, dp = 0) => {
+    const timeUnits = ['ms', 'seconds', 'minutes', 'hours', 'days', 'weeks', 'years'];
     let ms = s * 1000;
     let timeScalarIndex = 0, scaledTime = ms;
 
@@ -174,7 +185,7 @@ export const QuestedGalleryItemsHeader = ({quest, kpis}) => {
                                     component="div"
                                     sx={{paddingTop: "2px"}}
                                 >
-                                    {quests[quest].StakingConfig ? "Staking Quest" : "Normal Quest"}
+                                    Lockup Period
                                 </Typography>
                             </Stack>
                         </Grid>
@@ -199,7 +210,7 @@ export const QuestedGalleryItemsHeader = ({quest, kpis}) => {
                                     component="div"
                                     sx={{paddingTop: "2px"}}
                                 >
-                                    Per {getHumanReadableTime(quests[quest].StakingConfig.YieldPerTime)}
+                                    Every {getHumanReadablePluralTime(quests[quest].StakingConfig.YieldPerTime)}
                                 </Typography>
                             </Stack>
                         </Grid>
@@ -335,7 +346,7 @@ export const QuestedGalleryItemsHeader = ({quest, kpis}) => {
                                     component="div"
                                     sx={{paddingTop: "2px"}}
                                 >
-                                    {quests[quest].StakingConfig ? "Staking Quest" : "Normal Quest"}
+                                    Lockup Period
                                 </Typography>
                             </Stack>
                         </Grid>
@@ -360,7 +371,7 @@ export const QuestedGalleryItemsHeader = ({quest, kpis}) => {
                                     component="div"
                                     sx={{paddingTop: "2px"}}
                                 >
-                                    Per {getHumanReadableTime(quests[quest].StakingConfig.YieldPerTime)}
+                                    Every {getHumanReadablePluralTime(quests[quest].StakingConfig.YieldPerTime)}
                                 </Typography>
                             </Stack>
                         </Grid>
@@ -599,7 +610,7 @@ export const QuestedGalleryItems = ({onSelection}) => {
                                                 align="right"
                                                 variant="h5"
                                             >
-                                                {getHumanReadableTime(remainingTime)}
+                                                {getHumanReadablePluralTime(remainingTime)}
                                             </Typography>
                                         </Stack>
                                     </Box>

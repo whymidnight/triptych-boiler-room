@@ -98,3 +98,13 @@ export const questTabsAtom = atom({
   key: "questTabs",
   default: 0,
 });
+
+export const refreshIntervalAtom = atom({
+  key: "refreshInterval",
+  default: 5,
+});
+
+export const shouldRefreshIntervalAtom = atom({
+  key: "shouldRefreshInterval",
+  default: true,
+});
