@@ -469,69 +469,50 @@ export const QuestsGallery = () => {
         setOpen(false);
     };
 
-    useEffect(() => {
-        async function fetchQuests() {
-            if (!wallet.publicKey) {
-                return;
-            }
-
-            console.log("refreshing KPIS");
-            const questsKPIsJson = await get_quests_kpis(
-                ORACLE.toString(),
-                wallet.publicKey.toString(),
-            );
-            const questsKPIs = JSON.parse(
-                String.fromCharCode(...questsKPIsJson)
-            );
-            console.log("refreshed KPIS");
-
-            // console.log(JSON.stringify(questsKPIs, null, 2))
-            setQuestsKPIs(questsKPIs);
-        }
-        fetchQuests();
-    }, [wallet, resync, setQuestsKPIs]);
-
-
     async function fetchQuests() {
         if (!wallet.publicKey) {
             return;
         }
         if (!shouldRefreshInterval) return;
 
-        const requests = await Promise.allSettled([
-            get_quests(ORACLE.toString()),
-            get_quests_proposals(
-                ORACLE.toString(),
-                wallet.publicKey.toString()
-            ),
-            get_quests_kpis(
-                ORACLE.toString(),
-                wallet.publicKey.toString(),
-            ),
-        ]);
+        try {
+            const requests = await Promise.allSettled([
+                get_quests(ORACLE.toString()),
+                get_quests_proposals(
+                    ORACLE.toString(),
+                    wallet.publicKey.toString()
+                ),
+                get_quests_kpis(
+                    ORACLE.toString(),
+                    wallet.publicKey.toString(),
+                ),
+            ]);
 
-        const questsJson = requests[0];
-        const questsProposalsJson = requests[1];
-        const questsKPIsJson = requests[2];
+            const questsJson = requests[0];
+            const questsProposalsJson = requests[1];
+            const questsKPIsJson = requests[2];
 
-        //@ts-ignore
-        const quests = JSON.parse(String.fromCharCode(...questsJson.value));
-        const questsProposals = JSON.parse(
             //@ts-ignore
-            String.fromCharCode(...questsProposalsJson.value)
-        );
-        const questsKPIs = JSON.parse(
-            //@ts-ignore
-            String.fromCharCode(...questsKPIsJson.value)
-        );
+            const quests = JSON.parse(String.fromCharCode(...questsJson.value));
+            const questsProposals = JSON.parse(
+                //@ts-ignore
+                String.fromCharCode(...questsProposalsJson.value)
+            );
+            const questsKPIs = JSON.parse(
+                //@ts-ignore
+                String.fromCharCode(...questsKPIsJson.value)
+            );
 
-        console.log(questsProposals);
+            console.log(questsProposals);
 
-        console.log(Object.keys(quests));
-        setQuests(quests);
-        setQuestsProposals(questsProposals);
-        setQuestsKPIs(questsKPIs);
-        console.log("auto-refreshed quests");
+            console.log(Object.keys(quests));
+            setQuests(quests);
+            setQuestsProposals(questsProposals);
+            setQuestsKPIs(questsKPIs);
+            console.log("auto-refreshed quests");
+        } catch (e) {
+            console.log("failed to auto-refresh kpis")
+        }
     }
 
     useEffect(() => {
@@ -675,10 +656,6 @@ export const QuestsGallery = () => {
                     setOpen(true);
 
                     await (new Promise(resolve => setTimeout(resolve, 2 * 1000)));
-
-                    // setOpenMessage("Something terrible has gone wrong. :(");
-                    setOpenMessage("Please Refresh the Page.");
-                    setOpen(true);
                 }
                 setQuestsSelection("");
                 setQuestsProgression(0);
@@ -736,10 +713,6 @@ export const QuestsGallery = () => {
                     setOpen(true);
 
                     await (new Promise(resolve => setTimeout(resolve, 2 * 1000)));
-
-                    // setOpenMessage("Something terrible has gone wrong. :(");
-                    setOpenMessage("Please Refresh the Page.");
-                    setOpen(true);
                 }
             }
 
@@ -812,9 +785,6 @@ export const QuestsGallery = () => {
                     setOpen(true);
 
                     await (new Promise(resolve => setTimeout(resolve, 2 * 1000)));
-
-                    // setOpenMessage("Something terrible has gone wrong. :(");
-                    setOpenMessage("Please Refresh the Page.");
                 }
                 await gc();
                 setQuestsSelection("");
@@ -915,13 +885,10 @@ export const QuestsGallery = () => {
                             }
                         }
                     } catch (e) {
-                        setOpenMessage(e.message);
-                        setOpen(true);
+                    setOpenMessage(e.message);
+                    setOpen(true);
 
-                        await (new Promise(resolve => setTimeout(resolve, 2 * 1000)));
-
-                        // setOpenMessage("Something terrible has gone wrong. :(");
-                        setOpenMessage("Please Refresh the Page.");
+                    await (new Promise(resolve => setTimeout(resolve, 2 * 1000)));
                     }
                     setQuestsProgression(0);
                     setShouldRefreshInterval(true);
@@ -977,13 +944,10 @@ export const QuestsGallery = () => {
                             }
                         }
                     } catch (e) {
-                        setOpenMessage(e.message);
-                        setOpen(true);
+                    setOpenMessage(e.message);
+                    setOpen(true);
 
-                        await (new Promise(resolve => setTimeout(resolve, 2 * 1000)));
-
-                        // setOpenMessage("Something terrible has gone wrong. :(");
-                        setOpenMessage("Please Refresh the Page.");
+                    await (new Promise(resolve => setTimeout(resolve, 2 * 1000)));
                     }
                     setQuestsProgression(2);
                     setShouldRefreshInterval(false);
