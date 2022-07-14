@@ -114,7 +114,8 @@ export const XSwap = () => {
     }, []);
 
     const onAmountChange = useCallback((event, fieldEnum) => {
-        setAmount(Number(event.target.value));
+        let amountInp = Number(event.target.value);
+        setAmount(amountInp);
     }, []);
 
 

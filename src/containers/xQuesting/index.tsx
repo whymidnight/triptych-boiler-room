@@ -132,7 +132,7 @@ declare function get_rewards(
 ): Promise<any>;
 
 export const ORACLE = new PublicKey("GbfoTncFrg8PxS2KY9mmCHz73Bv9cXUxsr7Q66y5SUDo");
-export const CONNECTION = "https://api.mainnet-beta.solana.com";
+export const CONNECTION = "https://ssc-dao.genesysgo.net";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
     props,
