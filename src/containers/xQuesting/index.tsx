@@ -676,7 +676,8 @@ export const QuestsGallery = () => {
 
                     await (new Promise(resolve => setTimeout(resolve, 2 * 1000)));
 
-                    setOpenMessage("Something terrible has gone wrong. :(");
+                    // setOpenMessage("Something terrible has gone wrong. :(");
+                    setOpenMessage("Please Refresh the Page.");
                     setOpen(true);
                 }
                 setQuestsSelection("");
@@ -736,7 +737,8 @@ export const QuestsGallery = () => {
 
                     await (new Promise(resolve => setTimeout(resolve, 2 * 1000)));
 
-                    setOpenMessage("Something terrible has gone wrong. :(");
+                    // setOpenMessage("Something terrible has gone wrong. :(");
+                    setOpenMessage("Please Refresh the Page.");
                     setOpen(true);
                 }
             }
@@ -811,8 +813,8 @@ export const QuestsGallery = () => {
 
                     await (new Promise(resolve => setTimeout(resolve, 2 * 1000)));
 
-                    setOpenMessage("Something terrible has gone wrong. :(");
-                    setOpen(true);
+                    // setOpenMessage("Something terrible has gone wrong. :(");
+                    setOpenMessage("Please Refresh the Page.");
                 }
                 await gc();
                 setQuestsSelection("");
@@ -918,8 +920,8 @@ export const QuestsGallery = () => {
 
                         await (new Promise(resolve => setTimeout(resolve, 2 * 1000)));
 
-                        setOpenMessage("Something terrible has gone wrong. :(");
-                        setOpen(true);
+                        // setOpenMessage("Something terrible has gone wrong. :(");
+                        setOpenMessage("Please Refresh the Page.");
                     }
                     setQuestsProgression(0);
                     setShouldRefreshInterval(true);
@@ -980,8 +982,8 @@ export const QuestsGallery = () => {
 
                         await (new Promise(resolve => setTimeout(resolve, 2 * 1000)));
 
-                        setOpenMessage("Something terrible has gone wrong. :(");
-                        setOpen(true);
+                        // setOpenMessage("Something terrible has gone wrong. :(");
+                        setOpenMessage("Please Refresh the Page.");
                     }
                     setQuestsProgression(2);
                     setShouldRefreshInterval(false);
