@@ -36,6 +36,7 @@ export const XSwap = () => {
     const [selectedTo, setSelectedTo] = useState(-1);
     const [balance, setBalance] = useState(0.0);
     const [amount, setAmount] = useState(0.0);
+    const [toAmount, setToAmount] = useState(0.0);
     const [open, setOpen] = useState(false);
     const [openMessage, setOpenMessage] = useState("");
 
@@ -55,10 +56,11 @@ export const XSwap = () => {
     const onInvokeSwap = useCallback((event) => {
         console.log(swaps[selectedFrom].Index, amount.toFixed(8));
         async function invokeSwap() {
+            console.log(swaps[selectedFrom].swapMeta.Index);
             const selectQuestIx = JSON.parse(
                 String.fromCharCode(
                     // @ts-ignore
-                    ...(await invoke_swap(wallet.publicKey.toString(), ORACLE.toString(), String(swaps[selectedFrom].Index), amount.toFixed(8)))
+                    ...(await invoke_swap(wallet.publicKey.toString(), ORACLE.toString(), String(swaps[selectedFrom].swapMeta.Index), amount.toFixed(8)))
                 )
             );
 
@@ -74,6 +76,7 @@ export const XSwap = () => {
 
                     setOpenMessage("Please Approve Swap Transaction.");
                     setOpen(true);
+
                     const signature = await wallet.sendTransaction(
                         selectQuestTx,
                         connection
@@ -115,12 +118,17 @@ export const XSwap = () => {
 
     const onAmountChange = useCallback((event, fieldEnum) => {
         let amountInp = Number(event.target.value);
+        console.log(amountInp, swaps[selectedFrom].swapMeta.Per, amountInp / swaps[selectedFrom].swapMeta.Per);
+        let toAmountInp = Math.floor(amountInp / swaps[selectedFrom].swapMeta.Per);
+        amountInp = toAmountInp * swaps[selectedFrom].swapMeta.Per;
         setAmount(amountInp);
-    }, []);
+        setToAmount(toAmountInp);
+    }, [swaps, selectedFrom])
 
 
     useEffect(() => {
-        setAmount(Number(balance));
+        setAmount(0);
+        setToAmount(0);
     }, [balance]);
 
     useEffect(() => {
@@ -244,7 +252,7 @@ export const XSwap = () => {
                                             inputProps: {
                                                 min: 0,
                                                 max: balance,
-                                                step: '0.1',
+                                                step: swaps.hasOwnProperty(selectedFrom) ? String(swaps[selectedFrom].swapMeta.Per) : '1',
                                                 style: {textAlign: 'center'},
                                             },
                                             endAdornment: (<InputAdornment position="end"><Typography variant="h5" component="div">
@@ -331,16 +339,16 @@ export const XSwap = () => {
                                     <TextField
                                         onChange={(event) => onAmountChange(event, "")}
                                         type="number"
-                                        value={amount}
+                                        value={toAmount}
                                         InputProps={{
                                             inputProps: {
                                                 min: 0,
                                                 max: balance,
-                                                step: '0.1',
+                                                step: swaps.hasOwnProperty(selectedFrom) ? String(swaps[selectedFrom].swapMeta.Per) : '1',
                                                 style: {textAlign: 'center'},
                                             },
                                             endAdornment: (<InputAdornment position="end"><Typography variant="h5" component="div">
-                                                {selectedTo !== -1 ? swaps[selectedTo].mintsMeta.to.tokenMetadata.symbol : ""}
+                                                {selectedFrom !== -1 ? swaps[selectedFrom].mintsMeta.to.tokenMetadata.symbol : ""}
                                             </Typography>
                                             </InputAdornment>),
                                         }}
