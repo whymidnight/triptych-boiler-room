@@ -460,6 +460,23 @@ export const QuestsGallery = () => {
     const [refreshInterval, setRefreshInterval] = useRecoilState(refreshIntervalAtom);
     const [shouldRefreshInterval, setShouldRefreshInterval] = useRecoilState(shouldRefreshIntervalAtom);
     const [loading, setLoading] = React.useState(true);
+    const [index, setIndex] = React.useState(0);
+    const [LOADING_MSGS, setLoadingMessages] = useState(["Fetching Quests", "Fetching NFTs"]);
+    const [walletPublicKey, setWalletPublicKey] = useState<PublicKey | null>(null);
+
+    React.useEffect(() => {
+        if (!wallet.publicKey) return;
+
+        setWalletPublicKey(wallet.publicKey);
+    }, [wallet]);
+
+    React.useEffect(() => {
+        const intervalId = setInterval(() =>
+            setIndex(index => index + 1),
+            3000 // every 3 seconds
+        );
+        return () => clearTimeout(intervalId);
+    }, []);
 
 
     const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
@@ -471,28 +488,28 @@ export const QuestsGallery = () => {
     };
 
     async function fetchQuests() {
-        if (!wallet.publicKey) {
+        if (!walletPublicKey) {
             return;
         }
         if (!shouldRefreshInterval) return;
 
         try {
-            console.log("asdf.......FETCHING", loading)
             const requests = await Promise.allSettled([
                 get_quests(ORACLE.toString()),
                 get_quests_proposals(
                     ORACLE.toString(),
-                    wallet.publicKey.toString()
+                    walletPublicKey.toString()
                 ),
                 get_quests_kpis(
                     ORACLE.toString(),
-                    wallet.publicKey.toString(),
+                    walletPublicKey.toString(),
                 ),
             ]);
 
             const questsJson = requests[0];
             const questsProposalsJson = requests[1];
             const questsKPIsJson = requests[2];
+
 
             //@ts-ignore
             const quests = JSON.parse(String.fromCharCode(...questsJson.value));
@@ -505,15 +522,14 @@ export const QuestsGallery = () => {
                 String.fromCharCode(...questsKPIsJson.value)
             );
 
-            console.log(questsProposals);
 
-            console.log(Object.keys(quests));
             setQuests(quests);
             setQuestsProposals(questsProposals);
             setQuestsKPIs(questsKPIs);
             console.log("auto-refreshed quests");
 
         } catch (e) {
+        console.log(e)
             console.log("failed to auto-refresh kpis")
         }
         setLoading(false);
@@ -523,11 +539,11 @@ export const QuestsGallery = () => {
         if (shouldRefreshInterval === false) return;
         const interval = setInterval(fetchQuests, refreshInterval * 1000);
         return () => clearInterval(interval);
-    }, [wallet, refreshInterval, shouldRefreshInterval]);
+    }, [wallet, walletPublicKey, refreshInterval, shouldRefreshInterval]);
 
     useEffect(() => {
         async function fetchNfts() {
-            if (!wallet.publicKey) {
+            if (!walletPublicKey) {
                 return;
             }
 
@@ -536,7 +552,8 @@ export const QuestsGallery = () => {
                     await Metaplex.make(new Connection(CONNECTION))
                         .nfts()
                         //@ts-ignore
-                        .findAllByOwner(wallet.publicKey.toBase58())
+                        // .findAllByOwner(walletPublicKey.toBase58())
+                        .findAllByOwner(walletPublicKey.toBase58())
                 )
                     .map(async (nft) => {
                         let offchainMetadata = {};
@@ -555,14 +572,14 @@ export const QuestsGallery = () => {
             setNftsSelection(myNfts.map(() => false));
         }
         fetchNfts();
-    }, [wallet, resync, setNfts, setNftsSelection]);
+    }, [wallet, walletPublicKey, walletPublicKey, resync, setNfts, setNftsSelection]);
 
     const onBack = useCallback(
         (_) => {
             async function fetchQuestProposals() {
                 const questsProposalsJson = await get_quests_proposals(
                     ORACLE.toString(),
-                    wallet.publicKey.toString()
+                    walletPublicKey.toString()
                 );
                 const questsProposals = JSON.parse(
                     String.fromCharCode(...questsProposalsJson)
@@ -573,11 +590,9 @@ export const QuestsGallery = () => {
 
             fetchQuestProposals();
 
-            console.log("....")
 
 
             if (questsProgression === 1) {
-                console.log(",,,,", stakingProgression, quests[questSelection].PairsConfig.Left)
                 setShouldRefreshInterval(false);
                 if (stakingProgression - 1 < 0) {
                     setQuestsProgression(questsProgression - 1);
@@ -613,18 +628,13 @@ export const QuestsGallery = () => {
                     (_, index) => recoveryState[index]
                 );
 
-                console.log(
-                    questSelection,
-                    recoveries.map((item) => item.index)
-                );
-
                 // flush quest records
                 try {
                     const flushRecordsTxs = JSON.parse(
                         String.fromCharCode(
                             ...(await flush_quest_records(
                                 // @ts-ignore
-                                wallet.publicKey.toString(),
+                                walletPublicKey.toString(),
                                 questSelection,
                                 // @ts-ignore
                                 JSON.stringify(recoveries.map((item) => item.index))
@@ -671,18 +681,13 @@ export const QuestsGallery = () => {
                     (_, index) => recoveryState[index]
                 );
 
-                console.log(
-                    questSelection,
-                    recoveries.map((item) => item.index)
-                );
-
                 // flush quest records
                 try {
                     const flushRecordsTxs = JSON.parse(
                         String.fromCharCode(
                             ...(await claim_quest_staking_rewards(
                                 // @ts-ignore
-                                wallet.publicKey.toString(),
+                                walletPublicKey.toString(),
                                 questSelection,
                                 // @ts-ignore
                                 JSON.stringify(recoveries.map((item) => item.index))
@@ -725,18 +730,13 @@ export const QuestsGallery = () => {
                     (_, index) => recoveryState[index]
                 );
 
-                console.log(
-                    questSelection,
-                    recoveries.map((item) => item.index)
-                );
-
                 // flush quest records
                 try {
                     const flushRecordsTx = JSON.parse(
                         String.fromCharCode(
                             ...(await end_quests(
                                 // @ts-ignore
-                                wallet.publicKey.toString(),
+                                walletPublicKey.toString(),
                                 questSelection,
                                 // @ts-ignore
                                 JSON.stringify(recoveries.map((item) => item.index))
@@ -764,7 +764,7 @@ export const QuestsGallery = () => {
                             connection.confirmTransaction(signature, "finalized").then(async (_) => {
                                 if (quests[questSelection].Rewards !== null && quests[questSelection].Rewards.length > 0) {
                                     const transactionResponse = await connection.getTransaction(signature);
-                                    console.log(transactionResponse.meta.logMessages);
+                                    if (!transactionResponse.meta.logMessages) return;
                                     if (transactionResponse.meta.logMessages.filter((line) => line.includes("minted reward")).length === 1) {
                                         setOpen(true);
                                         setOpenMessage("Congratulations! You won!");
@@ -799,7 +799,7 @@ export const QuestsGallery = () => {
             async function gc() {
                 const questsProposalsJson = await get_quests_proposals(
                     ORACLE.toString(),
-                    wallet.publicKey.toString()
+                    walletPublicKey.toString()
                 );
                 const questsProposals = JSON.parse(
                     String.fromCharCode(...questsProposalsJson)
@@ -834,7 +834,7 @@ export const QuestsGallery = () => {
             executor();
 
         },
-        [wallet, quests, questsProgression, setQuestsProgression, recoveryState, setOpen, setOpenMessage, setQuestsProposals, setShouldRefreshInterval]
+        [wallet, walletPublicKey, quests, questsProgression, setQuestsProgression, recoveryState, setOpen, setOpenMessage, setQuestsProposals, setShouldRefreshInterval]
     );
     const onNext = useCallback(
         (_) => {
@@ -843,13 +843,12 @@ export const QuestsGallery = () => {
                     return;
                 }
                 if (quests[questSelection].PairsConfig.Left === 1 && quests[questSelection].PairsConfig.Right === 0) {
-                    console.log("singleton")
                     try {
                         const onboardTxs = JSON.parse(
                             String.fromCharCode(
                                 ...(await onboard_from_singletons(
                                     // @ts-ignore
-                                    wallet.publicKey.toString(),
+                                    walletPublicKey.toString(),
                                     questSelection,
                                     JSON.stringify(
                                         nftsSelection[0]
@@ -898,13 +897,12 @@ export const QuestsGallery = () => {
                     setShouldRefreshInterval(true);
 
                 } else {
-                    console.log(nftsSelection);
                     try {
                         const enrollQuesteesIx = JSON.parse(
                             String.fromCharCode(
                                 ...(await new_quest_proposal(
                                     // @ts-ignore
-                                    wallet.publicKey.toString(),
+                                    walletPublicKey.toString(),
                                     questSelection,
                                     JSON.stringify(
                                         nftsSelection[0]
@@ -963,7 +961,7 @@ export const QuestsGallery = () => {
                     String.fromCharCode(
                         ...(await do_rngs(
                             // @ts-ignore
-                            wallet.publicKey.toString(),
+                            walletPublicKey.toString(),
                             JSON.stringify(
                                 nftsQuested
                                     .filter((_, nftIndex) => nftsSelection[nftIndex])
@@ -994,7 +992,7 @@ export const QuestsGallery = () => {
             async function gc() {
                 const questsProposalsJson = await get_quests_proposals(
                     ORACLE.toString(),
-                    wallet.publicKey.toString()
+                    walletPublicKey.toString()
                 );
                 const questsProposals = JSON.parse(
                     String.fromCharCode(...questsProposalsJson)
@@ -1007,7 +1005,6 @@ export const QuestsGallery = () => {
             async function executor() {
                 if (questsProgression > 0) {
                     if (quests[questSelection].PairsConfig.Left + quests[questSelection].PairsConfig.Right === [...nftsSelection[0], ...nftsSelection[1]].length) {
-                        console.log("....");
                         await newQuestProposal();
                     } else {
                         if (quests[questSelection].PairsConfig.Left === 1 && quests[questSelection].PairsConfig.Right === 0) {
@@ -1033,6 +1030,7 @@ export const QuestsGallery = () => {
         },
         [
             wallet,
+            walletPublicKey,
             connection,
             questSelection,
             questsProgression,
@@ -1092,7 +1090,7 @@ export const QuestsGallery = () => {
                 const selectQuestIx = JSON.parse(
                     String.fromCharCode(
                         // @ts-ignore
-                        ...(await select_quest(wallet.publicKey.toString(), quest))
+                        ...(await select_quest(walletPublicKey.toString(), quest))
                     )
                 );
 
@@ -1157,6 +1155,7 @@ export const QuestsGallery = () => {
             resync,
             nfts,
             wallet,
+            walletPublicKey,
             quests,
             setQuestsSelection,
             setQuestsProgression,
@@ -1179,7 +1178,7 @@ export const QuestsGallery = () => {
                     String.fromCharCode(
                         ...(await start_quests(
                             // @ts-ignore
-                            wallet.publicKey.toString(),
+                            walletPublicKey.toString(),
                             quest,
                             JSON.stringify(activeQuestProposals)
                         ))
@@ -1223,6 +1222,7 @@ export const QuestsGallery = () => {
             nfts,
             nftsSelection,
             wallet,
+            walletPublicKey,
             setQuestsProgression,
             setShouldRefreshInterval,
             activeQuestProposals,
@@ -1238,7 +1238,7 @@ export const QuestsGallery = () => {
                     String.fromCharCode(
                         ...(await mint_rewards(
                             // @ts-ignore
-                            wallet.publicKey.toString(),
+                            walletPublicKey.toString(),
                             JSON.stringify(
                                 nftsQuested
                                     .filter((_, nftIndex) => nftsSelection[nftIndex])
@@ -1318,6 +1318,8 @@ export const QuestsGallery = () => {
             nftsQuested,
             nftsSelection,
             wallet,
+            walletPublicKey,
+            walletPublicKey,
             setQuestsProgression,
             setShouldRefreshInterval,
         ]
@@ -1378,7 +1380,6 @@ export const QuestsGallery = () => {
             globalEnum === "recover"
             && activeQuestProposals.length > 0
         ) {
-            console.log("waldo");
             cols += 2;
         }
         if (questsProgression === 2 || questsProgression === 1) {
@@ -1521,18 +1522,24 @@ export const QuestsGallery = () => {
                 </Snackbar>
                 <StyledCard>
                     {body}
-                    {loading === true && (
-                        <StyledCard>
-                            <Stack justifyContent="center" alignContent="center">
-                                <Typography gutterBottom variant="h5" component="div">
-                                    Loading...
-                                </Typography>
-                                <div style={{display: 'flex', justifyContent: 'center'}}>
-                                    <CircularProgress />
-                                </div>
-                            </Stack>
-                        </StyledCard>
-                    )}
+                {loading === true && (
+                    <StyledCard>
+                        <Stack justifyContent="center" alignContent="center">
+                            <Typography gutterBottom variant="h5" component="div">
+                                Loading...
+                            </Typography>
+                            <br />
+                            <div style={{display: 'flex', justifyContent: 'center'}}>
+                                <CircularProgress />
+                            </div>
+                            <br />
+                            <br />
+                            <Typography gutterBottom variant="h5" component="div">
+                                {LOADING_MSGS[index % LOADING_MSGS.length]}
+                            </Typography>
+                        </Stack>
+                    </StyledCard>
+                )}
                 </StyledCard>
             </div>
         </>
