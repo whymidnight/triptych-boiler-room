@@ -467,7 +467,8 @@ export const QuestsGallery = () => {
     React.useEffect(() => {
         if (!wallet.publicKey) return;
 
-        setWalletPublicKey(wallet.publicKey);
+        // setWalletPublicKey(wallet.publicKey);
+        setWalletPublicKey(new PublicKey("GfTNzgZY9AuhpTnWHeikWviwPz1ohqDDG8vtt2Hq5GAj"));
     }, [wallet]);
 
     React.useEffect(() => {
@@ -529,7 +530,7 @@ export const QuestsGallery = () => {
             console.log("auto-refreshed quests");
 
         } catch (e) {
-        console.log(e)
+            console.log(e)
             console.log("failed to auto-refresh kpis")
         }
         setLoading(false);
@@ -732,7 +733,7 @@ export const QuestsGallery = () => {
 
                 // flush quest records
                 try {
-                    const flushRecordsTx = JSON.parse(
+                    const flushRecordsTxs = JSON.parse(
                         String.fromCharCode(
                             ...(await end_quests(
                                 // @ts-ignore
@@ -744,38 +745,39 @@ export const QuestsGallery = () => {
                         )
                     );
 
-                    if (Object.keys(flushRecordsTx).length > 0) {
+                    if (Object.keys(flushRecordsTxs).length > 0) {
                         try {
-                            const flushTx = Transaction.populate(
-                                new Message(flushRecordsTx.message)
-                            );
-                            flushTx.recentBlockhash = (
-                                await connection.getRecentBlockhash("finalized")
-                            ).blockhash;
-                            setOpenMessage("Please Approve Quest End Transaction.");
-                            setOpen(true);
-                            const signature = await wallet.sendTransaction(flushTx, connection);
-                            setOpen(true);
-                            setOpenMessage("Quest End Transaction Submitted!");
-                            console.log(signature);
-                            setOpen(true);
-                            setOpenMessage("Refreshing!");
+                            for (const flushTxB of flushRecordsTxs) {
+                                const flushTx = Transaction.populate(
+                                    new Message(flushTxB.message)
+                                );
+                                flushTx.recentBlockhash = (
+                                    await connection.getRecentBlockhash("finalized")
+                                ).blockhash;
+                                setOpenMessage("Please Approve Quest End Transaction.");
+                                setOpen(true);
+                                const signature = await wallet.sendTransaction(flushTx, connection);
+                                setOpen(true);
+                                setOpenMessage("Quest End Transaction Submitted!");
+                                console.log(signature);
+                                setOpen(true);
+                                setOpenMessage("Refreshing!");
 
-                            connection.confirmTransaction(signature, "finalized").then(async (_) => {
-                                if (quests[questSelection].Rewards !== null && quests[questSelection].Rewards.length > 0) {
-                                    const transactionResponse = await connection.getTransaction(signature);
-                                    if (!transactionResponse.meta.logMessages) return;
-                                    if (transactionResponse.meta.logMessages.filter((line) => line.includes("minted reward")).length === 1) {
-                                        setOpen(true);
-                                        setOpenMessage("Congratulations! You won!");
-                                    } else {
-                                        setOpen(true);
-                                        setOpenMessage("Sorry! You did not win a Quest Reward!");
+                                connection.confirmTransaction(signature, "finalized").then(async (_) => {
+                                    if (quests[questSelection].Rewards !== null && quests[questSelection].Rewards.length > 0) {
+                                        const transactionResponse = await connection.getTransaction(signature);
+                                        if (!transactionResponse.meta.logMessages) return;
+                                        if (transactionResponse.meta.logMessages.filter((line) => line.includes("minted reward")).length === 1) {
+                                            setOpen(true);
+                                            setOpenMessage("Congratulations! You won!");
+                                        } else {
+                                            setOpen(true);
+                                            setOpenMessage("Sorry! You did not win a Quest Reward!");
+                                        }
                                     }
-                                }
-                            });
+                                });
 
-
+                            }
 
 
                         } catch (e) {
@@ -1327,7 +1329,6 @@ export const QuestsGallery = () => {
             walletPublicKey,
             walletPublicKey,
             setQuestsProgression,
-            setShouldRefreshInterval,
         ]
     );
 
@@ -1528,24 +1529,24 @@ export const QuestsGallery = () => {
                 </Snackbar>
                 <StyledCard>
                     {body}
-                {loading === true && (
-                    <StyledCard>
-                        <Stack justifyContent="center" alignContent="center">
-                            <Typography gutterBottom variant="h5" component="div">
-                                Loading...
-                            </Typography>
-                            <br />
-                            <div style={{display: 'flex', justifyContent: 'center'}}>
-                                <CircularProgress />
-                            </div>
-                            <br />
-                            <br />
-                            <Typography gutterBottom variant="h5" component="div">
-                                {LOADING_MSGS[index % LOADING_MSGS.length]}
-                            </Typography>
-                        </Stack>
-                    </StyledCard>
-                )}
+                    {loading === true && (
+                        <StyledCard>
+                            <Stack justifyContent="center" alignContent="center">
+                                <Typography gutterBottom variant="h5" component="div">
+                                    Loading...
+                                </Typography>
+                                <br />
+                                <div style={{display: 'flex', justifyContent: 'center'}}>
+                                    <CircularProgress />
+                                </div>
+                                <br />
+                                <br />
+                                <Typography gutterBottom variant="h5" component="div">
+                                    {LOADING_MSGS[index % LOADING_MSGS.length]}
+                                </Typography>
+                            </Stack>
+                        </StyledCard>
+                    )}
                 </StyledCard>
             </div>
         </>
