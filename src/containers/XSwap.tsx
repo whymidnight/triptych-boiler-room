@@ -117,10 +117,10 @@ export const XSwap = () => {
     }, []);
 
     const onAmountChange = useCallback((event, fieldEnum) => {
-        let amountInp = Number(event.target.value);
-        console.log(amountInp, swaps[selectedFrom].swapMeta.Per, amountInp / swaps[selectedFrom].swapMeta.Per);
-        let toAmountInp = Math.floor(amountInp / swaps[selectedFrom].swapMeta.Per);
-        amountInp = toAmountInp * swaps[selectedFrom].swapMeta.Per;
+
+        const toAmountInp = Math.floor(Number(event.target.value) / swaps[selectedFrom].swapMeta.Per);
+        const amountInp = toAmountInp * swaps[selectedFrom].swapMeta.Per;
+
         setAmount(amountInp);
         setToAmount(toAmountInp);
     }, [swaps, selectedFrom])
@@ -244,30 +244,32 @@ export const XSwap = () => {
                                     </FormControl>
                                 </Grid>
                                 <Grid item xs={6}>
-                                    <TextField
-                                        onChange={(event) => onAmountChange(event, "")}
-                                        type="number"
-                                        value={amount}
-                                        InputProps={{
-                                            inputProps: {
-                                                min: 0,
-                                                max: balance,
-                                                step: swaps.hasOwnProperty(selectedFrom) ? String(swaps[selectedFrom].swapMeta.Per) : '1',
-                                                style: {textAlign: 'center'},
-                                            },
-                                            endAdornment: (<InputAdornment position="end"><Typography variant="h5" component="div">
-                                                {selectedFrom !== -1 ? swaps[selectedFrom].mintsMeta.from.tokenMetadata.symbol : ""}
-                                            </Typography>
-                                            </InputAdornment>),
-                                        }}
-                                        sx={{
-                                            backgroundColor: '#fff',
-                                            borderRadius: "25px",
-                                            '& fieldset': {
+                                    <FormControl fullWidth>
+                                        <TextField
+                                            onChange={(event) => onAmountChange(event, "")}
+                                            type="number"
+                                            value={Number(amount).toString()}
+                                            InputProps={{
+                                                inputProps: {
+                                                    min: 0,
+                                                    max: balance,
+                                                    step: swaps.hasOwnProperty(selectedFrom) ? String(swaps[selectedFrom].swapMeta.Per) : '1',
+                                                    style: {textAlign: 'center'},
+                                                },
+                                                endAdornment: (<InputAdornment position="end"><Typography variant="h5" component="div">
+                                                    {selectedFrom !== -1 ? swaps[selectedFrom].mintsMeta.from.tokenMetadata.symbol : ""}
+                                                </Typography>
+                                                </InputAdornment>),
+                                            }}
+                                            sx={{
+                                                backgroundColor: '#fff',
                                                 borderRadius: "25px",
-                                            },
-                                        }}
-                                    />
+                                                '& fieldset': {
+                                                    borderRadius: "25px",
+                                                },
+                                            }}
+                                        />
+                                    </FormControl>
                                 </Grid>
                             </Grid>
                         </StyledCard>
@@ -336,30 +338,32 @@ export const XSwap = () => {
                                     </FormControl>
                                 </Grid>
                                 <Grid item xs={6}>
-                                    <TextField
-                                        onChange={(event) => onAmountChange(event, "")}
-                                        type="number"
-                                        value={toAmount}
-                                        InputProps={{
-                                            inputProps: {
-                                                min: 0,
-                                                max: balance,
-                                                step: swaps.hasOwnProperty(selectedFrom) ? String(swaps[selectedFrom].swapMeta.Per) : '1',
-                                                style: {textAlign: 'center'},
-                                            },
-                                            endAdornment: (<InputAdornment position="end"><Typography variant="h5" component="div">
-                                                {selectedFrom !== -1 ? swaps[selectedFrom].mintsMeta.to.tokenMetadata.symbol : ""}
-                                            </Typography>
-                                            </InputAdornment>),
-                                        }}
-                                        sx={{
-                                            backgroundColor: '#fff',
-                                            borderRadius: "25px",
-                                            '& fieldset': {
+                                    <FormControl fullWidth>
+                                        <TextField
+                                            onChange={(event) => onAmountChange(event, "")}
+                                            type="number"
+                                            value={Number(toAmount).toString()}
+                                            InputProps={{
+                                                inputProps: {
+                                                    min: 0,
+                                                    max: balance,
+                                                    step: swaps.hasOwnProperty(selectedFrom) ? String(swaps[selectedFrom].swapMeta.Per) : '1',
+                                                    style: {textAlign: 'center'},
+                                                },
+                                                endAdornment: (<InputAdornment position="end"><Typography variant="h5" component="div">
+                                                    {selectedFrom !== -1 ? swaps[selectedFrom].mintsMeta.to.tokenMetadata.symbol : ""}
+                                                </Typography>
+                                                </InputAdornment>),
+                                            }}
+                                            sx={{
+                                                backgroundColor: '#fff',
                                                 borderRadius: "25px",
-                                            },
-                                        }}
-                                    />
+                                                '& fieldset': {
+                                                    borderRadius: "25px",
+                                                },
+                                            }}
+                                        />
+                                    </FormControl>
                                 </Grid>
                             </Grid>
                         </StyledCard>

@@ -202,7 +202,7 @@ height: auto;
     width: 95vw;
   }
   @media (min-width: 500px) {
-    width: 30vw;
+    width: 45vw;
   }
   background-image: linear-gradient(var(--gradient-rotate, 246deg), rgb(218 46 239) 7.97%, rgb(43 106 255) 49.17%, rgb(57 208 216) 92.1%);
 }
