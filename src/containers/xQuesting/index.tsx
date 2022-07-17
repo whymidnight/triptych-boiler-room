@@ -468,7 +468,6 @@ export const QuestsGallery = () => {
         if (!wallet.publicKey) return;
 
         setWalletPublicKey(wallet.publicKey);
-        // setWalletPublicKey(new PublicKey("GfTNzgZY9AuhpTnWHeikWviwPz1ohqDDG8vtt2Hq5GAj"));
     }, [wallet]);
 
     React.useEffect(() => {
