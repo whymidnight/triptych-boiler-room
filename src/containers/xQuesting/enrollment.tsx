@@ -216,7 +216,11 @@ export const NFTGalleryItems = ({onSelection}) => {
                         {stakingProgression === 0 && (
                             <QuestStakingTokens
                                 id="Gen One"
-                                required={quests[questSelection].PairsConfig.Left}
+                                required={
+                                    quests.hasOwnProperty(questSelection) && quests[questSelection].PairsConfig
+                                        ? quests[questSelection].PairsConfig.Left
+                                        : 0
+                                }
                                 draggableId="genOneDraggable"
                                 droppableId="genOneStaking"
                                 staking={items.genOneStaking}
@@ -225,7 +229,11 @@ export const NFTGalleryItems = ({onSelection}) => {
                         {stakingProgression === 1 && (
                             <QuestStakingTokens
                                 id="Gen Two"
-                                required={quests[questSelection].PairsConfig.Right}
+                                required={
+                                    quests.hasOwnProperty(questSelection) && quests[questSelection].PairsConfig
+                                        ? quests[questSelection].PairsConfig.Right
+                                        : 0
+                                }
                                 draggableId="genTwoDraggable"
                                 droppableId="genTwoStaking"
                                 staking={items.genTwoStaking}

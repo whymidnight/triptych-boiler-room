@@ -951,8 +951,14 @@ export const QuestsGallery = () => {
 
                         await (new Promise(resolve => setTimeout(resolve, 2 * 1000)));
                     }
+                    /*
                     setQuestsProgression(2);
                     setShouldRefreshInterval(false);
+                    */
+                    setQuestsSelection("");
+                    setQuestsProgression(0);
+                    setShouldRefreshInterval(true);
+
                 }
             }
 
