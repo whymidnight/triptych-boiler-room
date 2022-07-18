@@ -651,7 +651,7 @@ export const QuestsGallery = () => {
                                 ).blockhash;
                                 setOpenMessage("Please Approve Quest Withdrawal Transaction.");
                                 setOpen(true);
-                                const signature = await wallet.sendTransaction(flushTx, connection);
+                                const signature = await wallet.sendTransaction(flushTx, connection, {skipPreflight: true});
                                 setOpen(true);
                                 setOpenMessage("Quest Withdrawal Transaction Submitted.");
                                 console.log(signature);
@@ -704,7 +704,7 @@ export const QuestsGallery = () => {
                                 ).blockhash;
                                 setOpenMessage("Please Approve Claim Reward Transaction.");
                                 setOpen(true);
-                                const signature = await wallet.sendTransaction(flushTx, connection);
+                                const signature = await wallet.sendTransaction(flushTx, connection, {skipPreflight: true});
                                 console.log(signature);
                                 setOpen(true);
                                 setOpenMessage("Claim Reward Transaction Submitted!");
@@ -755,7 +755,7 @@ export const QuestsGallery = () => {
                                 ).blockhash;
                                 setOpenMessage("Please Approve Quest End Transaction.");
                                 setOpen(true);
-                                const signature = await wallet.sendTransaction(flushTx, connection);
+                                const signature = await wallet.sendTransaction(flushTx, connection, {skipPreflight: true});
                                 setOpen(true);
                                 setOpenMessage("Quest End Transaction Submitted!");
                                 console.log(signature);
@@ -874,7 +874,8 @@ export const QuestsGallery = () => {
                                     setOpen(true);
                                     const signature = await wallet.sendTransaction(
                                         enrollQuesteesTx,
-                                        connection
+                                        connection,
+                                        {skipPreflight: true},
                                     );
                                     setOpen(true);
                                     setOpenMessage("Quest Start Transaction Submitted.");
@@ -933,7 +934,8 @@ export const QuestsGallery = () => {
                                 setOpen(true);
                                 const signature = await wallet.sendTransaction(
                                     enrollQuesteesTx,
-                                    connection
+                                    connection,
+                                    {skipPreflight: true},
                                 );
                                 setOpenMessage("Quest Start Transaction Submitted.");
                                 setOpen(true);
@@ -987,7 +989,11 @@ export const QuestsGallery = () => {
                     doRngsTx.recentBlockhash = (
                         await connection.getRecentBlockhash("finalized")
                     ).blockhash;
-                    const signature = await wallet.sendTransaction(doRngsTx, connection);
+                    const signature = await wallet.sendTransaction(
+                        doRngsTx,
+                        connection,
+                        {skipPreflight: true},
+                    );
                     console.log(signature);
                     await connection.confirmTransaction(signature, "confirmed");
                 }
@@ -1114,7 +1120,8 @@ export const QuestsGallery = () => {
                         setOpen(true);
                         const signature = await wallet.sendTransaction(
                             selectQuestTx,
-                            connection
+                            connection,
+                            {skipPreflight: true},
                         );
                         setOpenMessage("Quest Selection Submitted.")
                         setOpen(true);
@@ -1204,7 +1211,8 @@ export const QuestsGallery = () => {
                         setOpenMessage("Please Approve Start Quest Transaction.");
                         const signature = await wallet.sendTransaction(
                             startQuestsTx,
-                            connection
+                            connection,
+                            {skipPreflight: true},
                         );
                         setOpenMessage("Start Quest Transaction Submitted.");
                         setOpen(true);
@@ -1267,7 +1275,9 @@ export const QuestsGallery = () => {
                         ).blockhash;
                         const signature = await wallet.sendTransaction(
                             rewardTx,
-                            connection
+                            connection,
+                            {skipPreflight: true},
+
                         );
                         console.log(signature);
                         await connection.confirmTransaction(signature, "confirmed");
@@ -1303,7 +1313,8 @@ export const QuestsGallery = () => {
                     ).blockhash;
                     const signature = await wallet.sendTransaction(
                         endQuestsTx,
-                        connection
+                        connection,
+                        {skipPreflight: true},
                     );
                     console.log(signature);
                     await connection.confirmTransaction(signature, "confirmed");
