@@ -98,6 +98,57 @@ export const XSwap = () => {
 
     }, [swaps, selectedFrom, amount, balance, setOpen, setOpenMessage]);
 
+    const onAmountUpdate = useCallback((event, direction, op) => {
+        event.preventDefault();
+        if (selectedFrom === -1) return;
+
+        switch (direction) {
+            case "from": {
+                switch (op) {
+                    case "decr": {
+                        const toAmountInp = Math.floor(Number(amount - swaps[selectedFrom].swapMeta.Per) / swaps[selectedFrom].swapMeta.Per);
+                        const amountInp = toAmountInp * swaps[selectedFrom].swapMeta.Per;
+                        if (amountInp < 0 || amountInp > balance) return;
+                        setToAmount(toAmountInp);
+                        setAmount(amountInp);
+                        break;
+                    }
+                    case "incr": {
+                        const toAmountInp = Math.floor(Number(swaps[selectedFrom].swapMeta.Per + amount) / swaps[selectedFrom].swapMeta.Per);
+                        const amountInp = toAmountInp * swaps[selectedFrom].swapMeta.Per;
+                        if (amountInp < 0 || amountInp > balance) return;
+                        setToAmount(toAmountInp);
+                        setAmount(amountInp);
+                        break;
+                    }
+                }
+                break;
+            }
+            case "to": {
+                switch (op) {
+                    case "decr": {
+                        const toAmountInp = Math.floor(Number(amount - swaps[selectedFrom].swapMeta.Per) / swaps[selectedFrom].swapMeta.Per);
+                        const amountInp = toAmountInp * swaps[selectedFrom].swapMeta.Per;
+                        if (amountInp < 0 || amountInp > balance) return;
+                        setToAmount(toAmountInp);
+                        setAmount(amountInp);
+                        break;
+                    }
+                    case "incr": {
+                        const toAmountInp = Math.floor(Number(swaps[selectedFrom].swapMeta.Per + amount) / swaps[selectedFrom].swapMeta.Per);
+                        const amountInp = toAmountInp * swaps[selectedFrom].swapMeta.Per;
+                        if (amountInp < 0 || amountInp > balance) return;
+                        setToAmount(toAmountInp);
+                        setAmount(amountInp);
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+
+    }, [amount, swaps, selectedFrom, balance]);
+
     const onSwapSelect = useCallback((event, side, index) => {
         console.log(side, index, swaps[index]);
         switch (side) {
@@ -111,10 +162,6 @@ export const XSwap = () => {
             }
         }
     }, [setSelectedTo, setSelectedFrom]);
-
-    useEffect(() => {
-
-    }, []);
 
     const onAmountChange = useCallback((event, fieldEnum) => {
 
@@ -188,6 +235,16 @@ export const XSwap = () => {
             </Snackbar>
             <Box >
                 <StyledCard className="swap-container" >
+                    <StyledCard className="swap-card">
+                        <Typography variant="h5" component="div">
+                            From-To
+                        </Typography>
+                        <Typography variant="h5" component="div">
+                            {selectedFrom !== -1 ? swaps[selectedFrom].mintsMeta.from.tokenMetadata.symbol : "Token"}
+                            -
+                            {selectedTo !== -1 ? swaps[selectedFrom].mintsMeta.to.tokenMetadata.symbol : "Token"}
+                        </Typography>
+                    </StyledCard>
                     <Grid container item xs={12}>
                         <Grid item xs={6}>
                             <StyledCard className="swap-card">
@@ -209,18 +266,13 @@ export const XSwap = () => {
                     <Grid item xs={12} >
                         <StyledCard className="swap-card">
                             <Grid container item sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem'}}>
-                                <Grid item xs={2}>
-                                    <Typography variant="h5" component="div">
-                                        From
-                                    </Typography>
-                                </Grid>
                                 <Grid item xs={4}>
-                                    <FormControl fullWidth>
+                                    <FormControl fullWidth sx={{textAlignLast: 'center'}}>
                                         <InputLabel>
-                                            Token
+                                            {selectedFrom !== -1 ? swaps[selectedFrom].mintsMeta.from.tokenMetadata.symbol : "Token"}
                                         </InputLabel>
                                         <Select
-                                            label="Token"
+                                            label={selectedFrom !== -1 ? swaps[selectedFrom].mintsMeta.from.tokenMetadata.symbol : "Token"}
                                             value={String(selectedFrom)}
                                         >
                                             <MenuItem
@@ -243,8 +295,28 @@ export const XSwap = () => {
                                         </Select>
                                     </FormControl>
                                 </Grid>
-                                <Grid item xs={6}>
-                                    <FormControl fullWidth>
+                                <Grid item xs={8}>
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            backgroundColor: '#fff',
+                                            borderRadius: "25px",
+                                            '& button': {
+                                                borderRadius: "25px",
+                                                borderColor: '#fff',
+                                                textAlign: 'center',
+                                            },
+                                            '& fieldset': {
+                                                borderColor: '#fff',
+                                                textAlign: 'center',
+                                            },
+                                        }}
+                                    >
+                                        <Button className="swap-card" onClick={(event) => onAmountUpdate(event, "from", "decr")}>
+                                            -
+                                        </Button>
                                         <TextField
                                             onChange={(event) => onAmountChange(event, "")}
                                             type="number"
@@ -256,39 +328,26 @@ export const XSwap = () => {
                                                     step: swaps.hasOwnProperty(selectedFrom) ? String(swaps[selectedFrom].swapMeta.Per) : '1',
                                                     style: {textAlign: 'center'},
                                                 },
-                                                endAdornment: (<InputAdornment position="end"><Typography variant="h5" component="div">
-                                                    {selectedFrom !== -1 ? swaps[selectedFrom].mintsMeta.from.tokenMetadata.symbol : ""}
-                                                </Typography>
-                                                </InputAdornment>),
-                                            }}
-                                            sx={{
-                                                backgroundColor: '#fff',
-                                                borderRadius: "25px",
-                                                '& fieldset': {
-                                                    borderRadius: "25px",
-                                                },
                                             }}
                                         />
-                                    </FormControl>
+                                        <Button className="swap-card" onClick={(event) => onAmountUpdate(event, "from", "incr")}>
+                                            +
+                                        </Button>
+                                    </Box>
                                 </Grid>
                             </Grid>
                         </StyledCard>
                         <StyledCard className="swap-card">
                             <Grid container item sx={{display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem'}}>
-                                <Grid item xs={2}>
-                                    <Typography variant="h5" component="div">
-                                        To
-                                    </Typography>
-                                </Grid>
                                 <Grid item xs={4}>
                                     <FormControl fullWidth sx={{textAlignLast: 'center'}}>
                                         <InputLabel>
                                             <Typography align="center" gutterBottom variant="h5" component="div">
-                                                Token
+                                                {selectedFrom !== -1 ? swaps[selectedFrom].mintsMeta.to.tokenMetadata.symbol : "Token"}
                                             </Typography>
                                         </InputLabel>
                                         <Select
-                                            label="Token"
+                                            label={selectedFrom !== -1 ? swaps[selectedFrom].mintsMeta.to.tokenMetadata.symbol : "Token"}
                                             value={selectedTo}
                                         >
                                             <MenuItem
@@ -337,8 +396,28 @@ export const XSwap = () => {
                                         </Select>
                                     </FormControl>
                                 </Grid>
-                                <Grid item xs={6}>
-                                    <FormControl fullWidth>
+                                <Grid item xs={8}>
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            backgroundColor: '#fff',
+                                            borderRadius: "25px",
+                                            '& button': {
+                                                borderRadius: "25px",
+                                                borderColor: '#fff',
+                                                textAlign: 'center',
+                                            },
+                                            '& fieldset': {
+                                                borderColor: '#fff',
+                                                textAlign: 'center',
+                                            },
+                                        }}
+                                    >
+                                        <Button className="swap-card" onClick={(event) => onAmountUpdate(event, "to", "decr")}>
+                                            -
+                                        </Button>
                                         <TextField
                                             onChange={(event) => onAmountChange(event, "")}
                                             type="number"
@@ -350,27 +429,19 @@ export const XSwap = () => {
                                                     step: swaps.hasOwnProperty(selectedFrom) ? String(swaps[selectedFrom].swapMeta.Per) : '1',
                                                     style: {textAlign: 'center'},
                                                 },
-                                                endAdornment: (<InputAdornment position="end"><Typography variant="h5" component="div">
-                                                    {selectedFrom !== -1 ? swaps[selectedFrom].mintsMeta.to.tokenMetadata.symbol : ""}
-                                                </Typography>
-                                                </InputAdornment>),
-                                            }}
-                                            sx={{
-                                                backgroundColor: '#fff',
-                                                borderRadius: "25px",
-                                                '& fieldset': {
-                                                    borderRadius: "25px",
-                                                },
                                             }}
                                         />
-                                    </FormControl>
+                                        <Button className="swap-card" onClick={(event) => onAmountUpdate(event, "to", "incr")}>
+                                            +
+                                        </Button>
+                                    </Box>
                                 </Grid>
                             </Grid>
                         </StyledCard>
                     </Grid>
                 </StyledCard>
             </Box>
-        </Grid>
+        </Grid >
     );
 };
 
