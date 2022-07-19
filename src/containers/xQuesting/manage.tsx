@@ -454,11 +454,11 @@ export const QuestedGalleryItems = ({onSelection}) => {
                     break;
                 }
                 case "manage": {
-                    purgatory = questsProposals.hasOwnProperty(questSelection) ? questsProposals[questSelection].filter(({Started, Withdrawn}) => Started && !Withdrawn) : [];
+                    purgatory = questsProposals.hasOwnProperty(questSelection) ? questsProposals[questSelection].filter(({Started, Finished}) => Started && !Finished) : [];
                     break;
                 }
                 case "reward": {
-                    purgatory = questsProposals.hasOwnProperty(questSelection) ? questsProposals[questSelection].filter(({Started, Withdrawn}) => Started && !Withdrawn) : [];
+                    purgatory = questsProposals.hasOwnProperty(questSelection) ? questsProposals[questSelection].filter(({Started, Finished}) => Started && !Finished) : [];
                     break;
                 }
                 default: {
