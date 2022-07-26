@@ -1,18 +1,18 @@
-import {Metaplex} from "@metaplex-foundation/js-next";
+import { Metaplex } from "@metaplex-foundation/js-next";
 
-import React, {useState, useEffect, useCallback, useMemo} from "react";
-import {Transaction, Message} from "@solana/web3.js";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { Transaction, Message } from "@solana/web3.js";
 
-import {Box, Grid, CircularProgress} from "@mui/material";
+import { Box, Grid, CircularProgress } from "@mui/material";
 import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
-import {useRecoilState} from "recoil";
-import {PublicKey} from "@solana/web3.js";
-import {useWallet} from "@solana/wallet-adapter-react";
-import {Connection} from "@solana/web3.js";
+import { useRecoilState } from "recoil";
+import { PublicKey } from "@solana/web3.js";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { Connection } from "@solana/web3.js";
 import axios from "axios";
 
 /*
@@ -50,32 +50,30 @@ import {
   questTabsAtom,
   refreshIntervalAtom,
   shouldRefreshIntervalAtom,
+  loadingAtom,
 } from "./state/atoms";
-import {StyledCard} from "../../components/cards";
+import { StyledCard } from "../../components/cards";
 
-import Snackbar from '@mui/material/Snackbar';
-import {Stack} from '@mui/material';
-import MuiAlert, {AlertProps} from '@mui/material/Alert';
-import AppBar from '@mui/material/AppBar';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
+import Snackbar from "@mui/material/Snackbar";
+import { Stack } from "@mui/material";
+import MuiAlert, { AlertProps } from "@mui/material/Alert";
+import AppBar from "@mui/material/AppBar";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
 
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select, {SelectChangeEvent} from '@mui/material/Select';
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select, { SelectChangeEvent } from "@mui/material/Select";
 
-
-import {NFTGalleryItems, QuestStart} from "./enrollment";
-import {QuestedGalleryItems, QuestedGalleryItemsHeader} from "./manage";
-import {QuestAction} from "./rewards";
-import {exec} from "child_process";
+import { NFTGalleryItems, QuestStart } from "./enrollment";
+import { QuestedGalleryItems, QuestedGalleryItemsHeader } from "./manage";
+import { QuestAction } from "./rewards";
+import { exec } from "child_process";
+import Flipper from "../Flipper/index";
 
 declare function get_quests(oracle: String): Promise<any>;
-declare function get_quests_kpis(
-  oracle: String,
-  holder: String,
-): Promise<any>;
+declare function get_quests_kpis(oracle: String, holder: String): Promise<any>;
 declare function get_quests_proposals(
   oracle: String,
   holder: String
@@ -90,7 +88,7 @@ declare function new_quest_proposal(
 declare function onboard_from_singletons(
   wallet_publicKey: String,
   quest: String,
-  depositing: String,
+  depositing: String
 ): Promise<any>;
 declare function flush_quest_records(
   wallet_publicKey: String,
@@ -131,16 +129,17 @@ declare function get_rewards(
   questIndex: String
 ): Promise<any>;
 
-export const ORACLE = new PublicKey("GbfoTncFrg8PxS2KY9mmCHz73Bv9cXUxsr7Q66y5SUDo");
-export const CONNECTION = "https://rpc.ankr.com/solana";
+export const ORACLE = new PublicKey(
+  "GbfoTncFrg8PxS2KY9mmCHz73Bv9cXUxsr7Q66y5SUDo"
+);
+export const CONNECTION = "https://ssc-dao.genesysgo.net";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,
-  ref,
+  ref
 ) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
-
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -149,7 +148,7 @@ interface TabPanelProps {
 }
 
 function TabPanel(props: TabPanelProps) {
-  const {children, value, index, ...other} = props;
+  const { children, value, index, ...other } = props;
 
   return (
     <div
@@ -160,14 +159,13 @@ function TabPanel(props: TabPanelProps) {
       {...other}
     >
       {value === index && (
-        <Box sx={{p: 3}}>
+        <Box sx={{ p: 3 }}>
           <Typography>{children}</Typography>
         </Box>
       )}
     </div>
   );
 }
-
 
 //@ts-ignore
 export const QuestsGalleryItems = ({
@@ -176,6 +174,7 @@ export const QuestsGalleryItems = ({
   onReward,
   onRecover,
 }) => {
+  const [loading, setLoading] = useRecoilState(loadingAtom);
   const [questsProposals, setQuestsProposals] =
     useRecoilState(questsProposalsAtom);
   const [quests] = useRecoilState(questsAtom);
@@ -183,27 +182,42 @@ export const QuestsGalleryItems = ({
   const [nftsQuestedExhaust] = useRecoilState(nftsQuestedExhaustAtom);
   const [questsKeys, setQuestsKeys] = useState([]);
   const [tab, setTab] = useRecoilState(questTabsAtom);
-  const [refreshInterval, setRefreshInterval] = useRecoilState(refreshIntervalAtom);
+  const [refreshInterval, setRefreshInterval] =
+    useRecoilState(refreshIntervalAtom);
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTab(newValue);
   };
+  const [shouldRefreshInterval, setShouldRefreshInterval] = useRecoilState(
+    shouldRefreshIntervalAtom
+  );
 
   // 4jAu28eBUWzqNkYCLC17rWBCDEhs47juszS6dsABpkrw, 6tzi4GYZMTrCv9gJi6iXBC2eheD9EZBMBUxM1WHAibd8
   useEffect(() => {
-    const wlQuests = ["Ex2YyicgAHnGH1JZCu6y4Pq5UUrKqJdPCGa8qPx9MmDK", "HqK1mrYLhAuDHgyzRGNFJXeKzkH9fWXXKNaAi2YibJju"];
+    const wlQuests = [
+      "Ex2YyicgAHnGH1JZCu6y4Pq5UUrKqJdPCGa8qPx9MmDK",
+      "HqK1mrYLhAuDHgyzRGNFJXeKzkH9fWXXKNaAi2YibJju",
+    ];
 
     const keys = Object.keys(quests);
     switch (tab) {
       case 0: {
-        setQuestsKeys(keys.filter((quest) => !wlQuests.some((wlQuest) => wlQuest === quest)));
+        setQuestsKeys(
+          keys.filter((quest) => !wlQuests.some((wlQuest) => wlQuest === quest))
+        );
         break;
       }
       case 1: {
-        setQuestsKeys(keys.filter((quest) => wlQuests.some((wlQuest) => wlQuest === quest)));
+        setQuestsKeys(
+          keys.filter((quest) => wlQuests.some((wlQuest) => wlQuest === quest))
+        );
+        break;
+      }
+      case 2: {
+        setQuestsKeys([]);
         break;
       }
     }
-  }, [quests, tab, setQuestsKeys])
+  }, [quests, tab, setQuestsKeys]);
 
   const handleIntervalChange = useCallback((event: SelectChangeEvent) => {
     setRefreshInterval(Number(event.target.value));
@@ -216,213 +230,248 @@ export const QuestsGalleryItems = ({
         <Tab label="Whitelist Quests" />
       </Tabs>
       <Grid justifyContent="center" alignItems="center" container>
-        {questsKeys.length > 0 &&
-          questsKeys.map((quest) => {
-            return (
-              <>
-                <Grid xs={10} sm={3} key={quest}>
-                  <Box textAlign="center">
-                    <StyledCard>
-                      <StyledCard sx={{padding: "5%"}}>
-                        <Typography gutterBottom variant="h5" component="div">
-                          {
-                            quests[quest].Name
-                          }
-                        </Typography>
-                        <Typography gutterBottom variant="h5" component="div">
-                          {
-                            //@ts-ignore
-                            String(
-                              "Quest"
-                            )
-                          }
-                        </Typography>
-                      </StyledCard>
-                      <Grid container alignItems="center" justifyContent="center">
-                        <Grid item xs={12} sx={{padding: '5% 0%'}}>
-                          <QuestedGalleryItemsHeader
-                            quest={quest}
-                            kpis={[
-                              "totalStaked",
-                              quests[quest].StakingConfig !== null ? "stakingReward" : "",
-                            ]}
-                          />
-                        </Grid>
-                        <Grid item xs={12} sx={{padding: '5% 0%'}}>
-                          <QuestedGalleryItemsHeader
-                            quest={quest}
-                            kpis={[
-                              quests[quest].Tender !== null ? "entryCost" : "",
-                              "type",
-                            ]}
-                          />
-                        </Grid>
-                        <Grid item xs={12} sx={{padding: '5% 0%'}}>
-                          <QuestedGalleryItemsHeader
-                            quest={quest}
-                            kpis={[
-                              quests[quest].StakingConfig !== null ? "payoutMeta" : "",
-                            ]}
-                          />
-                        </Grid>
-                      </Grid>
-                      <CardContent>
-                        <Typography
-                          gutterBottom
-                          variant="h5"
-                          component="div"
-                          sx={{paddingTop: "2px"}}
-                        >
-                          Layout:
-                        </Typography>
-                        <Grid container>
-                          <Grid item xs={5} sx={{padding: "10px"}}>
+        {(() => {
+          switch (tab) {
+            case 2: {
+              setShouldRefreshInterval(false);
+              setLoading(false);
+              return (
+                <StyledCard>
+                  <Flipper />
+                </StyledCard>
+              );
+            }
+            default: {
+              return questsKeys.map((quest) => {
+                return (
+                  <>
+                    <Grid xs={10} sm={3} key={quest}>
+                      <Box textAlign="center">
+                        <StyledCard>
+                          <StyledCard sx={{ padding: "5%" }}>
                             <Typography
-                              align="right"
+                              gutterBottom
+                              variant="h5"
+                              component="div"
+                            >
+                              {quests[quest].Name}
+                            </Typography>
+                            <Typography
                               gutterBottom
                               variant="h5"
                               component="div"
                             >
                               {
                                 //@ts-ignore
-                                String(
-                                  //@ts-ignore
-                                  quests.hasOwnProperty(quest) ? quests[quest].PairsConfig.Left : 0
-                                )
+                                String("Quest")
                               }
                             </Typography>
+                          </StyledCard>
+                          <Grid
+                            container
+                            alignItems="center"
+                            justifyContent="center"
+                          >
+                            <Grid item xs={12} sx={{ padding: "5% 0%" }}>
+                              <QuestedGalleryItemsHeader
+                                quest={quest}
+                                kpis={[
+                                  "totalStaked",
+                                  quests[quest].StakingConfig !== null
+                                    ? "stakingReward"
+                                    : "",
+                                ]}
+                              />
+                            </Grid>
+                            <Grid item xs={12} sx={{ padding: "5% 0%" }}>
+                              <QuestedGalleryItemsHeader
+                                quest={quest}
+                                kpis={[
+                                  quests[quest].Tender !== null
+                                    ? "entryCost"
+                                    : "",
+                                  "type",
+                                ]}
+                              />
+                            </Grid>
+                            <Grid item xs={12} sx={{ padding: "5% 0%" }}>
+                              <QuestedGalleryItemsHeader
+                                quest={quest}
+                                kpis={[
+                                  quests[quest].StakingConfig !== null
+                                    ? "payoutMeta"
+                                    : "",
+                                ]}
+                              />
+                            </Grid>
                           </Grid>
-                          <Grid item xs={7} sx={{padding: "10px"}}>
+                          <CardContent>
                             <Typography
-                              align="left"
                               gutterBottom
                               variant="h5"
                               component="div"
+                              sx={{ paddingTop: "2px" }}
                             >
-                              {
-                                //@ts-ignore
-                                String("Gen One's")
-                              }
+                              Layout:
                             </Typography>
-                          </Grid>
-                        </Grid>
-                        <Grid container>
-                          <Grid item xs={5} sx={{padding: "10px"}}>
-                            <Typography
-                              align="right"
-                              gutterBottom
-                              variant="h5"
-                              component="div"
-                            >
-                              {
-                                //@ts-ignore
-                                String(
-                                  //@ts-ignore
-                                  quests.hasOwnProperty(quest) ? quests[quest].PairsConfig.Right : 0
-                                )
-                              }
-                            </Typography>
-                          </Grid>
-                          <Grid item xs={7} sx={{padding: "10px"}}>
-                            <Typography
-                              align="left"
-                              gutterBottom
-                              variant="h5"
-                              component="div"
-                            >
-                              {
-                                //@ts-ignore
-                                String("Gen Two's")
-                              }
-                            </Typography>
-                          </Grid>
-                        </Grid>
-                      </CardContent>
-                      <CardActions style={{justifyContent: "center"}}>
-                        <Button
-                          style={{
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                          }}
-                          disabled={
-                            questsProposals.hasOwnProperty(quest) &&
-                              questsProposals[quest].filter(
-                                //@ts-ignore
-                                ({Started, Finished}) => Started && !Finished
-                              ).length > 0
-                              ? false
-                              : true
-                          }
-                          onClick={(event) => onManage(event, quest)}
-                          size="small"
-                        >
-                          Manage
-                        </Button>
-                        <Button
-                          style={{
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                          }}
-                          onClick={(event) => onSelection(event, quest)}
-                          size="small"
-                        >
-                          Begin
-                        </Button>
-                        {questsProposals.hasOwnProperty(quest) &&
-                          questsProposals[quest].filter(
-                            (item) => !item.Started && !item.Withdrawn && (item.StartTime === null || item.StartTime === 0)
-                          ).length > 0 && (
+                            <Grid container>
+                              <Grid item xs={5} sx={{ padding: "10px" }}>
+                                <Typography
+                                  align="right"
+                                  gutterBottom
+                                  variant="h5"
+                                  component="div"
+                                >
+                                  {
+                                    //@ts-ignore
+                                    String(
+                                      //@ts-ignore
+                                      quests.hasOwnProperty(quest)
+                                        ? quests[quest].PairsConfig.Left
+                                        : 0
+                                    )
+                                  }
+                                </Typography>
+                              </Grid>
+                              <Grid item xs={7} sx={{ padding: "10px" }}>
+                                <Typography
+                                  align="left"
+                                  gutterBottom
+                                  variant="h5"
+                                  component="div"
+                                >
+                                  {
+                                    //@ts-ignore
+                                    String("Gen One's")
+                                  }
+                                </Typography>
+                              </Grid>
+                            </Grid>
+                            <Grid container>
+                              <Grid item xs={5} sx={{ padding: "10px" }}>
+                                <Typography
+                                  align="right"
+                                  gutterBottom
+                                  variant="h5"
+                                  component="div"
+                                >
+                                  {
+                                    //@ts-ignore
+                                    String(
+                                      //@ts-ignore
+                                      quests.hasOwnProperty(quest)
+                                        ? quests[quest].PairsConfig.Right
+                                        : 0
+                                    )
+                                  }
+                                </Typography>
+                              </Grid>
+                              <Grid item xs={7} sx={{ padding: "10px" }}>
+                                <Typography
+                                  align="left"
+                                  gutterBottom
+                                  variant="h5"
+                                  component="div"
+                                >
+                                  {
+                                    //@ts-ignore
+                                    String("Gen Two's")
+                                  }
+                                </Typography>
+                              </Grid>
+                            </Grid>
+                          </CardContent>
+                          <CardActions style={{ justifyContent: "center" }}>
                             <Button
                               style={{
                                 display: "flex",
                                 justifyContent: "center",
                                 alignItems: "center",
                               }}
-                              onClick={(event) => onRecover(event, quest)}
-                              size="small"
-                            >
-                              Recover
-                            </Button>
-                          )}
-                        {quests.hasOwnProperty(quest) && quests[quest].StakingConfig !== null
-                          && (
-                            <Button
                               disabled={
-                                quests.hasOwnProperty(quest) &&
-                                  quests[quest].StakingConfig !== null &&
-                                  questsProposals.hasOwnProperty(quest) &&
-                                  questsProposals[quest].filter(
-                                    //@ts-ignore
-                                    ({Started, Finished}) => Started && !Finished
-                                  ).length > 0
+                                questsProposals.hasOwnProperty(quest) &&
+                                questsProposals[quest].filter(
+                                  //@ts-ignore
+                                  ({ Started, Finished }) =>
+                                    Started && !Finished
+                                ).length > 0
                                   ? false
                                   : true
                               }
-                              onClick={(event) => onReward(event, quest)}
+                              onClick={(event) => onManage(event, quest)}
                               size="small"
                             >
-                              Rewards
+                              Manage
                             </Button>
-                          )}
-                      </CardActions>
-                    </StyledCard>
-                  </Box>
-                </Grid>
-              </>
-            );
-          })}
+                            <Button
+                              style={{
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                              }}
+                              onClick={(event) => onSelection(event, quest)}
+                              size="small"
+                            >
+                              Begin
+                            </Button>
+                            {questsProposals.hasOwnProperty(quest) &&
+                              questsProposals[quest].filter(
+                                (item) =>
+                                  !item.Started &&
+                                  !item.Withdrawn &&
+                                  (item.StartTime === null ||
+                                    item.StartTime === 0)
+                              ).length > 0 && (
+                                <Button
+                                  style={{
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                  }}
+                                  onClick={(event) => onRecover(event, quest)}
+                                  size="small"
+                                >
+                                  Recover
+                                </Button>
+                              )}
+                            {quests.hasOwnProperty(quest) &&
+                              quests[quest].StakingConfig !== null && (
+                                <Button
+                                  disabled={
+                                    quests.hasOwnProperty(quest) &&
+                                    quests[quest].StakingConfig !== null &&
+                                    questsProposals.hasOwnProperty(quest) &&
+                                    questsProposals[quest].filter(
+                                      //@ts-ignore
+                                      ({ Started, Finished }) =>
+                                        Started && !Finished
+                                    ).length > 0
+                                      ? false
+                                      : true
+                                  }
+                                  onClick={(event) => onReward(event, quest)}
+                                  size="small"
+                                >
+                                  Rewards
+                                </Button>
+                              )}
+                          </CardActions>
+                        </StyledCard>
+                      </Box>
+                    </Grid>
+                  </>
+                );
+              });
+            }
+          }
+        })()}
       </Grid>
     </>
   );
 };
 
 export const QuestsGallery = () => {
-  const connection = useMemo(
-    () => new Connection(CONNECTION),
-    []
-  );
+  const connection = useMemo(() => new Connection(CONNECTION), []);
 
   const wallet = useWallet();
   const [nfts, setNfts] = useRecoilState(nftsAtom);
@@ -452,17 +501,27 @@ export const QuestsGallery = () => {
 
   const [activate, setActivate] = useState(true);
   const [pairings, setPairings] = useRecoilState(pairingsAtom);
-  const [stakingProgression, setStakingProgression] = useRecoilState(stakingProgressionAtom);
+  const [stakingProgression, setStakingProgression] = useRecoilState(
+    stakingProgressionAtom
+  );
 
   const [resync, setResync] = useRecoilState(resyncAtom);
   const [open, setOpen] = React.useState(false);
   const [openMessage, setOpenMessage] = React.useState("");
-  const [refreshInterval, setRefreshInterval] = useRecoilState(refreshIntervalAtom);
-  const [shouldRefreshInterval, setShouldRefreshInterval] = useRecoilState(shouldRefreshIntervalAtom);
-  const [loading, setLoading] = React.useState(true);
+  const [refreshInterval, setRefreshInterval] =
+    useRecoilState(refreshIntervalAtom);
+  const [shouldRefreshInterval, setShouldRefreshInterval] = useRecoilState(
+    shouldRefreshIntervalAtom
+  );
+  const [loading, setLoading] = useRecoilState(loadingAtom);
   const [index, setIndex] = React.useState(0);
-  const [LOADING_MSGS, setLoadingMessages] = useState(["Fetching Quests", "Fetching NFTs"]);
-  const [walletPublicKey, setWalletPublicKey] = useState<PublicKey | null>(null);
+  const [LOADING_MSGS, setLoadingMessages] = useState([
+    "Fetching Quests",
+    "Fetching NFTs",
+  ]);
+  const [walletPublicKey, setWalletPublicKey] = useState<PublicKey | null>(
+    null
+  );
 
   React.useEffect(() => {
     if (!wallet.publicKey) return;
@@ -472,16 +531,18 @@ export const QuestsGallery = () => {
   }, [wallet]);
 
   React.useEffect(() => {
-    const intervalId = setInterval(() =>
-      setIndex(index => index + 1),
+    const intervalId = setInterval(
+      () => setIndex((index) => index + 1),
       3000 // every 3 seconds
     );
     return () => clearTimeout(intervalId);
   }, []);
 
-
-  const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
-    if (reason === 'clickaway') {
+  const handleClose = (
+    event?: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
       return;
     }
 
@@ -497,20 +558,13 @@ export const QuestsGallery = () => {
     try {
       const requests = await Promise.allSettled([
         get_quests(ORACLE.toString()),
-        get_quests_proposals(
-          ORACLE.toString(),
-          walletPublicKey.toString()
-        ),
-        get_quests_kpis(
-          ORACLE.toString(),
-          walletPublicKey.toString(),
-        ),
+        get_quests_proposals(ORACLE.toString(), walletPublicKey.toString()),
+        get_quests_kpis(ORACLE.toString(), walletPublicKey.toString()),
       ]);
 
       const questsJson = requests[0];
       const questsProposalsJson = requests[1];
       const questsKPIsJson = requests[2];
-
 
       //@ts-ignore
       const quests = JSON.parse(String.fromCharCode(...questsJson.value));
@@ -523,15 +577,13 @@ export const QuestsGallery = () => {
         String.fromCharCode(...questsKPIsJson.value)
       );
 
-
       setQuests(quests);
       setQuestsProposals(questsProposals);
       setQuestsKPIs(questsKPIs);
       console.log("auto-refreshed quests");
-
     } catch (e) {
-      console.log(e)
-      console.log("failed to auto-refresh kpis")
+      console.log(e);
+      console.log("failed to auto-refresh kpis");
     }
     setLoading(false);
   }
@@ -555,16 +607,15 @@ export const QuestsGallery = () => {
             //@ts-ignore
             // .findAllByOwner(walletPublicKey.toBase58())
             .findAllByOwner(walletPublicKey.toBase58())
-        )
-          .map(async (nft) => {
-            let offchainMetadata = {};
-            try {
-              // offchainMetadata = (await axios.get(nft.uri)).data;
-            } catch (e) {
-              console.log("fail");
-            }
-            return {...nft, offchainMetadata};
-          })
+        ).map(async (nft) => {
+          let offchainMetadata = {};
+          try {
+            // offchainMetadata = (await axios.get(nft.uri)).data;
+          } catch (e) {
+            console.log("fail");
+          }
+          return { ...nft, offchainMetadata };
+        })
       );
 
       //@ts-ignore
@@ -573,7 +624,14 @@ export const QuestsGallery = () => {
       setNftsSelection(myNfts.map(() => false));
     }
     fetchNfts();
-  }, [wallet, walletPublicKey, walletPublicKey, resync, setNfts, setNftsSelection]);
+  }, [
+    wallet,
+    walletPublicKey,
+    walletPublicKey,
+    resync,
+    setNfts,
+    setNftsSelection,
+  ]);
 
   const onBack = useCallback(
     (_) => {
@@ -591,19 +649,20 @@ export const QuestsGallery = () => {
 
       fetchQuestProposals();
 
-
-
       if (questsProgression === 1) {
         setShouldRefreshInterval(false);
         if (stakingProgression - 1 < 0) {
           setQuestsProgression(questsProgression - 1);
           return;
         }
-        if (stakingProgression === 1 && quests[questSelection].PairsConfig.Left === 0) {
+        if (
+          stakingProgression === 1 &&
+          quests[questSelection].PairsConfig.Left === 0
+        ) {
           setQuestsProgression(0);
           return;
         }
-        setStakingProgression(stakingProgression - 1 % 2);
+        setStakingProgression(stakingProgression - (1 % 2));
         return;
       }
       if (questsProgression - 1 === 0 || questsProgression + 1 === 0) {
@@ -618,9 +677,15 @@ export const QuestsGallery = () => {
       }
       if (questsProgression > 0) setQuestsProgression(questsProgression - 1);
       if (questsProgression < 0) setQuestsProgression(questsProgression + 1);
-
     },
-    [quests, questSelection, questsProgression, setQuestsProgression, stakingProgression, setShouldRefreshInterval]
+    [
+      quests,
+      questSelection,
+      questsProgression,
+      setQuestsProgression,
+      stakingProgression,
+      setShouldRefreshInterval,
+    ]
   );
   const onRecover = useCallback(
     (_, quest) => {
@@ -646,20 +711,25 @@ export const QuestsGallery = () => {
           if (flushRecordsTxs.length > 0) {
             for (const flushTxB of flushRecordsTxs) {
               try {
-                const flushTx = Transaction.populate(new Message(flushTxB.message));
+                const flushTx = Transaction.populate(
+                  new Message(flushTxB.message)
+                );
                 flushTx.recentBlockhash = (
                   await connection.getRecentBlockhash("finalized")
                 ).blockhash;
                 setOpenMessage("Please Approve Quest Withdrawal Transaction.");
                 setOpen(true);
-                const signature = await wallet.sendTransaction(flushTx, connection, {skipPreflight: true});
+                const signature = await wallet.sendTransaction(
+                  flushTx,
+                  connection,
+                  { skipPreflight: true }
+                );
                 setOpen(true);
                 setOpenMessage("Quest Withdrawal Transaction Submitted.");
                 console.log(signature);
                 setOpen(true);
                 setOpenMessage("Quest Withdrawal Transaction Succeeded.");
                 await connection.confirmTransaction(signature, "confirmed");
-
               } catch (e) {
                 setOpenMessage("Quest Withdrawal Transaction Failed. :(");
                 setOpen(true);
@@ -670,7 +740,7 @@ export const QuestsGallery = () => {
           setOpenMessage(e.message);
           setOpen(true);
 
-          await (new Promise(resolve => setTimeout(resolve, 2 * 1000)));
+          await new Promise((resolve) => setTimeout(resolve, 2 * 1000));
         }
         setQuestsSelection("");
         setQuestsProgression(0);
@@ -699,13 +769,19 @@ export const QuestsGallery = () => {
           if (flushRecordsTxs.length > 0) {
             for (const flushTxB of flushRecordsTxs) {
               try {
-                const flushTx = Transaction.populate(new Message(flushTxB.message));
+                const flushTx = Transaction.populate(
+                  new Message(flushTxB.message)
+                );
                 flushTx.recentBlockhash = (
                   await connection.getRecentBlockhash("finalized")
                 ).blockhash;
                 setOpenMessage("Please Approve Claim Reward Transaction.");
                 setOpen(true);
-                const signature = await wallet.sendTransaction(flushTx, connection, {skipPreflight: true});
+                const signature = await wallet.sendTransaction(
+                  flushTx,
+                  connection,
+                  { skipPreflight: true }
+                );
                 console.log(signature);
                 setOpen(true);
                 setOpenMessage("Claim Reward Transaction Submitted!");
@@ -722,7 +798,7 @@ export const QuestsGallery = () => {
           setOpenMessage(e.message);
           setOpen(true);
 
-          await (new Promise(resolve => setTimeout(resolve, 2 * 1000)));
+          await new Promise((resolve) => setTimeout(resolve, 2 * 1000));
         }
       }
 
@@ -756,32 +832,45 @@ export const QuestsGallery = () => {
                 ).blockhash;
                 setOpenMessage("Please Approve Quest End Transaction.");
                 setOpen(true);
-                const signature = await wallet.sendTransaction(flushTx, connection, {skipPreflight: true});
+                const signature = await wallet.sendTransaction(
+                  flushTx,
+                  connection,
+                  { skipPreflight: true }
+                );
                 setOpen(true);
                 setOpenMessage("Quest End Transaction Submitted!");
                 console.log(signature);
                 setOpen(true);
                 setOpenMessage("Refreshing!");
 
-                connection.confirmTransaction(signature, "finalized").then(async (_) => {
-                  if (quests[questSelection].Rewards !== null && quests[questSelection].Rewards.length > 0) {
-                    const transactionResponse = await connection.getTransaction(signature);
-                    if (!transactionResponse.meta.logMessages) return;
-                    if (transactionResponse.meta.logMessages.filter((line) => line.includes("minted reward")).length === 1) {
-                      setOpen(true);
-                      setOpenMessage("Congratulations! You won!");
-                    } else {
-                      setOpen(true);
-                      setOpenMessage("Sorry! You did not win a Quest Reward!");
+                connection
+                  .confirmTransaction(signature, "finalized")
+                  .then(async (_) => {
+                    if (
+                      quests[questSelection].Rewards !== null &&
+                      quests[questSelection].Rewards.length > 0
+                    ) {
+                      const transactionResponse =
+                        await connection.getTransaction(signature);
+                      if (!transactionResponse.meta.logMessages) return;
+                      if (
+                        transactionResponse.meta.logMessages.filter((line) =>
+                          line.includes("minted reward")
+                        ).length === 1
+                      ) {
+                        setOpen(true);
+                        setOpenMessage("Congratulations! You won!");
+                      } else {
+                        setOpen(true);
+                        setOpenMessage(
+                          "Sorry! You did not win a Quest Reward!"
+                        );
+                      }
                     }
-                  }
-                });
-
+                  });
               }
-
-
             } catch (e) {
-              console.log(e)
+              console.log(e);
               setOpenMessage("Quest End Transaction Failed. :(");
               setOpen(true);
             }
@@ -790,7 +879,7 @@ export const QuestsGallery = () => {
           setOpenMessage(e.message);
           setOpen(true);
 
-          await (new Promise(resolve => setTimeout(resolve, 2 * 1000)));
+          await new Promise((resolve) => setTimeout(resolve, 2 * 1000));
         }
         await gc();
         setQuestsSelection("");
@@ -808,7 +897,6 @@ export const QuestsGallery = () => {
         );
 
         setQuestsProposals(questsProposals);
-
       }
 
       async function executor() {
@@ -830,13 +918,22 @@ export const QuestsGallery = () => {
           setShouldRefreshInterval(false);
           setGlobalEnum("recover");
         }
-
       }
 
       executor();
-
     },
-    [wallet, walletPublicKey, quests, questsProgression, setQuestsProgression, recoveryState, setOpen, setOpenMessage, setQuestsProposals, setShouldRefreshInterval]
+    [
+      wallet,
+      walletPublicKey,
+      quests,
+      questsProgression,
+      setQuestsProgression,
+      recoveryState,
+      setOpen,
+      setOpenMessage,
+      setQuestsProposals,
+      setShouldRefreshInterval,
+    ]
   );
   const onNext = useCallback(
     (_) => {
@@ -844,7 +941,10 @@ export const QuestsGallery = () => {
         if (wallet === null) {
           return;
         }
-        if (quests[questSelection].PairsConfig.Left === 1 && quests[questSelection].PairsConfig.Right === 0) {
+        if (
+          quests[questSelection].PairsConfig.Left === 1 &&
+          quests[questSelection].PairsConfig.Right === 0
+        ) {
           try {
             const onboardTxs = JSON.parse(
               String.fromCharCode(
@@ -855,15 +955,14 @@ export const QuestsGallery = () => {
                   JSON.stringify(
                     nftsSelection[0]
                       // @ts-ignore
-                      .map(({mint}) => mint.toString())
-                  ),
+                      .map(({ mint }) => mint.toString())
+                  )
                 ))
               )
             );
 
             if (onboardTxs.length > 0) {
               for (const onboardTx of onboardTxs) {
-
                 try {
                   const enrollQuesteesTx = Transaction.populate(
                     new Message(onboardTx.message)
@@ -876,7 +975,7 @@ export const QuestsGallery = () => {
                   const signature = await wallet.sendTransaction(
                     enrollQuesteesTx,
                     connection,
-                    {skipPreflight: true},
+                    { skipPreflight: true }
                   );
                   setOpen(true);
                   setOpenMessage("Quest Start Transaction Submitted.");
@@ -894,11 +993,10 @@ export const QuestsGallery = () => {
             setOpenMessage(e.message);
             setOpen(true);
 
-            await (new Promise(resolve => setTimeout(resolve, 2 * 1000)));
+            await new Promise((resolve) => setTimeout(resolve, 2 * 1000));
           }
           setQuestsProgression(0);
           setShouldRefreshInterval(true);
-
         } else {
           try {
             const enrollQuesteesIx = JSON.parse(
@@ -910,13 +1008,13 @@ export const QuestsGallery = () => {
                   JSON.stringify(
                     nftsSelection[0]
                       // @ts-ignore
-                      .map(({mint}) => mint.toString())
+                      .map(({ mint }) => mint.toString())
                   ),
                   JSON.stringify(
                     nftsSelection[1]
                       // @ts-ignore
-                      .map(({mint}) => mint.toString())
-                  ),
+                      .map(({ mint }) => mint.toString())
+                  )
                 ))
               )
             );
@@ -936,7 +1034,7 @@ export const QuestsGallery = () => {
                 const signature = await wallet.sendTransaction(
                   enrollQuesteesTx,
                   connection,
-                  {skipPreflight: true},
+                  { skipPreflight: true }
                 );
                 setOpenMessage("Quest Start Transaction Submitted.");
                 setOpen(true);
@@ -953,7 +1051,7 @@ export const QuestsGallery = () => {
             setOpenMessage(e.message);
             setOpen(true);
 
-            await (new Promise(resolve => setTimeout(resolve, 2 * 1000)));
+            await new Promise((resolve) => setTimeout(resolve, 2 * 1000));
           }
           /*
           setQuestsProgression(2);
@@ -962,7 +1060,6 @@ export const QuestsGallery = () => {
           setQuestsSelection("");
           setQuestsProgression(0);
           setShouldRefreshInterval(true);
-
         }
       }
 
@@ -976,7 +1073,7 @@ export const QuestsGallery = () => {
                 nftsQuested
                   .filter((_, nftIndex) => nftsSelection[nftIndex])
                   // @ts-ignore
-                  .map(({mint}) => mint.toString())
+                  .map(({ mint }) => mint.toString())
               ),
               ORACLE.toString(),
               // @ts-ignore
@@ -990,11 +1087,9 @@ export const QuestsGallery = () => {
           doRngsTx.recentBlockhash = (
             await connection.getRecentBlockhash("finalized")
           ).blockhash;
-          const signature = await wallet.sendTransaction(
-            doRngsTx,
-            connection,
-            {skipPreflight: true},
-          );
+          const signature = await wallet.sendTransaction(doRngsTx, connection, {
+            skipPreflight: true,
+          });
           console.log(signature);
           await connection.confirmTransaction(signature, "confirmed");
         }
@@ -1013,15 +1108,21 @@ export const QuestsGallery = () => {
         );
 
         setQuestsProposals(questsProposals);
-
       }
 
       async function executor() {
         if (questsProgression > 0) {
-          if (quests[questSelection].PairsConfig.Left + quests[questSelection].PairsConfig.Right === [...nftsSelection[0], ...nftsSelection[1]].length) {
+          if (
+            quests[questSelection].PairsConfig.Left +
+              quests[questSelection].PairsConfig.Right ===
+            [...nftsSelection[0], ...nftsSelection[1]].length
+          ) {
             await newQuestProposal();
           } else {
-            if (quests[questSelection].PairsConfig.Left === 1 && quests[questSelection].PairsConfig.Right === 0) {
+            if (
+              quests[questSelection].PairsConfig.Left === 1 &&
+              quests[questSelection].PairsConfig.Right === 0
+            ) {
               await newQuestProposal();
             } else {
               setStakingProgression((1 + stakingProgression) % 2);
@@ -1037,7 +1138,6 @@ export const QuestsGallery = () => {
             setShouldRefreshInterval(false);
           }
         }
-
       }
 
       executor();
@@ -1117,22 +1217,22 @@ export const QuestsGallery = () => {
               await connection.getRecentBlockhash("finalized")
             ).blockhash;
             selectQuestTx.recentBlockhash = recentBlockhash;
-            setOpenMessage("Please Approve Quest Selection Transaction.")
+            setOpenMessage("Please Approve Quest Selection Transaction.");
             setOpen(true);
             const signature = await wallet.sendTransaction(
               selectQuestTx,
               connection,
-              {skipPreflight: true},
+              { skipPreflight: true }
             );
-            setOpenMessage("Quest Selection Submitted.")
+            setOpenMessage("Quest Selection Submitted.");
             setOpen(true);
             console.log(signature);
             await connection.confirmTransaction(signature, "confirmed");
-            setOpenMessage("Quest Selection Succeeded.")
+            setOpenMessage("Quest Selection Succeeded.");
             setOpen(true);
           } catch (e) {
             setOpen(true);
-            setOpenMessage("Quest Selection Failed. :(")
+            setOpenMessage("Quest Selection Failed. :(");
             return;
           }
         }
@@ -1213,7 +1313,7 @@ export const QuestsGallery = () => {
             const signature = await wallet.sendTransaction(
               startQuestsTx,
               connection,
-              {skipPreflight: true},
+              { skipPreflight: true }
             );
             setOpenMessage("Start Quest Transaction Submitted.");
             setOpen(true);
@@ -1259,7 +1359,7 @@ export const QuestsGallery = () => {
                 nftsQuested
                   .filter((_, nftIndex) => nftsSelection[nftIndex])
                   // @ts-ignore
-                  .map(({mint}) => mint.toString())
+                  .map(({ mint }) => mint.toString())
               ),
               ORACLE.toString(),
               // @ts-ignore
@@ -1277,8 +1377,7 @@ export const QuestsGallery = () => {
             const signature = await wallet.sendTransaction(
               rewardTx,
               connection,
-              {skipPreflight: true},
-
+              { skipPreflight: true }
             );
             console.log(signature);
             await connection.confirmTransaction(signature, "confirmed");
@@ -1296,7 +1395,7 @@ export const QuestsGallery = () => {
                 nftsQuested
                   .filter((_, nftIndex) => nftsSelection[nftIndex])
                   // @ts-ignore
-                  .map(({mint}) => mint.toString())
+                  .map(({ mint }) => mint.toString())
               ),
               ORACLE.toString(),
               // @ts-ignore
@@ -1315,7 +1414,7 @@ export const QuestsGallery = () => {
           const signature = await wallet.sendTransaction(
             endQuestsTx,
             connection,
-            {skipPreflight: true},
+            { skipPreflight: true }
           );
           console.log(signature);
           await connection.confirmTransaction(signature, "confirmed");
@@ -1388,16 +1487,11 @@ export const QuestsGallery = () => {
 
   const topBarXsPoints = useMemo(() => {
     var cols = 0;
-    if (
-      globalEnum === "recover"
-    ) {
+    if (globalEnum === "recover") {
       console.log("waldo");
       cols += 1;
     }
-    if (
-      globalEnum === "recover"
-      && activeQuestProposals.length > 0
-    ) {
+    if (globalEnum === "recover" && activeQuestProposals.length > 0) {
       cols += 2;
     }
     if (questsProgression === 2 || questsProgression === 1) {
@@ -1439,11 +1533,7 @@ export const QuestsGallery = () => {
         {questsProgression !== 0 && (
           <StyledCard>
             <Grid container>
-              <Grid
-                item
-                xs={topBarXsPoints}
-                sx={{justifyContent: "center"}}
-              >
+              <Grid item xs={topBarXsPoints} sx={{ justifyContent: "center" }}>
                 <StyledCard>
                   <Button
                     sx={{
@@ -1467,7 +1557,7 @@ export const QuestsGallery = () => {
                     <Grid
                       item
                       xs={topBarXsPoints}
-                      sx={{justifyContent: "center"}}
+                      sx={{ justifyContent: "center" }}
                     >
                       <StyledCard>
                         <Button
@@ -1487,7 +1577,7 @@ export const QuestsGallery = () => {
                 <Grid
                   item
                   xs={topBarXsPoints}
-                  sx={{justifyContent: "center"}}
+                  sx={{ justifyContent: "center" }}
                 >
                   <StyledCard>
                     <Button
@@ -1502,11 +1592,13 @@ export const QuestsGallery = () => {
                   </StyledCard>
                 </Grid>
               )}
-              {(questsProgression === 2 || (globalEnum === "recover" && activeQuestProposals.length > 0)) && (
+              {(questsProgression === 2 ||
+                (globalEnum === "recover" &&
+                  activeQuestProposals.length > 0)) && (
                 <Grid
                   item
                   xs={topBarXsPoints}
-                  sx={{justifyContent: "center"}}
+                  sx={{ justifyContent: "center" }}
                 >
                   <StyledCard>
                     <Button
@@ -1528,13 +1620,17 @@ export const QuestsGallery = () => {
           open={open}
           autoHideDuration={10 * 1000}
           onClose={handleClose}
-          sx={{zIndex: 100000000}}
+          sx={{ zIndex: 100000000 }}
           anchorOrigin={{
             vertical: "top",
-            horizontal: "center"
+            horizontal: "center",
           }}
         >
-          <Alert onClose={handleClose} severity="success" sx={{width: '100%'}}>
+          <Alert
+            onClose={handleClose}
+            severity="success"
+            sx={{ width: "100%" }}
+          >
             {openMessage}
           </Alert>
         </Snackbar>
@@ -1547,7 +1643,7 @@ export const QuestsGallery = () => {
                   Loading...
                 </Typography>
                 <br />
-                <div style={{display: 'flex', justifyContent: 'center'}}>
+                <div style={{ display: "flex", justifyContent: "center" }}>
                   <CircularProgress />
                 </div>
                 <br />

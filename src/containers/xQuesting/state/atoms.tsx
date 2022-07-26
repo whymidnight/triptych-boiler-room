@@ -1,4 +1,4 @@
-import {atom} from "recoil";
+import { atom } from "recoil";
 
 export const resyncAtom = atom({
   key: "resync",
@@ -73,7 +73,6 @@ export const questsProposalsAtom = atom({
   default: {},
 });
 
-
 export const activeQuestProposalsAtom = atom({
   key: "activeQuestProposals",
   default: [],
@@ -106,5 +105,10 @@ export const refreshIntervalAtom = atom({
 
 export const shouldRefreshIntervalAtom = atom({
   key: "shouldRefreshInterval",
+  default: true,
+});
+
+export const loadingAtom = atom({
+  key: "loading",
   default: true,
 });
