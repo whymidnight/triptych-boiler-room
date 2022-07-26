@@ -26,6 +26,7 @@ export const Profit = () => {
     useRecoilState(flipTransactionSignatureAtom);
 
   const [drain, setDrain] = useState(false);
+  const [dailyCreator, setDailyCreator] = useState(false);
   const [decision, setDecision] = useState<null | boolean>(null);
 
   useEffect(() => {
@@ -41,6 +42,7 @@ export const Profit = () => {
       console.log(ogInstruction);
 
       switch (ogInstruction.split(IX_LOG)[1]) {
+        case "InitializeEscrow":
         case "NewFlip": {
           console.log("...");
           const rngLog = txMeta.meta.logMessages.filter((log) =>
@@ -51,6 +53,15 @@ export const Profit = () => {
           )[0];
           console.log(rngLog);
           setDecision(JSON.parse(decisionLog.split(SEARCH)[1]));
+
+          const dailyCreatorInvokerKeyword = "initializing";
+          const dailyCreatorInvoker = txMeta.meta.logMessages.filter((log) =>
+            log.includes(dailyCreatorInvokerKeyword)
+          );
+          if (dailyCreatorInvoker.length !== 0) {
+            setDailyCreator(true);
+          }
+
           break;
         }
         case "DrainEscrow": {
@@ -75,6 +86,14 @@ export const Profit = () => {
         <StyledCard className="swap-container">
           <StyledCard>
             <Stack justifyContent="center" alignContent="center">
+              {dailyCreator && (
+                <>
+                  <br />
+                  <Typography gutterBottom variant="h5" component="div">
+                    Please tell my mom i said hi whenever you decide to smash.
+                  </Typography>
+                </>
+              )}
               {(() => {
                 if (drain) {
                   return (

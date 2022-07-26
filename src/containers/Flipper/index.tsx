@@ -36,6 +36,7 @@ import { useRecoilState } from "recoil";
 import Wager from "./components/wager";
 import Processing from "./components/processing";
 import Profit from "./components/profit";
+import Stats from "./components/stats";
 import { awaitTransactionSignatureConfirmation } from "src/utils/solana/transaction";
 
 const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
@@ -56,7 +57,7 @@ declare function get_escrow(holder: String): Promise<any>;
 
 export const CONNECTION = "https://api.devnet.solana.com";
 export const ORACLE = new PublicKey(
-  "EyJSGXsme8Dj9xwpzyvnjnLJ4BUi8insqjybtwWKqJau"
+  "HkJJu4ycQjnVwBKpJyjmhsCJbbiPdL952Q9y75NDhJem"
 );
 
 // @ts-ignore
@@ -274,7 +275,7 @@ export const Flipper = () => {
     }
 
     executor();
-  }, [activeStep, setActiveStep, wagerSelection, betSelection]);
+  }, [wallet, activeStep, setActiveStep, wagerSelection, betSelection]);
 
   let body;
   switch (activeStep) {
@@ -288,6 +289,10 @@ export const Flipper = () => {
     }
     case 2: {
       body = <Profit />;
+      break;
+    }
+    case 3: {
+      body = <Stats />;
       break;
     }
   }
@@ -310,14 +315,14 @@ export const Flipper = () => {
           ))}
         </Stepper>
       </StyledCard>
-      <StyledCard>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <StyledCard>
           <Stack>
             <Typography gutterBottom variant="h5" component="div">
               Claimable Earnings:
@@ -332,16 +337,18 @@ export const Flipper = () => {
               </Typography>
             </Typography>
           </Stack>
-        </Box>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "right",
-          }}
-        >
-          <Grid container>
-            <Grid item xs={6}>
+        </StyledCard>
+      </Box>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "right",
+        }}
+      >
+        <Grid container>
+          <Grid item xs={4}>
+            <StyledCard>
               <Button onClick={() => setActiveStep(0)}>
                 <Typography
                   gutterBottom
@@ -352,8 +359,24 @@ export const Flipper = () => {
                   Start New Flip
                 </Typography>
               </Button>
-            </Grid>
-            <Grid item xs={6}>
+            </StyledCard>
+          </Grid>
+          <Grid item xs={4}>
+            <StyledCard>
+              <Button onClick={() => setActiveStep(3)}>
+                <Typography
+                  gutterBottom
+                  fontSize={20}
+                  variant="h5"
+                  component="div"
+                >
+                  Stats
+                </Typography>
+              </Button>
+            </StyledCard>
+          </Grid>
+          <Grid item xs={4}>
+            <StyledCard>
               <Button onClick={onDrain}>
                 <Typography
                   gutterBottom
@@ -364,10 +387,10 @@ export const Flipper = () => {
                   Withdraw Earnings
                 </Typography>
               </Button>
-            </Grid>
+            </StyledCard>
           </Grid>
-        </Box>
-      </StyledCard>
+        </Grid>
+      </Box>
       <Snackbar
         open={open}
         autoHideDuration={6000}
