@@ -17,7 +17,7 @@ export const FlippeningPage: FC = () => {
             justifyContent: "center",
           }}
         >
-          <StyledCard sx={{ width: "50%" }}>
+          <StyledCard sx={{ width: "100%" }}>
             <Flipper />
           </StyledCard>
         </Box>
