@@ -12,14 +12,13 @@ export const FlippeningPage: FC = () => {
         <Box
           sx={{
             display: "flex",
-            paddingTop: "35vh",
             alignItems: "center",
             justifyContent: "center",
           }}
         >
-          <StyledCard sx={{ width: "100%" }}>
+          <Box className="flippening-box">
             <Flipper />
-          </StyledCard>
+          </Box>
         </Box>
       </div>
     </>

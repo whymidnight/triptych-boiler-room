@@ -9,6 +9,8 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
 import { StyledCard } from "src/components/cards";
 import { useMemo, useState, useEffect, useCallback, forwardRef } from "react";
 import { Connection, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
@@ -297,100 +299,10 @@ export const Flipper = () => {
     }
   }
 
+  const handleAction = useCallback(() => {}, []);
+
   return (
     <>
-      <StyledCard>
-        <Stepper activeStep={activeStep} alternativeLabel>
-          {STEPS.map((label) => (
-            <Step key={label}>
-              <StepLabel
-                sx={{
-                  "& .Mui-active": { color: "orange !important" },
-                  "& .Mui-completed": { color: "orange !important" },
-                }}
-              >
-                {label}
-              </StepLabel>
-            </Step>
-          ))}
-        </Stepper>
-      </StyledCard>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <StyledCard>
-          <Stack>
-            <Typography gutterBottom variant="h5" component="div">
-              Claimable Earnings:
-              <Typography gutterBottom variant="h5" component="div">
-                {earnings.toFixed(6)} SOL
-              </Typography>
-            </Typography>
-            <Typography gutterBottom variant="h5" component="div">
-              Balance:
-              <Typography gutterBottom variant="h5" component="div">
-                {balance.toFixed(6)} SOL
-              </Typography>
-            </Typography>
-          </Stack>
-        </StyledCard>
-      </Box>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "right",
-        }}
-      >
-        <Grid container>
-          <Grid item xs={4}>
-            <StyledCard>
-              <Button onClick={() => setActiveStep(0)}>
-                <Typography
-                  gutterBottom
-                  fontSize={20}
-                  variant="h5"
-                  component="div"
-                >
-                  Start New Flip
-                </Typography>
-              </Button>
-            </StyledCard>
-          </Grid>
-          <Grid item xs={4}>
-            <StyledCard>
-              <Button onClick={() => setActiveStep(3)}>
-                <Typography
-                  gutterBottom
-                  fontSize={20}
-                  variant="h5"
-                  component="div"
-                >
-                  Stats
-                </Typography>
-              </Button>
-            </StyledCard>
-          </Grid>
-          <Grid item xs={4}>
-            <StyledCard>
-              <Button onClick={onDrain}>
-                <Typography
-                  gutterBottom
-                  fontSize={20}
-                  variant="h5"
-                  component="div"
-                >
-                  Withdraw Earnings
-                </Typography>
-              </Button>
-            </StyledCard>
-          </Grid>
-        </Grid>
-      </Box>
       <Snackbar
         open={open}
         autoHideDuration={6000}
@@ -405,7 +317,73 @@ export const Flipper = () => {
           {openMessage}
         </Alert>
       </Snackbar>
-      {body}
+      <StyledCard>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Tabs
+            sx={{
+              color: "unset !important",
+              overflow: "auto !important",
+            }}
+            centered
+            variant="scrollable"
+            value={""}
+            onChange={handleAction}
+            textColor="primary"
+            indicatorColor="primary"
+          >
+            <Tab value="new" label="Start New Flip" />
+            <Tab value="withdraw" label="Withdraw Earnings" />
+            <Tab value="dailyStats" label="Daily Stats" />
+          </Tabs>
+        </Box>
+        <StyledCard>
+          <Stepper activeStep={activeStep} alternativeLabel>
+            {STEPS.map((label) => (
+              <Step key={label}>
+                <StepLabel
+                  sx={{
+                    "& .Mui-active": { color: "orange !important" },
+                    "& .Mui-completed": { color: "orange !important" },
+                  }}
+                >
+                  {label}
+                </StepLabel>
+              </Step>
+            ))}
+          </Stepper>
+        </StyledCard>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <StyledCard>
+            <Stack>
+              <Typography gutterBottom variant="h5" component="div">
+                Claimable Earnings:
+                <Typography gutterBottom variant="h5" component="div">
+                  {earnings.toFixed(6)} SOL
+                </Typography>
+              </Typography>
+              <Typography gutterBottom variant="h5" component="div">
+                Balance:
+                <Typography gutterBottom variant="h5" component="div">
+                  {balance.toFixed(6)} SOL
+                </Typography>
+              </Typography>
+            </Stack>
+          </StyledCard>
+        </Box>
+        {body}
+      </StyledCard>
     </>
   );
 };

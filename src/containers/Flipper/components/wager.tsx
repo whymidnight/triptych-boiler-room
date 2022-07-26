@@ -51,6 +51,17 @@ export const Wager = ({ onCTA }) => {
 
   return (
     <>
+      <Box
+        sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+      >
+        <StyledCard sx={{ width: "fitContent" }}>
+          <Button onClick={() => onCTA()}>
+            <Typography fontSize={24} variant="h5" component="div">
+              Double or Nothing
+            </Typography>
+          </Button>
+        </StyledCard>
+      </Box>
       <Grid
         container
         sx={{
@@ -65,47 +76,53 @@ export const Wager = ({ onCTA }) => {
               <Typography variant="h5" component="div">
                 Place Bet:
               </Typography>
-              <Tabs
-                centered
-                value={betSelection}
-                onChange={handleBetSelection}
-                textColor="primary"
-                indicatorColor="secondary"
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
               >
-                {Object.keys(BETS).map((index) => (
-                  <Tab value={index} label={BETS[index] + " " + "SOL"} />
-                ))}
-              </Tabs>
+                <Tabs
+                  centered
+                  variant="scrollable"
+                  value={betSelection}
+                  onChange={handleBetSelection}
+                  textColor="primary"
+                  indicatorColor="secondary"
+                >
+                  {Object.keys(BETS).map((index) => (
+                    <Tab value={index} label={BETS[index] + " " + "SOL"} />
+                  ))}
+                </Tabs>
+              </Box>
             </StyledCard>
             <StyledCard className="swap-card">
               <Typography variant="h5" component="div">
                 Wager Against:
               </Typography>
-              <Tabs
-                centered
-                value={wagerSelection}
-                onChange={handleWager}
-                textColor="primary"
-                indicatorColor="secondary"
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
               >
-                <Tab value="heads" label="Heads" />
-                <Tab value="tails" label="Tails" />
-              </Tabs>
+                <Tabs
+                  centered
+                  value={wagerSelection}
+                  onChange={handleWager}
+                  textColor="primary"
+                  indicatorColor="secondary"
+                >
+                  <Tab value="heads" label="Heads" />
+                  <Tab value="tails" label="Tails" />
+                </Tabs>
+              </Box>
             </StyledCard>
           </StyledCard>
         </Box>
       </Grid>
-      <Box
-        sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
-      >
-        <StyledCard sx={{ width: "fitContent" }}>
-          <Button onClick={() => onCTA()}>
-            <Typography variant="h5" component="div">
-              Double or Nothing
-            </Typography>
-          </Button>
-        </StyledCard>
-      </Box>
     </>
   );
 };

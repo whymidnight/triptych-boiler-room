@@ -1,4 +1,4 @@
-import {createGlobalStyle} from "styled-components";
+import { createGlobalStyle } from "styled-components";
 import Theme from "./theme/theme";
 
 export const GlobalStyle = createGlobalStyle`
@@ -7,7 +7,7 @@ export const GlobalStyle = createGlobalStyle`
   src: url(${Theme.typography.url}) format('woff2');
 }
 
-.MuiTypography-caption {
+    width: 50vw;.MuiTypography-caption {
   font-family: 'Silkscreen' !important;
   color: ${Theme.typography.body1.color} !important;
 }
@@ -226,4 +226,17 @@ color: ${Theme.typography.body1.color};
   }
 }
 
+.flippening-box {
+  @media (max-width: 500px) {
+    padding-top: 20vh;
+    padding-bottom: 20vh;
+    width: 100vw;
+  }
+  @media (min-width: 500px) {
+    padding-top: 20vh;
+    width: 50vw;
+  }
+}
+
 `;
+

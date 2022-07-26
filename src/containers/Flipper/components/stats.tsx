@@ -1,3 +1,4 @@
+import moment from "moment";
 import { StyledCard } from "src/components/cards";
 import { useMemo, useState, useEffect, useCallback, forwardRef } from "react";
 import {
@@ -73,98 +74,123 @@ export const Stats = () => {
                 </Typography>
               </Stack>
             )}
-            <Stack justifyContent="center" alignContent="center">
-              <Typography gutterBottom variant="h5" component="div">
-                Stats
-              </Typography>
-            </Stack>
             {stats !== null && (
-              <Grid container item>
-                <Grid item xs={6}>
-                  <StyledCard className="swap-card">
-                    <Typography gutterBottom variant="h5" component="div">
-                      Number of Flips
-                    </Typography>
-                    <Typography gutterBottom variant="h5" component="div">
-                      {stats.Heads[0] + stats.Tails[0]}
-                    </Typography>
-                  </StyledCard>
+              <>
+                <Stack justifyContent="center" alignContent="center">
+                  <Typography gutterBottom variant="h5" component="div">
+                    Stats for{" "}
+                    {moment(String(stats.DailyEpoch))
+                      .local()
+                      .format("MMM Do YYYY")}
+                  </Typography>
+                </Stack>
+                <Grid container item>
+                  <Grid item xs={6}>
+                    <StyledCard className="swap-card">
+                      <Typography gutterBottom variant="h5" component="div">
+                        Number of Flips
+                      </Typography>
+                      <Typography gutterBottom variant="h5" component="div">
+                        {stats.Heads[0] + stats.Tails[0]}
+                      </Typography>
+                    </StyledCard>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <StyledCard className="swap-card">
+                      <Typography gutterBottom variant="h5" component="div">
+                        Total Volume
+                      </Typography>
+                      <Typography gutterBottom variant="h5" component="div">
+                        {(
+                          (stats.Heads[1] + stats.Tails[1]) /
+                          LAMPORTS_PER_SOL
+                        ).toFixed(2)}{" "}
+                        SOL
+                      </Typography>
+                    </StyledCard>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <StyledCard className="swap-card">
+                      <Typography gutterBottom variant="h5" component="div">
+                        Flips for Heads
+                      </Typography>
+                      <Typography gutterBottom variant="h5" component="div">
+                        {stats.Heads[0]}
+                      </Typography>
+                    </StyledCard>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <StyledCard className="swap-card">
+                      <Typography gutterBottom variant="h5" component="div">
+                        Flips for Tails
+                      </Typography>
+                      <Typography gutterBottom variant="h5" component="div">
+                        {stats.Tails[0]}
+                      </Typography>
+                    </StyledCard>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <StyledCard className="swap-card">
+                      <Typography gutterBottom variant="h5" component="div">
+                        Winning Heads
+                      </Typography>
+                      <Typography gutterBottom variant="h5" component="div">
+                        {stats.Heads[2]} /{" "}
+                        {((stats.Heads[2] / stats.Heads[0]) * 100).toFixed(2)}%
+                        <Typography gutterBottom variant="h5" component="div">
+                          Overall -{" "}
+                          {(
+                            (stats.Heads[2] /
+                              (stats.Heads[0] + stats.Tails[0])) *
+                            100
+                          ).toFixed(2)}
+                          %
+                        </Typography>
+                      </Typography>
+                    </StyledCard>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <StyledCard className="swap-card">
+                      <Typography gutterBottom variant="h5" component="div">
+                        Winning Tails
+                      </Typography>
+                      <Typography gutterBottom variant="h5" component="div">
+                        {stats.Tails[2]} /{" "}
+                        {((stats.Tails[2] / stats.Tails[0]) * 100).toFixed(2)}%
+                        <Typography gutterBottom variant="h5" component="div">
+                          Overall -{" "}
+                          {(
+                            (stats.Tails[2] /
+                              (stats.Heads[0] + stats.Tails[0])) *
+                            100
+                          ).toFixed(2)}
+                          %
+                        </Typography>
+                      </Typography>
+                    </StyledCard>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <StyledCard className="swap-card">
+                      <Typography gutterBottom variant="h5" component="div">
+                        Volume for Heads
+                      </Typography>
+                      <Typography gutterBottom variant="h5" component="div">
+                        {(stats.Heads[1] / LAMPORTS_PER_SOL).toFixed(2)} SOL
+                      </Typography>
+                    </StyledCard>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <StyledCard className="swap-card">
+                      <Typography gutterBottom variant="h5" component="div">
+                        Volume for Tails
+                      </Typography>
+                      <Typography gutterBottom variant="h5" component="div">
+                        {(stats.Tails[1] / LAMPORTS_PER_SOL).toFixed(2)} SOL
+                      </Typography>
+                    </StyledCard>
+                  </Grid>
                 </Grid>
-                <Grid item xs={6}>
-                  <StyledCard className="swap-card">
-                    <Typography gutterBottom variant="h5" component="div">
-                      Total Volume
-                    </Typography>
-                    <Typography gutterBottom variant="h5" component="div">
-                      {(
-                        (stats.Heads[1] + stats.Tails[1]) /
-                        LAMPORTS_PER_SOL
-                      ).toFixed(2)}{" "}
-                      SOL
-                    </Typography>
-                  </StyledCard>
-                </Grid>
-                <Grid item xs={6}>
-                  <StyledCard className="swap-card">
-                    <Typography gutterBottom variant="h5" component="div">
-                      Number of Heads
-                    </Typography>
-                    <Typography gutterBottom variant="h5" component="div">
-                      {stats.Heads[0]}
-                    </Typography>
-                  </StyledCard>
-                </Grid>
-                <Grid item xs={6}>
-                  <StyledCard className="swap-card">
-                    <Typography gutterBottom variant="h5" component="div">
-                      Number of Tails
-                    </Typography>
-                    <Typography gutterBottom variant="h5" component="div">
-                      {stats.Tails[0]}
-                    </Typography>
-                  </StyledCard>
-                </Grid>
-                <Grid item xs={6}>
-                  <StyledCard className="swap-card">
-                    <Typography gutterBottom variant="h5" component="div">
-                      Winning Heads
-                    </Typography>
-                    <Typography gutterBottom variant="h5" component="div">
-                      {stats.Heads[2]}
-                    </Typography>
-                  </StyledCard>
-                </Grid>
-                <Grid item xs={6}>
-                  <StyledCard className="swap-card">
-                    <Typography gutterBottom variant="h5" component="div">
-                      Winning Tails
-                    </Typography>
-                    <Typography gutterBottom variant="h5" component="div">
-                      {stats.Tails[2]}
-                    </Typography>
-                  </StyledCard>
-                </Grid>
-                <Grid item xs={6}>
-                  <StyledCard className="swap-card">
-                    <Typography gutterBottom variant="h5" component="div">
-                      Volume for Heads
-                    </Typography>
-                    <Typography gutterBottom variant="h5" component="div">
-                      {(stats.Heads[1] / LAMPORTS_PER_SOL).toFixed(2)} SOL
-                    </Typography>
-                  </StyledCard>
-                </Grid>
-                <Grid item xs={6}>
-                  <StyledCard className="swap-card">
-                    <Typography gutterBottom variant="h5" component="div">
-                      Volume for Tails
-                    </Typography>
-                    <Typography gutterBottom variant="h5" component="div">
-                      {(stats.Tails[1] / LAMPORTS_PER_SOL).toFixed(2)} SOL
-                    </Typography>
-                  </StyledCard>
-                </Grid>
-              </Grid>
+              </>
             )}
           </StyledCard>
         </StyledCard>
