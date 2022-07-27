@@ -299,7 +299,22 @@ export const Flipper = () => {
     }
   }
 
-  const handleAction = useCallback(() => {}, []);
+  const handleAction = useCallback((_, val) => {
+    switch (val) {
+      case "new": {
+        setActiveStep(0);
+        break;
+      }
+      case "withdraw": {
+        onDrain();
+        break;
+      }
+      case "dailyStats": {
+        setActiveStep(3);
+        break;
+      }
+    }
+  }, []);
 
   return (
     <>
@@ -330,16 +345,15 @@ export const Flipper = () => {
               color: "unset !important",
               overflow: "auto !important",
             }}
-            centered
             variant="scrollable"
             value={""}
             onChange={handleAction}
             textColor="primary"
             indicatorColor="primary"
           >
-            <Tab value="new" label="Start New Flip" />
             <Tab value="withdraw" label="Withdraw Earnings" />
             <Tab value="dailyStats" label="Daily Stats" />
+            <Tab value="new" label="Start New Flip" />
           </Tabs>
         </Box>
         <StyledCard>

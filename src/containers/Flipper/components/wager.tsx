@@ -84,7 +84,6 @@ export const Wager = ({ onCTA }) => {
                 }}
               >
                 <Tabs
-                  centered
                   variant="scrollable"
                   value={betSelection}
                   onChange={handleBetSelection}
@@ -109,7 +108,7 @@ export const Wager = ({ onCTA }) => {
                 }}
               >
                 <Tabs
-                  centered
+                  variant="scrollable"
                   value={wagerSelection}
                   onChange={handleWager}
                   textColor="primary"
