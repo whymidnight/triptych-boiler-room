@@ -105,6 +105,7 @@ export const FlippeningPage: FC = () => {
                 sx={{
                   display: "flex",
                   alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
                 <BalanceManagement />
