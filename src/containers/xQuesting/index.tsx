@@ -70,7 +70,6 @@ import { NFTGalleryItems, QuestStart } from "./enrollment";
 import { QuestedGalleryItems, QuestedGalleryItemsHeader } from "./manage";
 import { QuestAction } from "./rewards";
 import { exec } from "child_process";
-import Flipper from "../Flipper/index";
 
 declare function get_quests(oracle: String): Promise<any>;
 declare function get_quests_kpis(oracle: String, holder: String): Promise<any>;
@@ -235,11 +234,7 @@ export const QuestsGalleryItems = ({
             case 2: {
               setShouldRefreshInterval(false);
               setLoading(false);
-              return (
-                <StyledCard>
-                  <Flipper />
-                </StyledCard>
-              );
+              return <StyledCard></StyledCard>;
             }
             default: {
               return questsKeys.map((quest) => {
@@ -1667,3 +1662,4 @@ export const XQuesting = () => {
     </>
   );
 };
+
