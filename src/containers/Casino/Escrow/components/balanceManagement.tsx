@@ -46,13 +46,13 @@ export const BalanceManagement = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [transactionInflight, setTransactionInflight] = useState(false);
   const [dialogSubject, setDialogSubject] = useState("");
-  const [amount, setAmount] = useState(0.0);
+  const [amount, setAmount] = useState("");
 
   const connection = useMemo(() => new Connection(CONNECTION), []);
 
   const onProceed = useCallback(() => {
     async function drainEscrow() {
-      const amountFmt = Math.floor(amount * LAMPORTS_PER_SOL);
+      const amountFmt = Math.floor(Number(amount) * LAMPORTS_PER_SOL);
 
       let escrowIx = {};
       switch (dialogSubject) {
@@ -93,13 +93,6 @@ export const BalanceManagement = () => {
           ).blockhash;
           selectQuestTx.recentBlockhash = recentBlockhash;
 
-          /*
-          const logs = await connection.simulateTransaction(
-            await wallet.signTransaction(selectQuestTx)
-          );
-          console.log(logs.value.logs);
-          */
-
           const signature = await wallet.sendTransaction(
             selectQuestTx,
             connection
@@ -108,17 +101,16 @@ export const BalanceManagement = () => {
           setFlipTransactionSignature(signature.toString());
           switch (dialogSubject) {
             case "Deposit": {
-              setWalletBalance((prev) => prev - amount);
+              setWalletBalance((prev) => prev - Number(amount));
               break;
             }
             case "Withdraw": {
-              setEscrowBalance((prev) => prev - amount);
+              setEscrowBalance((prev) => prev - Number(amount));
               break;
             }
           }
           console.log(signature);
 
-          // await connection.confirmTransaction(signature, "finalized");
           await awaitTransactionSignatureConfirmation(
             signature,
             connection,
@@ -126,23 +118,37 @@ export const BalanceManagement = () => {
           );
           switch (dialogSubject) {
             case "Deposit": {
-              setEscrowBalance((prev) => prev + amount);
+              setEscrowBalance((prev) => prev + Number(amount));
               break;
             }
             case "Withdraw": {
-              setWalletBalance((prev) => prev + amount);
+              setWalletBalance((prev) => prev + Number(amount));
               break;
             }
           }
         } catch (e) {
           console.log(e);
         }
+        setTransactionInflight(false);
         setDialogOpen(false);
       }
     }
 
     drainEscrow();
   }, [wallet, amount, dialogSubject]);
+
+  useEffect(() => {}, []);
+
+  const onChange = useCallback(
+    (event) => {
+      if (event.target.value.match(/^\d{0,}(\.\d{0,4})?$/))
+        setAmount(event.target.value);
+      if (event.target.value.match(/^\d{1,}(\.\d{0,4})?$/))
+        setAmount(event.target.value);
+      // setAmount(String(Number(event.target.value)));
+    },
+    [setAmount]
+  );
 
   let dialogBody = null;
   switch (transactionInflight) {
@@ -158,11 +164,11 @@ export const BalanceManagement = () => {
             <TextField
               autoFocus
               value={String(amount)}
-              onChange={(event) => setAmount(Number(event.target.value))}
+              onChange={onChange}
               margin="dense"
               label="Amount"
               variant="standard"
-              type="number"
+              type="decimal"
               inputProps={{
                 inputMode: "decimal",
                 step: "0.1",
@@ -193,7 +199,6 @@ export const BalanceManagement = () => {
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
         PaperComponent={StyledCard}
-        aria-labelledby="responsive-dialog-title"
       >
         <DialogTitle id="responsive-dialog-title">{dialogSubject}</DialogTitle>
         {dialogBody}
@@ -203,6 +208,8 @@ export const BalanceManagement = () => {
           onClick={() => {
             setDialogOpen(true);
             setDialogSubject("Deposit");
+            setTransactionInflight(false);
+            setAmount("");
           }}
         >
           Deposit
@@ -211,6 +218,8 @@ export const BalanceManagement = () => {
           onClick={() => {
             setDialogOpen(true);
             setDialogSubject("Withdraw");
+            setTransactionInflight(false);
+            setAmount("");
           }}
         >
           Withdraw

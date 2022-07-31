@@ -25,7 +25,7 @@ declare function get_statistics(oracle: String): Promise<any>;
 interface statisticsI {
   Initialized: null | boolean;
   Oracle: String;
-  DailyEpoch: Number;
+  DailyEpoch: number;
   Heads: number[];
   Tails: number[];
 }
@@ -79,9 +79,8 @@ export const Stats = () => {
                 <Stack justifyContent="center" alignContent="center">
                   <Typography gutterBottom variant="h5" component="div">
                     Stats for{" "}
-                    {moment(String(stats.DailyEpoch))
-                      .local()
-                      .format("MMM Do YYYY")}
+                    {moment.utc(stats.DailyEpoch * 1000).format("MMMM Do YYYY")}{" "}
+                    (in UTC)
                   </Typography>
                 </Stack>
                 <Grid container item>

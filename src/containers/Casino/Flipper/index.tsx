@@ -338,7 +338,7 @@ export const Flipper = () => {
           {openMessage}
         </Alert>
       </Snackbar>
-      <StyledCard>
+      <Box>
         <Box
           sx={{
             display: "flex",
@@ -363,24 +363,26 @@ export const Flipper = () => {
             <Tab value="new" label="Start New Flip" />
           </Tabs>
         </Box>
-        <StyledCard>
-          <Stepper activeStep={activeStep} alternativeLabel>
-            {STEPS.map((label) => (
-              <Step key={label}>
-                <StepLabel
-                  sx={{
-                    "& .Mui-active": { color: "orange !important" },
-                    "& .Mui-completed": { color: "orange !important" },
-                  }}
-                >
-                  {label}
-                </StepLabel>
-              </Step>
-            ))}
-          </Stepper>
-        </StyledCard>
         {body}
-      </StyledCard>
+        {activeStep !== 3 && (
+          <StyledCard>
+            <Stepper activeStep={activeStep} alternativeLabel>
+              {STEPS.map((label) => (
+                <Step key={label}>
+                  <StepLabel
+                    sx={{
+                      "& .Mui-active": { color: "orange !important" },
+                      "& .Mui-completed": { color: "orange !important" },
+                    }}
+                  >
+                    {label}
+                  </StepLabel>
+                </Step>
+              ))}
+            </Stepper>
+          </StyledCard>
+        )}
+      </Box>
     </>
   );
 };

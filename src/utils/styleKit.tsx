@@ -228,23 +228,20 @@ color: ${Theme.typography.body1.color};
 
 .flippening-box {
   @media (max-width: 500px) {
-    padding-top: 10vh;
-    padding-bottom: 20vh;
+    padding-top: 5vh;
+    padding-bottom: 7.5vh;
   }
   @media (min-width: 500px) {
-    padding-top: 20vh;
+    padding-top: 10vh;
   }
 }
 
 .flippening-content {
-  display: flex;
-  justify-content: center;
-  align-items: center;
   @media (max-width: 500px) {
-    width: 100vw;
+    width: 90vw;
   }
   @media (min-width: 500px) {
-    width: 60vw;
+    width: 30vw;
   }
 }
 

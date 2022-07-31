@@ -59,12 +59,12 @@ export const BalanceOverview = () => {
     <>
       <StyledCard>
         <Typography gutterBottom variant="h5" component="div">
-          Escrow: {escrowBalance.toFixed(6)} SOL
+          Wallet: {walletBalance.toFixed(6)} SOL
         </Typography>
       </StyledCard>
       <StyledCard>
         <Typography gutterBottom variant="h5" component="div">
-          Wallet: {walletBalance.toFixed(6)} SOL
+          Escrow: {escrowBalance.toFixed(6)} SOL
         </Typography>
       </StyledCard>
     </>

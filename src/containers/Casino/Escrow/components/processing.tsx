@@ -29,32 +29,28 @@ export const Processing = () => {
       }}
     >
       <Box>
-        <StyledCard className="swap-container">
-          <StyledCard>
-            <Stack justifyContent="center" alignContent="center">
-              <br />
-              <div style={{ display: "flex", justifyContent: "center" }}>
-                <CircularProgress />
-              </div>
-              <br />
-              <br />
-              <Typography gutterBottom variant="h5" component="div">
-                Please wait for Solana to finalize the transaction.
-              </Typography>
-              <Typography gutterBottom variant="h5" component="div">
-                Signature:{" "}
-                {String(
-                  flipTransactionSignature.slice(0, 4) +
-                    "..." +
-                    flipTransactionSignature.slice(
-                      flipTransactionSignature.length - 4,
-                      flipTransactionSignature.length
-                    )
-                )}
-              </Typography>
-            </Stack>
-          </StyledCard>
-        </StyledCard>
+        <Stack justifyContent="center" alignContent="center">
+          <br />
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <CircularProgress />
+          </div>
+          <br />
+          <br />
+          <Typography gutterBottom variant="h5" component="div">
+            Please wait for Solana to finalize the transaction.
+          </Typography>
+          <Typography gutterBottom variant="h5" component="div">
+            Signature:{" "}
+            {String(
+              flipTransactionSignature.slice(0, 4) +
+                "..." +
+                flipTransactionSignature.slice(
+                  flipTransactionSignature.length - 4,
+                  flipTransactionSignature.length
+                )
+            )}
+          </Typography>
+        </Stack>
       </Box>
     </Grid>
   );

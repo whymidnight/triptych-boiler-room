@@ -48,7 +48,7 @@ export const Wager = ({ onCTA }) => {
       <Box
         sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
       >
-        <StyledCard sx={{ width: "fitContent" }}>
+        <StyledCard>
           <Stack>
             <Button onClick={() => onCTA(operator)}>
               <Typography fontSize={24} variant="h5" component="div">

@@ -82,7 +82,6 @@ export const FlippeningPage: FC = () => {
                     indicatorColor="primary"
                   >
                     <Tab value="coinFlip" label="Coin Flip" />
-                    <Tab value="blackjack" label="Blackjack" />
                   </Tabs>
                 </StyledCard>
               </Grid>
@@ -112,9 +111,7 @@ export const FlippeningPage: FC = () => {
               </Grid>
             </Grid>
             <Provider store={store}>
-              <Box className="flippening-content">
-                <Box sx={{ width: "100%" }}>{body}</Box>
-              </Box>
+              <Box>{body}</Box>
             </Provider>
           </StyledCard>
         </Box>
