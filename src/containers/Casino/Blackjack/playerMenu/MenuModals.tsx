@@ -14,6 +14,7 @@ interface props {
 const MenuModals = (props: props): JSX.Element => {
   return (
     <div className="MenuModalsComponent card m-4">
+      {props.message}
       <div className="card-content buttons-menu has-text-centered">
         {props.buttons &&
           props.buttons.map(({ label, handler }, index) => (
@@ -31,4 +32,3 @@ const MenuModals = (props: props): JSX.Element => {
 };
 
 export default MenuModals;
-

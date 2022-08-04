@@ -22,6 +22,8 @@ import {
   bankerDraw,
   doEndgame,
 } from "./store/actions/GameActions";
+import { useRecoilState } from "recoil";
+import { betAmountAtom, phaseAtom } from "./state/atoms";
 
 interface GameProps {
   username: string;
@@ -44,6 +46,9 @@ const {
 } = GamePhases;
 
 const Game = ({ username }: GameProps): JSX.Element => {
+  const [phase, setPhase] = useRecoilState(phaseAtom);
+  const [betAmount, setBetAmount] = useRecoilState(betAmountAtom);
+
   const credits = useSelector<stateInterface, number>(
     (state) => state.user.credits
   );
@@ -77,6 +82,7 @@ const Game = ({ username }: GameProps): JSX.Element => {
   const startButtons: button[] = [
     {
       label: "Start new hand",
+      //@ts-ignore
       handler: () => dispatch(startHand()),
     },
   ];
@@ -93,8 +99,8 @@ const Game = ({ username }: GameProps): JSX.Element => {
   ];
 
   const doDoubleDown = (currentPot: number) => {
-    dispatch(setCredit(-currentPot));
-    dispatch(playerDraw(true));
+    // dispatch(setCredit(-currentPot));
+    // dispatch(playerDraw(true));
   };
 
   const potShow: number | null = [GameEnded, PreGame, BettinStage].includes(
@@ -103,17 +109,19 @@ const Game = ({ username }: GameProps): JSX.Element => {
     ? null
     : betPot;
 
+  /*
   useEffect(() => {
     dispatch(setCredit(10000));
   }, []);
+  */
 
   useEffect(() => {
     switch (gamePhase) {
       case PreGame:
-        break;
       case BettinStage:
+        dispatch(startHand());
         const doBetFactory = (n: number) => [
-          `$${n}`,
+          `${n} SOL`,
           () => {
             dispatch(makeBet(n));
             dispatch(setCredit(-n));
@@ -126,13 +134,12 @@ const Game = ({ username }: GameProps): JSX.Element => {
           doBetFactory(40),
           doBetFactory(50),
         ]);
-        setMessage(`${username.toUpperCase()}, make your bet`);
+        setMessage(`Make your bet`);
         setButtons(bettingStageButtons);
         break;
       case InitialDraw:
-        setMessage(`You have posted $${betPot}.`);
         setButtons(null);
-        setTimeout(() => dispatch(doInitialDeal()), 1500);
+        dispatch(doInitialDeal());
         break;
       case FirstUserAction:
         setMessage(`Do your move!`);
@@ -167,7 +174,7 @@ const Game = ({ username }: GameProps): JSX.Element => {
           playerScore !== "busted"
         ) {
           const halfPot: number = betPot / 2;
-          dispatch(setCredit(halfPot));
+          // dispatch(setCredit(halfPot));
           setMessage(
             `You have surrendered! Half pot ($${halfPot}) is back to you. ` +
               baseMessage
@@ -177,7 +184,7 @@ const Game = ({ username }: GameProps): JSX.Element => {
             case "player":
               const winningAmmount =
                 playerScore === "blackjack" ? 2.5 * betPot : 2 * betPot;
-              dispatch(setCredit(winningAmmount));
+              // dispatch(setCredit(winningAmmount));
               setMessage(
                 `You have been awarded $${winningAmmount}, congratulations!`
               );
@@ -187,7 +194,7 @@ const Game = ({ username }: GameProps): JSX.Element => {
               break;
             case "tie":
               setMessage(`The game is a tie, you have $${betPot} back!`);
-              dispatch(setCredit(betPot));
+              // dispatch(setCredit(betPot));
               break;
           }
         }
@@ -201,24 +208,12 @@ const Game = ({ username }: GameProps): JSX.Element => {
   useEffect(() => {
     if (gamePhase === BankerAction) {
       setMessage(`Banker is drawing...!`); // must be optimized
-      setTimeout(() => dispatch(bankerDraw()), 1500);
+      // setTimeout(() => dispatch(bankerDraw()), 1500);
     }
   }, [bankerCards.length]);
 
   return (
     <StyledCard className="GameScreenComponent container columns">
-      {useMemo(
-        () => (
-          <StyledCard>
-            <MenuHead
-              username={username}
-              credits={credits}
-              currentPot={potShow}
-            />
-          </StyledCard>
-        ),
-        [username, credits, potShow]
-      )}
       <StyledCard>
         <GameBoard
           bankerCards={bankerCards}
