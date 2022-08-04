@@ -1,14 +1,24 @@
-import HomePage from "../src/pages/home";
+import CasinoPage from "../src/pages/casino";
 import { CreateTheme } from "../src/utils/theme/theme";
 import { ThemeProvider } from "@mui/material/styles";
-import { Paper } from "@mui/material";
+import {
+  useFlipperWasm,
+  useEscrowWasm,
+  useBlackjackWasm,
+} from "../src/utils/wasm_loader_hooks";
 
 const Index = () => {
   const theme = CreateTheme();
+  const flipper = useFlipperWasm();
+  const blackjack = useBlackjackWasm();
+  const escrow = useEscrowWasm();
+
   return (
     <>
       <ThemeProvider theme={theme}>
-        <HomePage />
+        {flipper === "ready" && flipper == blackjack && flipper === escrow && (
+          <CasinoPage />
+        )}
       </ThemeProvider>
     </>
   );
