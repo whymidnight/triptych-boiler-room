@@ -90,7 +90,7 @@ export const Profit = () => {
                 <>
                   <br />
                   <Typography gutterBottom variant="h5" component="div">
-                    Please tell my mom i said hi whenever you decide to smash.
+                    Congrats on the easter egg :).
                   </Typography>
                 </>
               )}
@@ -100,7 +100,7 @@ export const Profit = () => {
                     <>
                       <br />
                       <Typography gutterBottom variant="h5" component="div">
-                        Cum again. Thank you semen bastard!
+                        Congrats on the easter eggular.
                       </Typography>
                     </>
                   );
@@ -111,7 +111,7 @@ export const Profit = () => {
                       <>
                         <br />
                         <Typography gutterBottom variant="h5" component="div">
-                          Congratulations you winning fuck.
+                          Congratulations you won.
                         </Typography>
                       </>
                     );
@@ -121,8 +121,7 @@ export const Profit = () => {
                       <>
                         <br />
                         <Typography gutterBottom variant="h5" component="div">
-                          Congratulations you loser fuck. Your wallet has been
-                          drained, bitch!
+                          Congratulations you lost.
                         </Typography>
                       </>
                     );
