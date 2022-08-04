@@ -59,9 +59,9 @@ declare function invoke_flip(
 
 declare function get_escrow(holder: String): Promise<any>;
 
-export const CONNECTION = "https://api.devnet.solana.com";
+export const CONNECTION = "https://ssc-dao.genesysgo.net";
 export const ORACLE = new PublicKey(
-  "HkJJu4ycQjnVwBKpJyjmhsCJbbiPdL952Q9y75NDhJem"
+  "GbfoTncFrg8PxS2KY9mmCHz73Bv9cXUxsr7Q66y5SUDo"
 );
 
 // @ts-ignore

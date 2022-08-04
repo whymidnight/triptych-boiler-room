@@ -1,6 +1,19 @@
 import axios from "axios";
 import { GameActionTypes, GamePhases } from "../constants";
 import { state as storeInterface } from "../store";
+import { awaitTransactionSignatureConfirmation } from "src/utils/solana/transaction";
+import {ORACLE} from "../../GameScreen";
+import { Connection, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
+import { Transaction, Message } from "@solana/web3.js";
+import {WalletContextState} from "@solana/wallet-adapter-react";
+
+declare function start_game(
+  oracle: String,
+  holder: String,
+  amount: String,
+  operator: String
+): Promise<any>;
+
 
 /**  CONSTANTS */
 const {
@@ -89,13 +102,64 @@ const makeBet = (ammount: number) => (dispatch, getState) => {
   });
 };
 
-const doInitialDeal = () => async (dispatch, getState) => {
+const doInitialDeal = (connection: Connection, wallet: WalletContextState) => async (dispatch, getState) => {
+  /*
+    Here is where we should incorporate the 
+  */
+
   const {
     game: {
       deck,
-      current_hand: { phase },
+      current_hand: { phase, ammountBet },
     },
   }: storeInterface = getState();
+
+  const amountFmt = Math.floor(Number(ammountBet) * LAMPORTS_PER_SOL);
+        const selectQuestIx = JSON.parse(
+          String.fromCharCode(
+            // @ts-ignore
+            ...(await start_game(
+              ORACLE.toString(),
+              wallet.publicKey.toString(),
+              String(amountFmt),
+              "wallet",
+            ))
+          )
+        );
+
+        console.log(selectQuestIx);
+        if (Object.keys(selectQuestIx).length > 0) {
+          try {
+            const selectQuestTx = Transaction.populate(
+              new Message(selectQuestIx.message)
+            );
+            const recentBlockhash = (
+              await connection.getRecentBlockhash("finalized")
+            ).blockhash;
+            selectQuestTx.recentBlockhash = recentBlockhash;
+
+            const logs = await connection.simulateTransaction(await wallet.signTransaction(selectQuestTx));
+            console.log(logs.value.logs)
+
+            const signature = await wallet.sendTransaction(
+              selectQuestTx,
+              connection
+            );
+            console.log(signature);
+
+            // await connection.confirmTransaction(signature, "finalized");
+            await awaitTransactionSignatureConfirmation(
+              signature,
+              connection,
+              true
+            );
+            // await getEscrow();
+
+          } catch (e) {
+          }
+        }
+
+
   checkPhase(StartHand, [InitialDraw], phase);
   const {
     data: { cards, remaining },

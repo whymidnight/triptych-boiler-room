@@ -22,8 +22,17 @@ import {
   bankerDraw,
   doEndgame,
 } from "./store/actions/GameActions";
+
+import { useWallet } from "@solana/wallet-adapter-react";
 import { useRecoilState } from "recoil";
 import { betAmountAtom, phaseAtom } from "./state/atoms";
+import { Connection, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
+import { Transaction, Message } from "@solana/web3.js";
+
+export const CONNECTION = "https://api.devnet.solana.com";
+export const ORACLE = new PublicKey(
+  "HkJJu4ycQjnVwBKpJyjmhsCJbbiPdL952Q9y75NDhJem"
+);
 
 interface GameProps {
   username: string;
@@ -46,6 +55,9 @@ const {
 } = GamePhases;
 
 const Game = ({ username }: GameProps): JSX.Element => {
+  const connection = useMemo(() => new Connection(CONNECTION), []);
+
+  const wallet = useWallet();
   const [phase, setPhase] = useRecoilState(phaseAtom);
   const [betAmount, setBetAmount] = useRecoilState(betAmountAtom);
 
@@ -109,11 +121,9 @@ const Game = ({ username }: GameProps): JSX.Element => {
     ? null
     : betPot;
 
-  /*
   useEffect(() => {
-    dispatch(setCredit(10000));
+    dispatch(startHand());
   }, []);
-  */
 
   useEffect(() => {
     switch (gamePhase) {
@@ -128,18 +138,17 @@ const Game = ({ username }: GameProps): JSX.Element => {
           },
         ];
         const bettingStageButtons = buttonsFactory([
-          doBetFactory(10),
-          doBetFactory(20),
-          doBetFactory(30),
-          doBetFactory(40),
-          doBetFactory(50),
+          doBetFactory(0.05),
+          doBetFactory(0.1),
+          doBetFactory(0.25),
+          doBetFactory(0.5),
         ]);
         setMessage(`Make your bet`);
         setButtons(bettingStageButtons);
         break;
       case InitialDraw:
         setButtons(null);
-        dispatch(doInitialDeal());
+        dispatch(doInitialDeal(connection, wallet));
         break;
       case FirstUserAction:
         setMessage(`Do your move!`);
