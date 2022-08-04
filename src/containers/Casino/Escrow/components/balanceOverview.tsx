@@ -20,7 +20,7 @@ import { Connection, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 
 declare function get_escrow(holder: String): Promise<any>;
 
-export const CONNECTION = "https://api.devnet.solana.com";
+export const CONNECTION = "https://ssc-dao.genesysgo.net";
 
 export const BalanceOverview = () => {
   const wallet = useWallet();

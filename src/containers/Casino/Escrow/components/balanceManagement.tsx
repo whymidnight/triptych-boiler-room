@@ -35,7 +35,7 @@ import Processing from "./processing";
 declare function deposit_escrow(holder: String, amount: String): Promise<any>;
 declare function drain_escrow(holder: String, amount: String): Promise<any>;
 
-export const CONNECTION = "https://api.devnet.solana.com";
+export const CONNECTION = "https://ssc-dao.genesysgo.net";
 
 export const BalanceManagement = () => {
   const wallet = useWallet();
