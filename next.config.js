@@ -1,10 +1,5 @@
 /** @type {import('next').NextConfig} */
 module.exports = {
-    images: {
-    domains: ['cdn.sanity.io', 'pbs.twimg.com'],
-      loader: 'imgix',
-      path: "/",
-  },
   typescript: {
     ignoreBuildErrors: true,
   },
