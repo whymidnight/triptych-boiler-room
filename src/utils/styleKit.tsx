@@ -3,47 +3,42 @@ import Theme from "./theme/theme";
 
 export const GlobalStyle = createGlobalStyle`
 @font-face {
-  font-family: 'Silkscreen';
+  font-family: 'MADE Evolve Sans';
   src: url(${Theme.typography.url}) format('woff2');
 }
 
     width: 50vw;.MuiTypography-caption {
-  font-family: 'Silkscreen' !important;
+  font-family: 'MADE Evolve Sans' !important;
   color: ${Theme.typography.body1.color} !important;
 }
 .MuiTypography-body2 {
-  font-family: 'Silkscreen' !important;
+  font-family: 'MADE Evolve Sans' !important;
 }
 button[class*="CTAButton"] {
-  font-family: 'Silkscreen' !important;
+  font-family: 'MADE Evolve Sans' !important;
   background: ${Theme.palette.secondary.main} !important;
-  color: ${Theme.typography.body1.color} !important;
 }
 .MuiTypography-colorTextSecondary {
-  font-family: 'Silkscreen' !important;
-  color: ${Theme.typography.body1.color} !important;
+  font-family: 'MADE Evolve Sans' !important;
 }
 .MuiTypography-colorTextPrimary {
-  font-family: 'Silkscreen' !important;
-  color: ${Theme.typography.body1.color} !important;
+  font-family: 'MADE Evolve Sans' !important;
 }
 
 .wallet-adapter-button {
-  font-family: "Silkscreen" !important;
-  color: ${Theme.typography.body1.color} !important;
+  font-family: "MADE Evolve Sans" !important;
   background-color: ${Theme.palette.secondary.main} !important;
 }
 .wallet-adapter-button-trigger {
   background-color: ${Theme.palette.secondary.main} !important;
 }
 .wallet-adapter-modal-wrapper {
-  font-family: "Silkscreen" !important;
+  font-family: "MADE Evolve Sans" !important;
   background-color: ${Theme.palette.primary.main} !important;
-  color: ${Theme.typography.body1.color} !important;
 }
 
 #cmui-modal {
-  font-family: "Silkscreen" !important;
+  font-family: "MADE Evolve Sans" !important;
   background-color: ${Theme.palette.secondary.light};
   box-shadow: 0px 0px 40px 10px ${Theme.palette.secondary.main} !important;
 }
@@ -94,42 +89,20 @@ button[class*="CTAButton"] {
 }
 
 .bg {
-  @media (max-width: 600px) {
-    background: url("${process.env.NEXT_PUBLIC_BACKGROUND_MOBILE_FILE}");
-    background-size: cover;
-    background-position: center;
-  }
-  @media (min-width: 600px) {
-    background: url("${process.env.NEXT_PUBLIC_BACKGROUND_FILE}");
-    background-size: cover;
-    background-position: center;
-  }
+  background-color: ${Theme.palette.primary.main};
   min-height: 100vh;
 }
 .xquestingbg {
-  @media (max-width: 600px) {
-    background: url("${process.env.NEXT_PUBLIC_XQUESTING_BACKGROUND_MOBILE_FILE}");
-    background-size: cover;
-    background-position: center;
-  }
-  @media (min-width: 600px) {
-    background: url("${process.env.NEXT_PUBLIC_XQUESTING_BACKGROUND_FILE}");
-    background-size: cover;
-    background-position: center;
-  }
+  background-color: ${Theme.palette.primary.main};
+  min-height: 100vh;
+}
+.profilebg {
+  background-color: ${Theme.palette.secondary.light};
   min-height: 100vh;
 }
 .App-header {
-  @media (max-width: 600px) {
-    background: url("${process.env.NEXT_PUBLIC_BACKGROUND_MOBILE_FILE}");
-    background-size: cover;
-    background-position: center;
-  }
-  @media (min-width: 600px) {
-    background: url("${process.env.NEXT_PUBLIC_BACKGROUND_FILE}");
-    background-size: cover;
-    background-position: center;
-  }
+  background-color: ${Theme.palette.primary.main};
+
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -148,7 +121,7 @@ button[class*="CTAButton"] {
   color: ${Theme.typography.body1.color};
 }
 #matrixrain-column {
-  font-family: "Silkscreen" !important;
+  font-family: "MADE Evolve Sans" !important;
   color: ${Theme.palette.secondary.main};
 }
 #matrixrain-bg {
@@ -161,15 +134,13 @@ h2, p {
 
 html,
 body {
-  font-family: "Silkscreen" !important;
+  font-family: "MADE Evolve Sans" !important;
   padding: 0;
   margin: 0;
 }
 
 img {
 border-radius: unset !important;
-width: 50% !important;
-height: auto;
 }
 
 .grid-item {
@@ -206,9 +177,11 @@ height: auto;
   }
   background-image: linear-gradient(var(--gradient-rotate, 246deg), rgb(218 46 239) 7.97%, rgb(43 106 255) 49.17%, rgb(57 208 216) 92.1%);
 }
+
 .swap-card {
   background-image: linear-gradient(140.14deg,rgb(0 182 191 / 15%),rgb(27 22 89 / 10%) 86.61%),linear-gradient(321.82deg,rgb(24 19 77),rgb(27 22 89));
 }
+
 .MuiMenu-list {
   background-color: linear-gradient(140.14deg,rgb(0 182 191 / 15%),rgb(27 22 89 / 10%) 86.61%),linear-gradient(321.82deg,rgb(24 19 77),rgb(27 22 89)) !important;
   background: linear-gradient(140.14deg,rgb(0 182 191 / 15%),rgb(27 22 89 / 10%) 86.61%),linear-gradient(321.82deg,rgb(24 19 77),rgb(27 22 89)) !important;
@@ -228,7 +201,7 @@ color: ${Theme.typography.body1.color};
 
 .flippening-box {
   @media (max-width: 500px) {
-    padding-top: 5vh;
+    padding-top: 10vh;
     padding-bottom: 7.5vh;
   }
   @media (min-width: 500px) {
@@ -243,6 +216,10 @@ color: ${Theme.typography.body1.color};
   @media (min-width: 500px) {
     width: 30vw;
   }
+}
+
+.giveaways-container {
+  width: 700px;
 }
 
 `;

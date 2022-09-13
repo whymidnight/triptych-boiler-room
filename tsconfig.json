@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "baseUrl": "./",
     "target": "es5",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
@@ -18,8 +17,11 @@
     "noEmit": true,
     "jsx": "preserve",
     "noFallthroughCasesInSwitch": true,
-    "incremental": true
+    "incremental": true,
+    "baseUrl": ".",
+    "paths": {}
   },
   "include": ["src"],
   "exclude": ["node_modules", "vendor_modules"]
 }
+

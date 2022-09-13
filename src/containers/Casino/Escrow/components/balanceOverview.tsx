@@ -24,9 +24,21 @@ export const CONNECTION = "https://ssc-dao.genesysgo.net";
 
 export const BalanceOverview = () => {
   const wallet = useWallet();
-  const [escrowBalance, setEscrowBalance] = useRecoilState(escrowBalanceAtom);
   const [walletBalance, setWalletBalance] = useRecoilState(walletBalanceAtom);
   const connection = useMemo(() => new Connection(CONNECTION), []);
+
+  return (
+    <>
+      <WalletBalance />
+      <EscrowBalance />
+    </>
+  );
+};
+
+export const WalletBalance = () => {
+  const wallet = useWallet();
+  const connection = useMemo(() => new Connection(CONNECTION), []);
+  const [walletBalance, setWalletBalance] = useRecoilState(walletBalanceAtom);
 
   useEffect(() => {
     async function getBalance() {
@@ -36,6 +48,26 @@ export const BalanceOverview = () => {
       const nativeBalance = await connection.getBalance(wallet.publicKey);
       setWalletBalance(nativeBalance / LAMPORTS_PER_SOL);
     }
+    getBalance();
+  }, [wallet]);
+
+  return (
+    <StyledCard>
+      <Typography gutterBottom variant="h5" component="div">
+        Wallet:
+        <Typography gutterBottom variant="h5" component="div">
+          {walletBalance.toFixed(4)} SOL
+        </Typography>
+      </Typography>
+    </StyledCard>
+  );
+};
+
+export const EscrowBalance = () => {
+  const wallet = useWallet();
+  const [escrowBalance, setEscrowBalance] = useRecoilState(escrowBalanceAtom);
+
+  useEffect(() => {
     async function getEscrow() {
       if (!wallet.publicKey) {
         return;
@@ -52,22 +84,17 @@ export const BalanceOverview = () => {
       }
     }
     getEscrow();
-    getBalance();
   }, [wallet]);
 
   return (
-    <>
-      <StyledCard>
+    <StyledCard>
+      <Typography gutterBottom variant="h5" component="div">
+        Escrow:
         <Typography gutterBottom variant="h5" component="div">
-          Wallet: {walletBalance.toFixed(6)} SOL
+          {escrowBalance.toFixed(4)} SOL
         </Typography>
-      </StyledCard>
-      <StyledCard>
-        <Typography gutterBottom variant="h5" component="div">
-          Escrow: {escrowBalance.toFixed(6)} SOL
-        </Typography>
-      </StyledCard>
-    </>
+      </Typography>
+    </StyledCard>
   );
 };
 

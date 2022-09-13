@@ -1,4 +1,4 @@
-import CasinoPage from "../src/pages/casino";
+import GiveawaysPage from "../src/pages/giveaways";
 import { CreateTheme } from "../src/utils/theme/theme";
 import { ThemeProvider } from "@mui/material/styles";
 import {
@@ -7,21 +7,20 @@ import {
   useBlackjackWasm,
 } from "../src/utils/wasm_loader_hooks";
 
-const Index = () => {
+const Casino = () => {
   const theme = CreateTheme();
   const flipper = useFlipperWasm();
   const blackjack = useBlackjackWasm();
   const escrow = useEscrowWasm();
 
   return (
-    <>
-      <ThemeProvider theme={theme}>
-        {flipper === "ready" && flipper == blackjack && flipper === escrow && (
-          <CasinoPage />
-        )}
-      </ThemeProvider>
-    </>
+    <ThemeProvider theme={theme}>
+      {flipper === "ready" && flipper == blackjack && flipper === escrow && (
+        <GiveawaysPage />
+      )}
+    </ThemeProvider>
   );
 };
 
-export default Index;
+export default Casino;
+

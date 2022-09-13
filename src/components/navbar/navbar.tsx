@@ -1,13 +1,14 @@
 import * as React from "react";
-import {WalletMultiButton} from "@solana/wallet-adapter-react-ui";
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
 import Container from "@mui/material/Container";
+import { Divider, Typography } from "@mui/material";
 import styled from "styled-components";
 import Theme from "../../utils/theme/theme";
 import Image from "next/image";
 import Link from "next/link";
-import {Grid} from "@mui/material";
+import { Grid } from "@mui/material";
 
 const TopBar = styled.div`
   z-index: 100000;
@@ -20,20 +21,22 @@ const TopBar = styled.div`
 export const Navbar = () => {
   return (
     <TopBar id="topbar">
-      <Grid container sx={{width: "100vw", display: "flex"}}>
-        <Grid item style={{position: "relative"}} xs={4}>
+      <Grid container sx={{ width: "100vw", display: "flex" }}>
+        <Grid item style={{ position: "relative" }} xs={4}>
           <Link href="/">
-          <Image
-            src={process.env.NEXT_PUBLIC_LOGO_FILE!}
-            width={300}
-            layout="fill"
-            objectFit="contain"
-            alt="logo"
-          />
+            <a>
+              <Image
+                src={process.env.NEXT_PUBLIC_LOGO_FILE!}
+                width={300}
+                layout="fill"
+                objectFit="contain"
+                alt="logo"
+              />
+            </a>
           </Link>
         </Grid>
 
-        <Grid item xs={2} />
+        <Grid item xs={1} />
         <Grid
           item
           style={{
@@ -41,8 +44,98 @@ export const Navbar = () => {
             justifyContent: "right",
             paddingRight: "1%",
           }}
-          xs={6}
+          xs={7}
         >
+          <Box
+            style={{
+              display: "flex",
+              alignItems: "center",
+              paddingRight: "1rem",
+            }}
+          >
+            <Link href="https://solfaucet.com/">
+              <a>
+                <Typography color="white" variant="h6" fontSize={18}>
+                  Faucet
+                </Typography>
+              </a>
+            </Link>
+          </Box>
+          <Box
+            style={{
+              display: "flex",
+              alignItems: "center",
+              paddingRight: "1rem",
+              marginTop: "0.5rem",
+              marginBottom: "0.5rem",
+            }}
+          >
+            <Divider
+              sx={{ bgcolor: "#37AA9C" }}
+              orientation="vertical"
+              flexItem
+            />
+          </Box>
+          <Box
+            style={{
+              display: "flex",
+              alignItems: "center",
+              paddingRight: "1rem",
+            }}
+          >
+            <Link href="/profile">
+              <a>
+                <Typography color="white" variant="h6" fontSize={18}>
+                  Manage Profile
+                </Typography>
+              </a>
+            </Link>
+          </Box>
+          <Box
+            style={{
+              display: "flex",
+              alignItems: "center",
+              paddingRight: "1rem",
+              marginTop: "0.5rem",
+              marginBottom: "0.5rem",
+            }}
+          >
+            <Divider
+              sx={{ bgcolor: "#37AA9C" }}
+              orientation="vertical"
+              flexItem
+            />
+          </Box>
+          <Box
+            style={{
+              display: "flex",
+              alignItems: "center",
+              paddingRight: "1rem",
+            }}
+          >
+            <Link href="/giveaways">
+              <a>
+                <Typography color="white" variant="h6" fontSize={18}>
+                  Giveaways
+                </Typography>
+              </a>
+            </Link>
+          </Box>
+          <Box
+            style={{
+              display: "flex",
+              alignItems: "center",
+              paddingRight: "1rem",
+              marginTop: "0.5rem",
+              marginBottom: "0.5rem",
+            }}
+          >
+            <Divider
+              sx={{ bgcolor: "#37AA9C" }}
+              orientation="vertical"
+              flexItem
+            />
+          </Box>
           <WalletMultiButton />
         </Grid>
       </Grid>

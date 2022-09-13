@@ -1,10 +1,24 @@
 /** @type {import('next').NextConfig} */
 module.exports = {
+    images: {
+    domains: ['cdn.sanity.io', 'pbs.twimg.com'],
+      loader: 'imgix',
+      path: "/",
+  },
   typescript: {
     ignoreBuildErrors: true,
   },
   reactStrictMode: true,
+  webpack5: true,
   webpack: (config) => {
+    config.module.rules = [
+      ...config.module.rules,
+      {
+        test: /\.mjs$/,
+        include: /node_modules/,
+        type: "javascript/auto",
+      },
+    ];
     config.resolve = {
       ...config.resolve,
       fallback: {

@@ -1,4 +1,4 @@
-import {createTheme} from "@mui/material/styles";
+import { createTheme } from "@mui/material/styles";
 import {
   red,
   orange,
@@ -10,17 +10,31 @@ import {
 
 export const Theme = {
   components: {
-    MuiButton: {
+    MuiTextField: {
       styleOverrides: {
-        text: {},
-        outlined: {},
-        contained: {},
+        root: {
+          "& .MuiInput-underline:after": {
+            boxShadow: "#37AA9C",
+          },
+        },
       },
+    },
+    MuiButton: {
+      variants: [
+        {
+          props: { variant: "outlined" },
+          style: {
+            border: "solid",
+            borderWidth: "1px",
+            borderColor: process.env.NEXT_PUBLIC_TEXT_COLOR!,
+          },
+        },
+      ],
     },
   },
   typography: {
     url: process.env.NEXT_PUBLIC_TEXT_FONT_FILE!,
-    fontFamily: ["Silkscreen"],
+    fontFamily: ["MADE Evolve Sans"],
     fontSize: "12rem",
     h1: {
       fontFamily: "Lato",

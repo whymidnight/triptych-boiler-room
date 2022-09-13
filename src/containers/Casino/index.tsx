@@ -49,62 +49,6 @@ export const Casino: FC = () => {
       }}
     >
       <StyledCard>
-        <Grid container>
-          <Grid
-            item
-            sm={3}
-            xs={12}
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "100%",
-            }}
-          >
-            <StyledCard>
-              <Tabs
-                scrollButtons={false}
-                sx={{
-                  color: "unset !important",
-                  overflow: "auto !important",
-                }}
-                onChange={handleTabChange}
-                variant="scrollable"
-                value={tab}
-                // onChange={handleAction}
-                textColor="primary"
-                indicatorColor="primary"
-              >
-                <Tab value="coinFlip" label="Coin Flip" />
-                <Tab value="blackjack" label="Blackjack" />
-              </Tabs>
-            </StyledCard>
-          </Grid>
-          <Grid
-            item
-            sm={6}
-            xs={12}
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <BalanceOverview />
-          </Grid>
-          <Grid
-            item
-            sm={3}
-            xs={12}
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <BalanceManagement />
-          </Grid>
-        </Grid>
         <Provider store={store}>
           <Box>{body}</Box>
         </Provider>
@@ -114,4 +58,3 @@ export const Casino: FC = () => {
 };
 
 export default Casino;
-

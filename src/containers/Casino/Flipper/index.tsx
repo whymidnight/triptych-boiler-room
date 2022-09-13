@@ -41,6 +41,8 @@ import Profit from "./components/profit";
 import Stats from "./components/stats";
 import { awaitTransactionSignatureConfirmation } from "src/utils/solana/transaction";
 import { escrowBalanceAtom, walletBalanceAtom } from "../Escrow/state/atoms";
+import BalanceOverview from "../Escrow/components/balanceOverview";
+import BalanceManagement from "../Escrow/components/balanceManagement";
 
 const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,
@@ -189,6 +191,8 @@ export const Flipper = () => {
         } catch (e) {
           setOpen(true);
           setOpenMessage("Transaction Failed. :(");
+          alert(e);
+          console.log(e);
         }
       }
     }
@@ -228,10 +232,9 @@ export const Flipper = () => {
           )
         );
 
-        console.log(selectQuestIx);
         if (Object.keys(selectQuestIx).length > 0) {
           try {
-            const selectQuestTx = Transaction.populate(
+            var selectQuestTx = Transaction.populate(
               new Message(selectQuestIx.message)
             );
             const recentBlockhash = (
@@ -242,9 +245,12 @@ export const Flipper = () => {
             setOpenMessage("Please Approve Transaction.");
             setOpen(true);
 
-            const signature = await wallet.sendTransaction(
-              selectQuestTx,
-              connection
+            selectQuestTx.signatures = (
+              await wallet.signTransaction(selectQuestTx)
+            ).signatures;
+
+            const signature = await connection.sendRawTransaction(
+              selectQuestTx.serialize()
             );
             setFlipTransactionSignature(signature.toString());
             setBalance((prev) => prev - BETS[betSelection]);
@@ -267,6 +273,7 @@ export const Flipper = () => {
           } catch (e) {
             setOpen(true);
             setOpenMessage("Transaction Failed. :(");
+            alert(e);
           }
         }
       }
@@ -288,7 +295,23 @@ export const Flipper = () => {
   let body;
   switch (activeStep) {
     case 0: {
-      body = <Wager onCTA={onCTA} />;
+      body = (
+        <Box>
+          <Grid container>
+            <Grid
+              item
+              sm={3}
+              xs={12}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            ></Grid>
+          </Grid>
+          <Wager onCTA={onCTA} />
+        </Box>
+      );
       break;
     }
     case 1: {
@@ -365,22 +388,20 @@ export const Flipper = () => {
         </Box>
         {body}
         {activeStep !== 3 && (
-          <StyledCard>
-            <Stepper activeStep={activeStep} alternativeLabel>
-              {STEPS.map((label) => (
-                <Step key={label}>
-                  <StepLabel
-                    sx={{
-                      "& .Mui-active": { color: "orange !important" },
-                      "& .Mui-completed": { color: "orange !important" },
-                    }}
-                  >
-                    {label}
-                  </StepLabel>
-                </Step>
-              ))}
-            </Stepper>
-          </StyledCard>
+          <Grid container>
+            <Grid
+              item
+              sm={6}
+              xs={12}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <BalanceManagement />
+            </Grid>
+          </Grid>
         )}
       </Box>
     </>

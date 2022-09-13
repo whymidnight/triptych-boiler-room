@@ -1,0 +1,218 @@
+import axios from "axios";
+import { TwitterTweetEmbed } from "react-twitter-embed";
+import {
+  Box,
+  Grid,
+  Typography,
+  TextField,
+  Button,
+  Select,
+  MenuItem,
+  InputLabel,
+} from "@mui/material";
+import { ChangeEventHandler, useCallback, useEffect, useState } from "react";
+import { useRecoilState } from "recoil";
+import { userDataAtom, spaceDataAtom } from "../state/atoms";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { StyledCardSecondary } from "src/components/cards/card";
+import { Input } from "@material-ui/core";
+
+export const Manage = () => {
+  const [userData] = useRecoilState(userDataAtom);
+  const [giveawaysData, setGiveawaysData] = useState([]);
+
+  const [tweetUrl, setTweetUrl] = useState("");
+  const [tweetId, setTweetId] = useState("");
+  const [validTweet, setValidTweet] = useState(false);
+
+  const tweetValidate = useCallback((event) => {
+    //@ts-ignore
+    const url = event.target.value;
+    setTweetUrl(url);
+
+    const urlSplit = url.split("/");
+    console.log("....", url, urlSplit.length);
+    if (urlSplit.length === 6) {
+      setValidTweet(true);
+      setTweetId(urlSplit[5]);
+    }
+  }, []);
+
+  const wallet = useWallet();
+
+  const onCreate = useCallback(() => {
+    if (tweetId === "") return;
+    if (!wallet.publicKey) return;
+    async function manageFn() {
+      const message = "overview";
+      const signed = await wallet.signMessage(Buffer.from(message));
+
+      const manage = await axios("https://triptychlabs.io:43594/giveaways", {
+        headers: {
+          OriginalMessage: message,
+        },
+        method: "POST",
+        data: {
+          method: "overview",
+          body: {
+            publicKey: wallet.publicKey.toString(),
+            [message]: Buffer.from(signed).toString("hex"),
+          },
+        },
+      });
+
+      console.log(manage.data.message);
+      setGiveawaysData(manage.data.message.giveaways);
+    }
+
+    async function create() {
+      const message = "overview";
+      const signed = await wallet.signMessage(Buffer.from(message));
+
+      const manage = await axios("https://triptychlabs.io:43594/giveaways", {
+        headers: {
+          OriginalMessage: message,
+        },
+        method: "POST",
+        data: {
+          method: "create",
+          body: {
+            publicKey: wallet.publicKey.toString(),
+            [message]: Buffer.from(signed).toString("hex"),
+            tweetId,
+          },
+        },
+      });
+      console.log(manage.data);
+      await manageFn();
+    }
+    create();
+  }, [tweetId]);
+
+  useEffect(() => {
+    if (!wallet.publicKey) return;
+
+    async function manageFn() {
+      const message = "overview";
+      const signed = await wallet.signMessage(Buffer.from(message));
+
+      const manage = await axios("https://triptychlabs.io:43594/giveaways", {
+        headers: {
+          OriginalMessage: message,
+        },
+        method: "POST",
+        data: {
+          method: "overview",
+          body: {
+            publicKey: wallet.publicKey.toString(),
+            [message]: Buffer.from(signed).toString("hex"),
+          },
+        },
+      });
+
+      console.log(manage.data.message);
+      setGiveawaysData(manage.data.message.giveaways);
+    }
+
+    manageFn();
+  }, []);
+
+  const [listView, setListView] = useState(true);
+
+  return (
+    <Box>
+      <Typography color="#94F3E4" fontSize={18} variant="h5" component="div">
+        Welcome {userData && userData.name}!
+        {userData !== null && (
+          <Box style={{}}>
+            <Box
+              style={{
+                paddingTop: "10px",
+                display: "flex",
+                width: "100%",
+                justifyContent: "center",
+                flexDirection: "column",
+              }}
+            >
+              {listView && (
+                <Box
+                  sx={{
+                    borderRadius: "10px",
+                    backgroundColor: "#333F44",
+                  }}
+                >
+                  <Typography
+                    color="#94F3E4"
+                    fontSize={18}
+                    variant="h5"
+                    component="div"
+                    style={{
+                      margin: "0.5rem",
+                    }}
+                  >
+                    Historical Giveaways
+                  </Typography>
+
+                  {giveawaysData.map(({ TweetId }) => {
+                    return (
+                      <Box
+                        style={{
+                          padding: "0.5rem",
+                          margin: "1rem",
+                          borderRadius: "10px",
+                          backgroundColor: "#1A1A1B",
+                        }}
+                      >
+                        {TweetId}
+                      </Box>
+                    );
+                  })}
+                </Box>
+              )}
+              {!listView &&
+                giveawaysData.map(({ TweetId }) => {
+                  return (
+                    <TwitterTweetEmbed
+                      tweetId={TweetId}
+                      options={{ height: 400 }}
+                    />
+                  );
+                })}
+              <Box
+                component="form"
+                style={{
+                  padding: "1rem",
+                }}
+              >
+                <TextField
+                  sx={{
+                    input: {
+                      color: "#94F3E4",
+                    },
+                  }}
+                  style={{
+                    width: "100%",
+                    textAlign: "center",
+                  }}
+                  label="Enter Link to Tweet"
+                  variant="outlined"
+                  value={tweetUrl}
+                  onChange={tweetValidate}
+                />
+              </Box>
+              <Button
+                disabled={!validTweet}
+                onClick={onCreate}
+                variant="outlined"
+              >
+                <Typography color="#94F3E4" fontSize={18} variant="h5">
+                  Start Giveaway
+                </Typography>
+              </Button>
+            </Box>
+          </Box>
+        )}
+      </Typography>
+    </Box>
+  );
+};

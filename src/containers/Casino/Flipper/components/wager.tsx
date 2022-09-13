@@ -20,6 +20,10 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
+import {
+  WalletBalance,
+  EscrowBalance,
+} from "../../Escrow/components/balanceOverview";
 
 export const Wager = ({ onCTA }) => {
   const OPERATORS = ["wallet", "escrow"];
@@ -50,11 +54,18 @@ export const Wager = ({ onCTA }) => {
       >
         <StyledCard>
           <Stack>
-            <Button onClick={() => onCTA(operator)}>
-              <Typography fontSize={24} variant="h5" component="div">
-                Double or Nothing
-              </Typography>
-            </Button>
+            <Box style={{ paddingTop: "5%" }}>
+              <Button onClick={() => onCTA(operator)}>
+                <Typography
+                  color="#94F3E4"
+                  fontSize={24}
+                  variant="h5"
+                  component="div"
+                >
+                  Double
+                </Typography>
+              </Button>
+            </Box>
             <Box
               sx={{
                 display: "flex",
@@ -63,14 +74,14 @@ export const Wager = ({ onCTA }) => {
               }}
             >
               <Tabs
-                variant="scrollable"
+                variant="fullWidth"
                 value={operator}
                 onChange={handleOperator}
                 textColor="primary"
                 indicatorColor="secondary"
               >
-                <Tab value={OPERATORS[0]} label="Wallet" />
-                <Tab value={OPERATORS[1]} label="Escrow" />
+                <Tab value={OPERATORS[0]} label={<WalletBalance />} />
+                <Tab value={OPERATORS[1]} label={<EscrowBalance />} />
               </Tabs>
             </Box>
           </Stack>

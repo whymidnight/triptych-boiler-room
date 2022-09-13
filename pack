@@ -1,0 +1,6 @@
+
+    "@solana/wallet-adapter-material-ui": "./vendor/wallet-adapter/packages/ui/material-ui",
+    "@solana/wallet-adapter-react": "./vendor/wallet-adapter/packages/core/react",
+    "@solana/wallet-adapter-react-ui": "./vendor/wallet-adapter/packages/ui/react-ui",
+    "@solana/wallet-adapter-wallets": "./vendor/wallet-adapter/packages/wallets/wallets",
+
