@@ -48,7 +48,7 @@
     "@solana/wallet-adapter-react": "https://gitpkg.now.sh/whymidnight/wallet-adapter/packages/core/react?gitpkg",
     "@solana/wallet-adapter-react-ui": "https://gitpkg.now.sh/whymidnight/wallet-adapter/packages/ui/react-ui?gitpkg",
     "@solana/wallet-adapter-triptychlabs": "https://gitpkg.now.sh/whymidnight/wallet-adapter/packages/wallets/triptychlabs?gitpkg",
-    "@solana/wallet-adapter-wallets": "https://gitpkg.now.sh/whymidnight/wallet-adapter/packages/wallets/wallets?gitpkg",
+    "@solana/wallet-adapter-wallets": "0.18.5",
     "@solana/web3.js": "^1.41.4",
     "@types/pako": "^2.0.0",
     "@types/styled-components": "^5.1.25",
