@@ -1,14 +1,15 @@
-import {FC} from "react";
-import {Navbar} from "../components/navbar/navbar";
-import {XQuesting} from "../containers/xQuesting/index";
+import { FC } from "react";
+import { Navbar } from "../components/navbar/navbar";
+import { XQuesting } from "../containers/xQuesting/index";
+import { Box, Button, Typography } from "@mui/material";
 
 export const XQuestingPage: FC = () => {
   return (
     <>
       <Navbar />
-      <div className="xquestingbg">
+      <Box className="xquestingbg">
         <XQuesting />
-      </div>
+      </Box>
     </>
   );
 };

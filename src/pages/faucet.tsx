@@ -5,13 +5,12 @@ import { Box } from "@mui/material";
 import { Connection, PublicKey } from "@solana/web3.js";
 
 export const FaucetPage: FC = () => {
-  const network = "devnet" as WalletAdapterNetwork;
+  const network = "devnet";
   const rpcHost = "https://api.devnet.solana.com";
   const connection = new Connection(rpcHost);
 
   return (
     <>
-      <Navbar />
       <div className="xquestingbg">
         <Box
           sx={{
@@ -20,6 +19,7 @@ export const FaucetPage: FC = () => {
             justifyContent: "center",
             alignItems: "center",
             height: "100vh",
+            width: "100vw",
           }}
         >
           <Faucet

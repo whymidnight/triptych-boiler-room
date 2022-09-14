@@ -53,10 +53,10 @@ export const Navbar = () => {
               paddingRight: "1rem",
             }}
           >
-            <Link href="https://solfaucet.com/">
+            <Link href="/questing">
               <a>
                 <Typography color="white" variant="h6" fontSize={18}>
-                  Faucet
+                  Questing
                 </Typography>
               </a>
             </Link>
@@ -83,10 +83,10 @@ export const Navbar = () => {
               paddingRight: "1rem",
             }}
           >
-            <Link href="/profile">
+            <Link href="/swap">
               <a>
                 <Typography color="white" variant="h6" fontSize={18}>
-                  Manage Profile
+                  Swap
                 </Typography>
               </a>
             </Link>
@@ -117,6 +117,36 @@ export const Navbar = () => {
               <a>
                 <Typography color="white" variant="h6" fontSize={18}>
                   Giveaways
+                </Typography>
+              </a>
+            </Link>
+          </Box>
+          <Box
+            style={{
+              display: "flex",
+              alignItems: "center",
+              paddingRight: "1rem",
+              marginTop: "0.5rem",
+              marginBottom: "0.5rem",
+            }}
+          >
+            <Divider
+              sx={{ bgcolor: "#37AA9C" }}
+              orientation="vertical"
+              flexItem
+            />
+          </Box>
+          <Box
+            style={{
+              display: "flex",
+              alignItems: "center",
+              paddingRight: "1rem",
+            }}
+          >
+            <Link href="/profile">
+              <a>
+                <Typography color="white" variant="h6" fontSize={18}>
+                  Profile
                 </Typography>
               </a>
             </Link>

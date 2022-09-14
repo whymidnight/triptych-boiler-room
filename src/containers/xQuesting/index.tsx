@@ -129,9 +129,9 @@ declare function get_rewards(
 ): Promise<any>;
 
 export const ORACLE = new PublicKey(
-  "GbfoTncFrg8PxS2KY9mmCHz73Bv9cXUxsr7Q66y5SUDo"
+  "BqVJxUsAfWdgTz6i5SCHYKNPxmU7ofHH9WPKpdD63iiE"
 );
-export const CONNECTION = "https://ssc-dao.genesysgo.net";
+export const CONNECTION = "https://devnet.genesysgo.net";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,
@@ -192,10 +192,7 @@ export const QuestsGalleryItems = ({
 
   // 4jAu28eBUWzqNkYCLC17rWBCDEhs47juszS6dsABpkrw, 6tzi4GYZMTrCv9gJi6iXBC2eheD9EZBMBUxM1WHAibd8
   useEffect(() => {
-    const wlQuests = [
-      "Ex2YyicgAHnGH1JZCu6y4Pq5UUrKqJdPCGa8qPx9MmDK",
-      "HqK1mrYLhAuDHgyzRGNFJXeKzkH9fWXXKNaAi2YibJju",
-    ];
+    const wlQuests = [];
 
     const keys = Object.keys(quests);
     switch (tab) {
@@ -378,6 +375,7 @@ export const QuestsGalleryItems = ({
                           </CardContent>
                           <CardActions style={{ justifyContent: "center" }}>
                             <Button
+                              variant="outlined"
                               style={{
                                 display: "flex",
                                 justifyContent: "center",
@@ -399,6 +397,7 @@ export const QuestsGalleryItems = ({
                               Manage
                             </Button>
                             <Button
+                              variant="outlined"
                               style={{
                                 display: "flex",
                                 justifyContent: "center",
@@ -409,7 +408,9 @@ export const QuestsGalleryItems = ({
                             >
                               Begin
                             </Button>
-                            {questsProposals.hasOwnProperty(quest) &&
+                            {/*
+                             * EXPERIMENTAL RECOVERY
+                            questsProposals.hasOwnProperty(quest) &&
                               questsProposals[quest].filter(
                                 (item) =>
                                   !item.Started &&
@@ -418,6 +419,7 @@ export const QuestsGalleryItems = ({
                                     item.StartTime === 0)
                               ).length > 0 && (
                                 <Button
+                                  variant="outlined"
                                   style={{
                                     display: "flex",
                                     justifyContent: "center",
@@ -428,10 +430,12 @@ export const QuestsGalleryItems = ({
                                 >
                                   Recover
                                 </Button>
-                              )}
+                              )
+                              */}
                             {quests.hasOwnProperty(quest) &&
                               quests[quest].StakingConfig !== null && (
                                 <Button
+                                  variant="outlined"
                                   disabled={
                                     quests.hasOwnProperty(quest) &&
                                     quests[quest].StakingConfig !== null &&
@@ -572,6 +576,7 @@ export const QuestsGallery = () => {
         String.fromCharCode(...questsKPIsJson.value)
       );
 
+      console.log(quests);
       setQuests(quests);
       setQuestsProposals(questsProposals);
       setQuestsKPIs(questsKPIs);
@@ -706,7 +711,7 @@ export const QuestsGallery = () => {
           if (flushRecordsTxs.length > 0) {
             for (const flushTxB of flushRecordsTxs) {
               try {
-                const flushTx = Transaction.populate(
+                let flushTx = Transaction.populate(
                   new Message(flushTxB.message)
                 );
                 flushTx.recentBlockhash = (
@@ -714,10 +719,9 @@ export const QuestsGallery = () => {
                 ).blockhash;
                 setOpenMessage("Please Approve Quest Withdrawal Transaction.");
                 setOpen(true);
-                const signature = await wallet.sendTransaction(
-                  flushTx,
-                  connection,
-                  { skipPreflight: true }
+                flushTx = await wallet.signTransaction(flushTx);
+                const signature = await connection.sendRawTransaction(
+                  flushTx.serialize()
                 );
                 setOpen(true);
                 setOpenMessage("Quest Withdrawal Transaction Submitted.");
@@ -764,7 +768,7 @@ export const QuestsGallery = () => {
           if (flushRecordsTxs.length > 0) {
             for (const flushTxB of flushRecordsTxs) {
               try {
-                const flushTx = Transaction.populate(
+                let flushTx = Transaction.populate(
                   new Message(flushTxB.message)
                 );
                 flushTx.recentBlockhash = (
@@ -772,10 +776,9 @@ export const QuestsGallery = () => {
                 ).blockhash;
                 setOpenMessage("Please Approve Claim Reward Transaction.");
                 setOpen(true);
-                const signature = await wallet.sendTransaction(
-                  flushTx,
-                  connection,
-                  { skipPreflight: true }
+                flushTx = await wallet.signTransaction(flushTx);
+                const signature = await connection.sendRawTransaction(
+                  flushTx.serialize()
                 );
                 console.log(signature);
                 setOpen(true);
@@ -819,7 +822,7 @@ export const QuestsGallery = () => {
           if (Object.keys(flushRecordsTxs).length > 0) {
             try {
               for (const flushTxB of flushRecordsTxs) {
-                const flushTx = Transaction.populate(
+                let flushTx = Transaction.populate(
                   new Message(flushTxB.message)
                 );
                 flushTx.recentBlockhash = (
@@ -827,10 +830,9 @@ export const QuestsGallery = () => {
                 ).blockhash;
                 setOpenMessage("Please Approve Quest End Transaction.");
                 setOpen(true);
-                const signature = await wallet.sendTransaction(
-                  flushTx,
-                  connection,
-                  { skipPreflight: true }
+                flushTx = await wallet.signTransaction(flushTx);
+                const signature = await connection.sendRawTransaction(
+                  flushTx.serialize()
                 );
                 setOpen(true);
                 setOpenMessage("Quest End Transaction Submitted!");
@@ -959,7 +961,7 @@ export const QuestsGallery = () => {
             if (onboardTxs.length > 0) {
               for (const onboardTx of onboardTxs) {
                 try {
-                  const enrollQuesteesTx = Transaction.populate(
+                  let enrollQuesteesTx = Transaction.populate(
                     new Message(onboardTx.message)
                   );
                   enrollQuesteesTx.recentBlockhash = (
@@ -967,10 +969,11 @@ export const QuestsGallery = () => {
                   ).blockhash;
                   setOpenMessage("Please Approve Quest Start Transaction.");
                   setOpen(true);
-                  const signature = await wallet.sendTransaction(
-                    enrollQuesteesTx,
-                    connection,
-                    { skipPreflight: true }
+                  enrollQuesteesTx = await wallet.signTransaction(
+                    enrollQuesteesTx
+                  );
+                  const signature = await connection.sendRawTransaction(
+                    enrollQuesteesTx.serialize()
                   );
                   setOpen(true);
                   setOpenMessage("Quest Start Transaction Submitted.");
@@ -1018,7 +1021,7 @@ export const QuestsGallery = () => {
               setActiveQuestProposals([enrollQuesteesIx.proposalIndex]);
 
               try {
-                const enrollQuesteesTx = Transaction.populate(
+                let enrollQuesteesTx = Transaction.populate(
                   new Message(enrollQuesteesIx.transaction.message)
                 );
                 enrollQuesteesTx.recentBlockhash = (
@@ -1026,10 +1029,11 @@ export const QuestsGallery = () => {
                 ).blockhash;
                 setOpenMessage("Please Approve Quest Start Transaction.");
                 setOpen(true);
-                const signature = await wallet.sendTransaction(
-                  enrollQuesteesTx,
-                  connection,
-                  { skipPreflight: true }
+                enrollQuesteesTx = await wallet.signTransaction(
+                  enrollQuesteesTx
+                );
+                const signature = await connection.sendRawTransaction(
+                  enrollQuesteesTx.serialize()
                 );
                 setOpenMessage("Quest Start Transaction Submitted.");
                 setOpen(true);
@@ -1078,13 +1082,14 @@ export const QuestsGallery = () => {
         );
 
         if (Object.keys(doRngsIx).length > 0) {
-          const doRngsTx = Transaction.populate(new Message(doRngsIx.message));
+          let doRngsTx = Transaction.populate(new Message(doRngsIx.message));
           doRngsTx.recentBlockhash = (
             await connection.getRecentBlockhash("finalized")
           ).blockhash;
-          const signature = await wallet.sendTransaction(doRngsTx, connection, {
-            skipPreflight: true,
-          });
+          doRngsTx = await wallet.signTransaction(doRngsTx);
+          const signature = await connection.sendRawTransaction(
+            doRngsTx.serialize()
+          );
           console.log(signature);
           await connection.confirmTransaction(signature, "confirmed");
         }
@@ -1205,19 +1210,19 @@ export const QuestsGallery = () => {
 
         if (Object.keys(selectQuestIx).length > 0) {
           try {
-            const selectQuestTx = Transaction.populate(
+            let selectQuestTx = Transaction.populate(
               new Message(selectQuestIx.message)
             );
+            console.log(selectQuestTx);
             const recentBlockhash = (
               await connection.getRecentBlockhash("finalized")
             ).blockhash;
             selectQuestTx.recentBlockhash = recentBlockhash;
             setOpenMessage("Please Approve Quest Selection Transaction.");
             setOpen(true);
-            const signature = await wallet.sendTransaction(
-              selectQuestTx,
-              connection,
-              { skipPreflight: true }
+            selectQuestTx = await wallet.signTransaction(selectQuestTx);
+            const signature = await connection.sendRawTransaction(
+              selectQuestTx.serialize()
             );
             setOpenMessage("Quest Selection Submitted.");
             setOpen(true);
@@ -1297,7 +1302,7 @@ export const QuestsGallery = () => {
 
         if (Object.keys(startQuestsIx).length > 0) {
           try {
-            const startQuestsTx = Transaction.populate(
+            let startQuestsTx = Transaction.populate(
               new Message(startQuestsIx.message)
             );
             startQuestsTx.recentBlockhash = (
@@ -1305,10 +1310,9 @@ export const QuestsGallery = () => {
             ).blockhash;
             setOpen(true);
             setOpenMessage("Please Approve Start Quest Transaction.");
-            const signature = await wallet.sendTransaction(
-              startQuestsTx,
-              connection,
-              { skipPreflight: true }
+            startQuestsTx = await wallet.signTransaction(startQuestsTx);
+            const signature = await connection.sendRawTransaction(
+              startQuestsTx.serialize()
             );
             setOpenMessage("Start Quest Transaction Submitted.");
             setOpen(true);
@@ -1369,10 +1373,9 @@ export const QuestsGallery = () => {
             rewardTx.recentBlockhash = (
               await connection.getRecentBlockhash("finalized")
             ).blockhash;
-            const signature = await wallet.sendTransaction(
-              rewardTx,
-              connection,
-              { skipPreflight: true }
+            rewardTx = await wallet.signTransaction(rewardTx);
+            const signature = await connection.sendRawTransaction(
+              rewardTx.serialize()
             );
             console.log(signature);
             await connection.confirmTransaction(signature, "confirmed");
@@ -1400,16 +1403,15 @@ export const QuestsGallery = () => {
         );
 
         if (Object.keys(endQuestsIx).length > 0) {
-          const endQuestsTx = Transaction.populate(
+          let endQuestsTx = Transaction.populate(
             new Message(endQuestsIx.message)
           );
           endQuestsTx.recentBlockhash = (
             await connection.getRecentBlockhash("finalized")
           ).blockhash;
-          const signature = await wallet.sendTransaction(
-            endQuestsTx,
-            connection,
-            { skipPreflight: true }
+          endQuestsTx = await wallet.signTransaction(endQuestsTx);
+          const signature = await connection.sendRawTransaction(
+            endQuestsTx.serialize()
           );
           console.log(signature);
           await connection.confirmTransaction(signature, "confirmed");
@@ -1534,6 +1536,8 @@ export const QuestsGallery = () => {
                     sx={{
                       fontSize: "1.1rem",
                       width: "-webkit-fill-available",
+                      borderRadius: "25px",
+                      color: "#94F3E4",
                     }}
                     onClick={onBack}
                   >
@@ -1559,6 +1563,8 @@ export const QuestsGallery = () => {
                           sx={{
                             fontSize: "1.1rem",
                             width: "-webkit-fill-available",
+                            borderRadius: "25px",
+                            color: "#94F3E4",
                           }}
                           onClick={(event) => onRecover(event, questSelection)}
                         >
@@ -1579,6 +1585,8 @@ export const QuestsGallery = () => {
                       sx={{
                         fontSize: "1.1rem",
                         width: "-webkit-fill-available",
+                        borderRadius: "25px",
+                        color: "#94F3E4",
                       }}
                       onClick={onNext}
                     >
@@ -1600,6 +1608,7 @@ export const QuestsGallery = () => {
                       sx={{
                         fontSize: "1.1rem",
                         width: "-webkit-fill-available",
+                        borderRadius: "25px",
                       }}
                       onClick={(event) => onQuestStart(event, questSelection)}
                     >
@@ -1662,4 +1671,3 @@ export const XQuesting = () => {
     </>
   );
 };
-

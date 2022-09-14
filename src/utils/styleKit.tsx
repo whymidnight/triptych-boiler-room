@@ -2,12 +2,11 @@ import { createGlobalStyle } from "styled-components";
 import Theme from "./theme/theme";
 
 export const GlobalStyle = createGlobalStyle`
-@font-face {
-  font-family: 'MADE Evolve Sans';
-  src: url(${Theme.typography.url}) format('woff2');
-}
-
-    width: 50vw;.MuiTypography-caption {
+  @font-face {
+    font-family: 'MADE Evolve Sans';
+    src: url(${Theme.typography.url}) format('woff2');
+  }
+  width: 50vw;.MuiTypography-caption {
   font-family: 'MADE Evolve Sans' !important;
   color: ${Theme.typography.body1.color} !important;
 }
@@ -41,7 +40,7 @@ button[class*="CTAButton"] {
 #cmui-modal {
   font-family: "MADE Evolve Sans" !important;
   background-color: ${Theme.palette.secondary.light};
-  box-shadow: 0px 0px 40px 10px ${Theme.palette.secondary.main} !important;
+  box-shadow: 0px 0px 20px 5px ${Theme.palette.secondary.main} !important;
 }
 
 .raffles-featured-box {
@@ -80,7 +79,7 @@ button[class*="CTAButton"] {
     width: 90vw;
   }
   @media (min-width: 500px) {
-    width: 50vw;
+    width: 70vw;
   }
 }
 
@@ -174,9 +173,8 @@ border-radius: unset !important;
     width: 95vw;
   }
   @media (min-width: 500px) {
-    width: 45vw;
+    width: 65vw;
   }
-  background-color: ${Theme.palette.secondary.light} !important;
 }
 
 .swap-card {

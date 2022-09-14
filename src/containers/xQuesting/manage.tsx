@@ -109,7 +109,7 @@ export const QuestedGalleryItemsHeader = ({ quest, kpis }) => {
         >
           <Divider
             orientation="vertical"
-            style={{ height: "100%", width: "1px", backgroundColor: "orange" }}
+            style={{ height: "100%", width: "1px", backgroundColor: "#94F3E4" }}
           />
         </Grid>
       );
@@ -310,7 +310,7 @@ export const QuestedGalleryItemsHeader = ({ quest, kpis }) => {
         >
           <Divider
             orientation="vertical"
-            style={{ height: "100%", width: "1px", backgroundColor: "orange" }}
+            style={{ height: "100%", width: "1px", backgroundColor: "#94F3E4" }}
           />
         </Grid>
       );
@@ -342,7 +342,7 @@ export const QuestedGalleryItemsHeader = ({ quest, kpis }) => {
         >
           <Divider
             orientation="vertical"
-            style={{ height: "100%", width: "1px", backgroundColor: "orange" }}
+            style={{ height: "100%", width: "1px", backgroundColor: "#94F3E4" }}
           />
         </Grid>
       );
@@ -543,7 +543,7 @@ export const QuestedGalleryItemsHeader = ({ quest, kpis }) => {
       >
         <Divider
           orientation="vertical"
-          style={{ height: "100%", width: "1px", backgroundColor: "orange" }}
+          style={{ height: "100%", width: "1px", backgroundColor: "#94F3E4" }}
         />
       </Grid>
     );
@@ -780,17 +780,27 @@ export const QuestedGalleryItems = ({ onSelection }) => {
                 <Grid
                   item
                   xs={12}
-                  sx={{ display: "flex", justifyContent: "center" }}
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    width: "100%",
+                  }}
                 >
                   <Grid
                     item
-                    xs={6}
-                    sx={{ display: "flex", justifyContent: "center" }}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "center",
+                    }}
                   >
                     <Box>
                       <Button
                         disabled={disabled}
-                        style={{ fontSize: "1rem", margin: "5px" }}
+                        style={{
+                          fontSize: "1rem",
+                          margin: "5px",
+                          color: !disabled ? "#94F3E4" : "#333F44",
+                        }}
                         onClick={(event) => {
                           console.log(".........");
                           setRecoveryState((prev) => {
@@ -809,11 +819,7 @@ export const QuestedGalleryItems = ({ onSelection }) => {
                       </Button>
                     </Box>
                   </Grid>
-                  <Grid
-                    item
-                    xs={6}
-                    sx={{ display: "flex", justifyContent: "center" }}
-                  >
+                  <Grid item sx={{ display: "flex", justifyContent: "center" }}>
                     <Box
                       sx={{
                         display: "flex",
@@ -821,14 +827,16 @@ export const QuestedGalleryItems = ({ onSelection }) => {
                         justifyContent: "center",
                       }}
                     >
-                      <Stack>
-                        <Typography align="right" variant="h5">
-                          Time Remaining
-                        </Typography>
-                        <Typography align="right" variant="h5">
-                          {getHumanReadablePluralTime(remainingTime)}
-                        </Typography>
-                      </Stack>
+                      {globalEnum !== "reward" && (
+                        <Stack>
+                          <Typography align="right" variant="h5">
+                            Time Remaining
+                          </Typography>
+                          <Typography align="right" variant="h5">
+                            {getHumanReadablePluralTime(remainingTime)}
+                          </Typography>
+                        </Stack>
+                      )}
                     </Box>
                   </Grid>
                 </Grid>

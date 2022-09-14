@@ -623,6 +623,7 @@ const QuestStakingTokens = (props) => {
               display: "grid",
               gridTemplateColumns: "1fr",
               gridTemplateRows: "1fr",
+              margin: "1rem",
             }}
           >
             <UseDroppable
@@ -682,6 +683,7 @@ const QuestStakingTokens = (props) => {
               sx={{
                 height: "max-content",
                 minHeight: "200px",
+                margin: "1rem",
               }}
             >
               <UseDroppable id={props.draggableId} items={props.draggable} />

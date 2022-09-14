@@ -56,6 +56,9 @@ export const QuestAction = ({ onSelection }) => {
             }}
           >
             <Button
+              style={{
+                color: "#94F3E4",
+              }}
               onClick={(event) => onSelection(event, questSelection)}
               size="small"
             >
@@ -99,4 +102,3 @@ export const QuestAction = ({ onSelection }) => {
     </>
   );
 };
-
