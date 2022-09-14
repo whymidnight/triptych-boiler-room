@@ -1,4 +1,4 @@
-import ProfilePage from "../src/pages/profile";
+import FaucetPage from "../src/pages/faucet";
 import { CreateTheme } from "../src/utils/theme/theme";
 import { ThemeProvider } from "@mui/material/styles";
 
@@ -7,7 +7,7 @@ const Casino = () => {
 
   return (
     <ThemeProvider theme={theme}>
-      <ProfilePage />
+      <FaucetPage />
     </ThemeProvider>
   );
 };

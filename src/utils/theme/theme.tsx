@@ -29,6 +29,14 @@ export const Theme = {
             borderColor: process.env.NEXT_PUBLIC_TEXT_COLOR!,
           },
         },
+        {
+          props: { variant: "outlined", disabled: true },
+          style: {
+            border: "solid",
+            borderWidth: "1px",
+            borderColor: process.env.NEXT_PUBLIC_TEXT_COLOR!,
+          },
+        },
       ],
     },
   },
@@ -88,7 +96,7 @@ export const Theme = {
     },
     action: {
       active: red[200],
-      disabled: grey[700],
+      disabled: "red",
       disabledBackground: grey[200],
       hover: red[100],
       hoverOpacity: 0.7,
@@ -115,3 +123,4 @@ export const CreateTheme = () => {
 };
 
 export default Theme;
+

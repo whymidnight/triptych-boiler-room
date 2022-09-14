@@ -1,10 +1,11 @@
 import { Box } from "@mui/material";
+import { StyledCard } from "src/components/cards";
 import Home from "../../vendor_modules/cmui/Home";
 
 // @ts-ignore
-export const Mint = ({ candyMachineId, connection, rpcHost, network }) => {
+export const Faucet = ({ candyMachineId, connection, rpcHost, network }) => {
   return (
-    <Box className="swap-container">
+    <StyledCard className="swap-container">
       <Home
         candyMachineId={candyMachineId}
         connection={connection}
@@ -12,8 +13,8 @@ export const Mint = ({ candyMachineId, connection, rpcHost, network }) => {
         rpcHost={rpcHost}
         network={network}
       />
-    </Box>
+    </StyledCard>
   );
 };
 
-export default Mint;
+export default Faucet;

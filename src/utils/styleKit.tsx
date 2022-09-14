@@ -23,6 +23,7 @@ button[class*="CTAButton"] {
 }
 .MuiTypography-colorTextPrimary {
   font-family: 'MADE Evolve Sans' !important;
+  color: ${Theme.typography.body1.color} !important;
 }
 
 .wallet-adapter-button {
@@ -175,7 +176,7 @@ border-radius: unset !important;
   @media (min-width: 500px) {
     width: 45vw;
   }
-  background-image: linear-gradient(var(--gradient-rotate, 246deg), rgb(218 46 239) 7.97%, rgb(43 106 255) 49.17%, rgb(57 208 216) 92.1%);
+  background-color: ${Theme.palette.secondary.light} !important;
 }
 
 .swap-card {
@@ -220,6 +221,10 @@ color: ${Theme.typography.body1.color};
 
 .giveaways-container {
   width: 700px;
+}
+
+.Mui-disabled {
+  border: 1px solid #333F44 !important;
 }
 
 `;

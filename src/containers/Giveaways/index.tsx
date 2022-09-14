@@ -28,6 +28,7 @@ import { useRecoilState } from "recoil";
 import { userDataAtom } from "./state/atoms";
 import { Manage } from "./containers/Manage";
 import { Participants } from "./containers/participants";
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 
 interface UserData {
   id: string;
@@ -176,6 +177,21 @@ export const Giveaways = ({
         </Alert>
       </Snackbar>
       <Box style={{ padding: "1rem" }}>
+        <Box
+          style={{
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          <Typography
+            color="#94F3E4"
+            fontSize={24}
+            variant="h5"
+            component="div"
+          >
+            Triptych Giveaways
+          </Typography>
+        </Box>
         {!auth && (
           <StyledCard
             style={{ display: "flex", justifyContent: "center" }}
@@ -185,22 +201,58 @@ export const Giveaways = ({
               style={{
                 display: "flex",
                 flex: 1,
-                flexDirection: "column",
+                flexDirection: "row",
                 padding: "1rem",
+                justifyContent: "center",
               }}
             >
-              <Button onClick={onVerify}>
-                <Typography
-                  color="#94F3E4"
-                  fontSize={18}
-                  variant="h5"
-                  component="div"
+              {!wallet.connected && (
+                <Box
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
                 >
-                  Connect Twitter
-                </Typography>
-              </Button>
-              {view === "participants" && (
-                <Participants tweetId={tweetIdSlug!} />
+                  <Typography
+                    color="#94F3E4"
+                    fontSize={18}
+                    variant="h5"
+                    component="div"
+                  >
+                    Connect Wallet!
+                  </Typography>
+                  <WalletMultiButton />
+                </Box>
+              )}
+              {wallet.connected && (
+                <Box
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Button onClick={onVerify}>
+                    <Typography
+                      color="#94F3E4"
+                      fontSize={18}
+                      variant="h5"
+                      component="div"
+                    >
+                      Connect Twitter
+                    </Typography>
+                  </Button>
+                  {view === "participants" && (
+                    <Participants
+                      tweetId={tweetIdSlug!}
+                      setAlertMessage={setAlertMessage}
+                      setOpen={setOpen}
+                    />
+                  )}
+                </Box>
               )}
             </Box>
           </StyledCard>
@@ -235,14 +287,25 @@ export const Giveaways = ({
                           paddingBottom: "2rem",
                         }}
                       >
-                        <Typography
-                          color="#94F3E4"
-                          fontSize={18}
-                          variant="h5"
-                          component="div"
+                        <Box
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            justifyContent: "center",
+                            alignItems: "center",
+                          }}
                         >
-                          Giveaways
-                        </Typography>
+                          <Box
+                            component="img"
+                            src={"/tripmac.gif"}
+                            style={{
+                              height: 64,
+                              width: 64,
+                              justifyContent: "center",
+                            }}
+                            alt="pfp"
+                          />
+                        </Box>
                         <Tabs value={tab} onChange={handleTabChange}>
                           <Tab label="Create" value={0} />
                           <Tab label="Active" value={1} />
