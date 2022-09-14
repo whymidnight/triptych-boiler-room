@@ -273,6 +273,7 @@ export const Giveaways = ({
                         }}
                       >
                         <Image
+                          unoptimized={true}
                           objectFit="cover"
                           src={
                             userData
