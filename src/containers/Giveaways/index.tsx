@@ -270,18 +270,21 @@ export const Giveaways = ({
                         style={{
                           borderRadius: "50%",
                           overflow: "hidden",
+                          height: 48,
+                          width: 48,
                         }}
                       >
-                        <Image
-                          unoptimized={true}
-                          objectFit="cover"
+                        <Box
+                          component="img"
                           src={
                             userData
                               ? userData.profile_image_url
                               : process.env.NEXT_PUBLIC_LOGO_FILE!
                           }
-                          height={48}
-                          width={48}
+                          style={{
+                            height: 48,
+                            width: 48,
+                          }}
                           alt="pfp"
                         />
                       </Box>
