@@ -129,9 +129,9 @@ declare function get_rewards(
 ): Promise<any>;
 
 export const ORACLE = new PublicKey(
-  "BqVJxUsAfWdgTz6i5SCHYKNPxmU7ofHH9WPKpdD63iiE"
+  "7ZsSixH23trMsnpPQyKt4RsSky69ZzVzAuXLcsf723PK"
 );
-export const CONNECTION = "https://devnet.genesysgo.net";
+export const CONNECTION = "https://api.devnet.solana.com";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,
@@ -822,7 +822,7 @@ export const QuestsGallery = () => {
           if (Object.keys(flushRecordsTxs).length > 0) {
             try {
               for (const flushTxB of flushRecordsTxs) {
-                let flushTx = Transaction.populate(
+                const flushTx = Transaction.populate(
                   new Message(flushTxB.message)
                 );
                 flushTx.recentBlockhash = (
@@ -830,9 +830,8 @@ export const QuestsGallery = () => {
                 ).blockhash;
                 setOpenMessage("Please Approve Quest End Transaction.");
                 setOpen(true);
-                flushTx = await wallet.signTransaction(flushTx);
                 const signature = await connection.sendRawTransaction(
-                  flushTx.serialize()
+                  (await wallet.signTransaction(flushTx)).serialize()
                 );
                 setOpen(true);
                 setOpenMessage("Quest End Transaction Submitted!");
@@ -958,6 +957,7 @@ export const QuestsGallery = () => {
               )
             );
 
+            console.log("asdfasdfasdfasdf_SIGNLE");
             if (onboardTxs.length > 0) {
               for (const onboardTx of onboardTxs) {
                 try {
@@ -973,8 +973,12 @@ export const QuestsGallery = () => {
                     enrollQuesteesTx
                   );
                   const signature = await connection.sendRawTransaction(
-                    enrollQuesteesTx.serialize()
+                    enrollQuesteesTx.serialize(),
+                    {
+                      skipPreflight: true,
+                    }
                   );
+                  console.log(signature);
                   setOpen(true);
                   setOpenMessage("Quest Start Transaction Submitted.");
                   console.log(signature);
@@ -982,6 +986,7 @@ export const QuestsGallery = () => {
                   setOpen(true);
                   setOpenMessage("Quest Start Transaction Succeeded.");
                 } catch (e) {
+                  console.log(e);
                   setOpenMessage("Quest Start Transaction Failed. :(");
                   setOpen(true);
                 }
@@ -1017,6 +1022,7 @@ export const QuestsGallery = () => {
               )
             );
 
+            console.log("asdfasdfasdfasdf");
             if (Object.keys(enrollQuesteesIx).length > 0) {
               setActiveQuestProposals([enrollQuesteesIx.proposalIndex]);
 
@@ -1042,6 +1048,7 @@ export const QuestsGallery = () => {
                 setOpenMessage("Quest Start Transaction Succeeded.");
                 setOpen(true);
               } catch (e) {
+                console.log(e);
                 setOpenMessage("Quest Start Transaction Failed. :(");
                 setOpen(true);
               }
@@ -1224,13 +1231,13 @@ export const QuestsGallery = () => {
             const signature = await connection.sendRawTransaction(
               selectQuestTx.serialize()
             );
-            setOpenMessage("Quest Selection Submitted.");
             setOpen(true);
             console.log(signature);
             await connection.confirmTransaction(signature, "confirmed");
             setOpenMessage("Quest Selection Succeeded.");
             setOpen(true);
           } catch (e) {
+            console.log(e);
             setOpen(true);
             setOpenMessage("Quest Selection Failed. :(");
             return;
@@ -1321,6 +1328,8 @@ export const QuestsGallery = () => {
             setOpenMessage("Start Quest Transaction Succeeded.");
             setOpen(true);
           } catch (e) {
+            console.log("fail....");
+            console.log(e);
             setOpen(true);
             setOpenMessage("Start Quest Transaction Failed.");
           }
@@ -1671,3 +1680,4 @@ export const XQuesting = () => {
     </>
   );
 };
+

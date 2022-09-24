@@ -184,7 +184,7 @@ export const Manage = ({
         setOpen(true);
         setAlertMessage("Transaction may take up to 2 minutes to finalize!");
 
-        const connection = new Connection("https://devnet.genesysgo.net");
+        const connection = new Connection("https://ssc-dao.genesysgo.net");
         await awaitTransactionSignatureConfirmation(
           start.data.message.signature,
           connection,
