@@ -128,9 +128,6 @@ declare function get_rewards(
   questIndex: String
 ): Promise<any>;
 
-export const ORACLE = new PublicKey(
-  "7ZsSixH23trMsnpPQyKt4RsSky69ZzVzAuXLcsf723PK"
-);
 export const CONNECTION = "https://api.devnet.solana.com";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
@@ -469,7 +466,9 @@ export const QuestsGalleryItems = ({
   );
 };
 
-export const QuestsGallery = () => {
+export const QuestsGallery = ({ oracle }: { oracle: PublicKey }) => {
+  const ORACLE = oracle;
+  console.log(ORACLE.toString());
   const connection = useMemo(() => new Connection(CONNECTION), []);
 
   const wallet = useWallet();
@@ -1673,11 +1672,10 @@ export const QuestsGallery = () => {
   );
 };
 
-export const XQuesting = () => {
+export const XQuesting = ({ oracle }: { oracle: PublicKey }) => {
   return (
     <>
-      <QuestsGallery />
+      <QuestsGallery oracle={oracle} />
     </>
   );
 };
-

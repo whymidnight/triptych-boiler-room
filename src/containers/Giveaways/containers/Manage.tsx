@@ -16,6 +16,8 @@ import {
   MenuItem,
   InputLabel,
   Divider,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import { ChangeEventHandler, useCallback, useEffect, useState } from "react";
 import { useRecoilState } from "recoil";
@@ -80,6 +82,9 @@ export const Manage = ({
   const [tweetId, setTweetId] = useState("");
   const [validTweet, setValidTweet] = useState(false);
   const [value, setValue] = useState<Dayjs | null>(dayjs());
+
+  const [featureRetweet, setFeatureRetweet] = useState(false);
+  const [featureFollow, setFeatureFollow] = useState(false);
 
   const handleChange = (newValue: Dayjs | null) => {
     setValue(newValue);
@@ -247,6 +252,10 @@ export const Manage = ({
       const message = "create";
       const signed = await wallet.signMessage(Buffer.from(message));
 
+      let features = ["like"];
+      if (featureRetweet) features.push("retweet");
+      if (featureFollow) features.push("follow");
+
       setOpen(true);
       setAlertMessage("Creating Giveaway !");
       const manage = await axios("https://triptychlabs.io:43594/giveaways", {
@@ -261,6 +270,9 @@ export const Manage = ({
             [message]: Buffer.from(signed).toString("hex"),
             tweetId,
             epoch,
+            features: {
+              features,
+            },
           },
         },
       });
@@ -276,31 +288,33 @@ export const Manage = ({
       router.push(String("/giveaways/" + tweetId));
     }
     create();
-  }, [tweetId, value]);
+  }, [tweetId, value, featureRetweet, featureFollow]);
 
   useEffect(() => {
     if (!wallet.publicKey) return;
 
     async function manageFn() {
       const message = "overview";
-      const signed = await wallet.signMessage(Buffer.from(message));
+      try {
+        const signed = await wallet.signMessage(Buffer.from(message));
 
-      const manage = await axios("https://triptychlabs.io:43594/giveaways", {
-        headers: {
-          OriginalMessage: message,
-        },
-        method: "POST",
-        data: {
-          method: "overview",
-          body: {
-            publicKey: wallet.publicKey.toString(),
-            [message]: Buffer.from(signed).toString("hex"),
+        const manage = await axios("https://triptychlabs.io:43594/giveaways", {
+          headers: {
+            OriginalMessage: message,
           },
-        },
-      });
+          method: "POST",
+          data: {
+            method: "overview",
+            body: {
+              publicKey: wallet.publicKey.toString(),
+              [message]: Buffer.from(signed).toString("hex"),
+            },
+          },
+        });
 
-      console.log(manage.data.message);
-      setGiveawaysData(manage.data.message.giveaways);
+        console.log(manage.data.message);
+        setGiveawaysData(manage.data.message.giveaways);
+      } catch (_) {}
     }
 
     manageFn();
@@ -361,6 +375,56 @@ export const Manage = ({
                   />
                 )}
               />
+            </Box>
+            <Box
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                paddingTop: "1rem",
+                paddingBottom: "1rem",
+              }}
+            >
+              <Box style={{ display: "flex", flexDirection: "column" }}>
+                <Typography
+                  color="#94F3E4"
+                  fontSize={18}
+                  variant="h5"
+                  component="div"
+                  style={{
+                    margin: "0.5rem",
+                  }}
+                >
+                  Features:
+                </Typography>
+                <FormControlLabel
+                  label={
+                    <Typography color="#94F3E4" variant="h4">
+                      Retweet
+                    </Typography>
+                  }
+                  control={
+                    <Checkbox
+                      onChange={() => setFeatureRetweet((val) => !val)}
+                      inputProps={{ "aria-label": "controlled" }}
+                      checked={featureRetweet}
+                    />
+                  }
+                />
+                <FormControlLabel
+                  label={
+                    <Typography color="#94F3E4" variant="h4">
+                      Follow
+                    </Typography>
+                  }
+                  control={
+                    <Checkbox
+                      onChange={() => setFeatureFollow((val) => !val)}
+                      inputProps={{ "aria-label": "controlled" }}
+                      checked={featureFollow}
+                    />
+                  }
+                />
+              </Box>
             </Box>
             {tweetId !== "" && validTweet && (
               <TwitterTweetEmbed

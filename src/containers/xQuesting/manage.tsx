@@ -29,7 +29,7 @@ import {
 
 import axios from "axios";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { ORACLE, CONNECTION } from "./index";
+import { CONNECTION } from "./index";
 import moment from "moment";
 
 declare function get_quests_kpis(oracle: String, holder: String): Promise<any>;
@@ -876,3 +876,4 @@ export const QuestedGalleryItems = ({ onSelection }) => {
     </StyledCard>
   );
 };
+

@@ -120,9 +120,13 @@ export const Giveaways = ({
         "width=400,height=800"
       );
       const timer = setInterval(async () => {
-        if (win.closed) {
+        try {
+          if (win.closed) {
+            clearInterval(timer);
+            await auth();
+          }
+        } catch (_) {
           clearInterval(timer);
-          await auth();
         }
       }, 500);
     }
